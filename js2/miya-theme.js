@@ -1619,7 +1619,7 @@
     applyHomeCopy(theme);
     var promises = [];
     promises.push(applyFont(theme));
-    if (!isCustom) {
+    if (!isCustomLike) {
       promises.push(
         global.miyaResolveMediaUrl(theme.wallpaper).then(function (url) {
           applyWallToPhone(url);
