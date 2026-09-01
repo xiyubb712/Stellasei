@@ -2757,14 +2757,16 @@
         '<div class="wg-profile__cover-bg"></div>' +
       '</div>' +
       '<div class="wg-profile__body">' +
-        '<div class="wg-profile__avatar desk-custom__wg-avatar" aria-hidden="true" style="cursor: pointer;"></div>' +
-        '<div class="wg-profile__info">' +
-          '<h2 class="wg-profile__name" data-miya-copy="profileName">星绥 Stellasei</h2>' +
-          '<p class="wg-profile__bio" data-miya-copy="profileBio">白日太长，适合慢慢过</p>' +
-          '<div class="wg-profile__clock">' +
-            '<span class="wg-profile__clock-time">--:--</span>' +
-            '<span class="wg-profile__clock-date">--月--日</span>' +
+        '<div class="wg-profile__clock">' +
+          '<span class="wg-profile__clock-time">--:--</span>' +
+          '<span class="wg-profile__clock-date">--月--日</span>' +
+        '</div>' +
+        '<div class="wg-profile__bottom">' +
+          '<div class="wg-profile__info">' +
+            '<h2 class="wg-profile__name" data-miya-copy="profileName">星绥 Stellasei</h2>' +
+            '<p class="wg-profile__bio" data-miya-copy="profileBio">白日太长，适合慢慢过</p>' +
           '</div>' +
+          '<div class="wg-profile__avatar desk-custom__wg-avatar" aria-hidden="true" style="cursor: pointer;"></div>' +
         '</div>' +
       '</div>' +
       '<button type="button" class="desk-custom__wg-remove" aria-label="移除小组件">×</button>';
