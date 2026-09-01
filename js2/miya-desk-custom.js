@@ -3203,6 +3203,67 @@
         }
       }, true); // 用捕获模式，确保在冒泡阶段之前拦截
     }
+    // 带重试机制的头像同步：不依赖 base64 缓存，直接从 miyaChatStore 读取
+    var syncAvatarRetry = 0;
+    function syncProfile4x4Avatar() {
+      try {
+        var profileId = localStorage.getItem('miya_home_avatar_profile_id');
+        if (!profileId) {
+          if (syncAvatarRetry < 20) {
+            syncAvatarRetry++;
+            setTimeout(syncProfile4x4Avatar, 300);
+          }
+          return;
+        }
+        var cs = window.miyaChatStore;
+        if (!cs || typeof cs.getProfiles !== 'function') {
+          if (syncAvatarRetry < 20) {
+            syncAvatarRetry++;
+            setTimeout(syncProfile4x4Avatar, 300);
+          }
+          return;
+        }
+        var profiles = cs.getProfiles() || [];
+        var prof = profiles.find(function (p) { return p && p.id === profileId; });
+        if (!prof) {
+          if (syncAvatarRetry < 20) {
+            syncAvatarRetry++;
+            setTimeout(syncProfile4x4Avatar, 300);
+          }
+          return;
+        }
+        var avatarId = prof.avatarId || prof.avatarBlobId || '';
+        if (!avatarId) {
+          if (syncAvatarRetry < 20) {
+            syncAvatarRetry++;
+            setTimeout(syncProfile4x4Avatar, 300);
+          }
+          return;
+        }
+        // 成功读取到头像 ID，应用头像
+        var applyAvatar = function (url) {
+          if (!url || !avaEl) return;
+          avaEl.style.backgroundImage = 'url("' + url.replace(/"/g, '%22') + '")';
+          avaEl.style.backgroundSize = 'cover';
+          avaEl.style.backgroundPosition = 'center';
+          avaEl.classList.add('has-custom-ava');
+        };
+        if (typeof cs.getCachedBlobUrl === 'function') {
+          var cached = cs.getCachedBlobUrl(avatarId);
+          if (cached) { applyAvatar(cached); return; }
+        }
+        if (typeof cs.getAvatarUrl === 'function') {
+          cs.getAvatarUrl(avatarId).then(applyAvatar).catch(function () {});
+        }
+      } catch (e) {
+        if (syncAvatarRetry < 20) {
+          syncAvatarRetry++;
+          setTimeout(syncProfile4x4Avatar, 300);
+        }
+      }
+    }
+    // 立即开始同步头像
+    syncProfile4x4Avatar();
     return el;
   }
 
