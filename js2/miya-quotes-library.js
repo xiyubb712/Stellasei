@@ -222,7 +222,8 @@
   }
 
   // 暴露到全局
-  global.miyaQuotesLibrary = QuotesLibrary;
+  var globalObj = typeof window !== 'undefined' ? window : (typeof global !== 'undefined' ? global : this);
+  globalObj.miyaQuotesLibrary = QuotesLibrary;
 
   console.log('语录库已加载 - 第一阶段基础框架完成');
 })();

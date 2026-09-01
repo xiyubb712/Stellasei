@@ -1340,6 +1340,21 @@
           console.error('更新角色头像失败:', e);
         }
       }
+
+      // 更新对话语录（从语录库读取）
+      try {
+        var quotesLib = global.miyaQuotesLibrary || null;
+        var msgEls = wgEl.querySelectorAll('.wg-couple-entry__msg');
+        if (quotesLib && typeof quotesLib.getRandom === 'function' && msgEls.length >= 2 && homeContactId) {
+          var coupleQuote = quotesLib.getRandom('couple', homeContactId, 'general');
+          if (coupleQuote && coupleQuote.left && coupleQuote.right) {
+            msgEls[0].textContent = coupleQuote.left;
+            msgEls[1].textContent = coupleQuote.right;
+          }
+        }
+      } catch (e) {
+        console.error('更新情侣对话语录失败:', e);
+      }
     } else if (type === 'companion') {
       // 陪伴小组件：显示角色头像和陪伴语录
       refreshCompanionWidget(wgEl);
@@ -3461,9 +3476,25 @@
     } catch (e) {}
   }
 
-  // 随机获取一句语录
+  // 随机获取一句语录（优先从语录库读取，没有则用预设）
   function getRandomCompanionQuote() {
     try {
+      var contactId = getCurrentCompanionContactId();
+      var quotesLib = global.miyaQuotesLibrary || null;
+      
+      // 优先从语录库读取
+      if (quotesLib && typeof quotesLib.getRandom === 'function' && contactId) {
+        // 随机选一个场景（学习/工作/休息/吃饭/睡前/放空）
+        var scenes = ['study', 'work', 'rest', 'meal', 'sleep', 'chill'];
+        var randomScene = scenes[Math.floor(Math.random() * scenes.length)];
+        var quote = quotesLib.getRandom('companion', contactId, randomScene);
+        if (quote && typeof quote === 'string' && quote.trim()) {
+          companionState.currentQuote = quote;
+          return quote;
+        }
+      }
+      
+      // 备用：用预设语录
       var quotes = COMPANION_QUOTES;
       if (quotes.length === 0) return "我会一直陪着你的";
       var newIndex;
@@ -3542,13 +3573,22 @@
       }, true);
     }
 
-    // 点击气泡：刷新一句话
+    // 点击气泡：进入陪伴系统（因为边边太难点了）
     var bubbleEl = el.querySelector('.wg-companion__bubble');
     if (bubbleEl) {
       bubbleEl.addEventListener('pointerdown', function (e) {
         e.stopImmediatePropagation();
-        getRandomCompanionQuote();
-        refreshCompanionWidget(el);
+        // 进入陪伴系统
+        try {
+          if (typeof global.miyaOpenCompanionApp === 'function') {
+            global.miyaOpenCompanionApp();
+          } else {
+            openCompanionApp();
+          }
+        } catch (err) {
+          showToast('陪伴系统启动中...');
+          window.open('companion-app.html', '_blank');
+        }
       }, true);
     }
 
@@ -3590,28 +3630,37 @@
       var textEl = wgEl.querySelector('.wg-companion__bubble-text');
       if (textEl) textEl.textContent = quote;
 
-      // 更新头像
+      // 更新头像（跟情侣空间入口小组件用同样的方式）
       var avatarEl = wgEl.querySelector('.wg-companion__avatar');
       if (avatarEl && contactId) {
         try {
-          var chatStore = global.miyaChatStore || null;
-          if (chatStore && typeof chatStore.getContacts === 'function') {
-            var contacts = chatStore.getContacts() || [];
-            var contact = contacts.find(function (c) { return c && c.id === contactId; });
-            if (contact && contact.avatar) {
-              var resolveFn = global.miyaResolveAvatarUrl || (global.miyaCoupleApp && global.miyaCoupleApp.resolveAvatarUrl);
-              if (resolveFn && typeof resolveFn === 'function') {
-                resolveFn(contact.avatar).then(function (url) {
-                  if (url) avatarEl.style.backgroundImage = 'url(' + url + ')';
-                }).catch(function () {
-                  avatarEl.style.backgroundImage = 'none';
-                });
-              } else {
-                avatarEl.style.backgroundImage = 'url(' + contact.avatar + ')';
-              }
+          var contact = null;
+          var cs = global.miyaChatStore || null;
+          if (cs && typeof cs.getContacts === 'function') {
+            var contacts = cs.getContacts() || [];
+            contact = contacts.find(function (c) { return c && c.id === contactId; }) || null;
+          }
+          if (contact) {
+            // 优先用解析后的头像URL（传整个contact对象）
+            if (typeof global.miyaResolveAvatarUrl === 'function') {
+              global.miyaResolveAvatarUrl(contact).then(function (url) {
+                if (url && avatarEl) {
+                  avatarEl.style.backgroundImage = 'url(' + url + ')';
+                }
+              }).catch(function () {
+                // 解析失败，用备用方案
+                if (contact && contact.avatar && avatarEl) {
+                  avatarEl.style.backgroundImage = 'url(' + contact.avatar + ')';
+                }
+              });
+            } else if (contact.avatar) {
+              // 解析函数还没加载，直接用avatar
+              avatarEl.style.backgroundImage = 'url(' + contact.avatar + ')';
             }
           }
-        } catch (e) {}
+        } catch (e) {
+          console.error('更新陪伴头像失败:', e);
+        }
       }
     } catch (e) {}
   }
@@ -7534,6 +7583,69 @@
   global.miyaOpenQuotesApp = openQuotesApp;
   global.miyaCloseQuotesApp = closeQuotesApp;
 
+  // 语录库 postMessage 通信（解决 iframe 跨域问题）
+  window.addEventListener('message', function (e) {
+    try {
+      var data = e.data;
+      if (!data || typeof data !== 'object') return;
+      if (data.type !== 'miya-quotes-library-request') return;
+
+      var quotesLib = window.miyaQuotesLibrary;
+      if (!quotesLib) return;
+
+      var action = data.action;
+      var result = null;
+
+      switch (action) {
+        case 'getAll':
+          result = quotesLib.getAll();
+          break;
+        case 'saveAll':
+          result = quotesLib.saveAll(data.data);
+          break;
+        case 'getRandom':
+          result = quotesLib.getRandom(data.category, data.characterId, data.scene);
+          break;
+        case 'addQuote':
+          result = quotesLib.addQuote(data.category, data.characterId, data.scene, data.quote);
+          break;
+        case 'resetToDefault':
+          result = quotesLib.resetToDefault();
+          break;
+        case 'getContacts':
+          // 获取联系人列表
+          try {
+            if (window.miyaChatStore && typeof window.miyaChatStore.getMeta === 'function') {
+              var meta = window.miyaChatStore.getMeta();
+              result = (meta && meta.contacts && Array.isArray(meta.contacts))
+                ? meta.contacts.filter(function(c) { return c && c.id; }).map(function(c) {
+                    return { id: c.id, name: c.name || c.charName || '未命名角色' };
+                  })
+                : [];
+            } else {
+              result = [];
+            }
+          } catch (err) {
+            console.log('获取联系人列表失败:', err);
+            result = [];
+          }
+          break;
+      }
+
+      // 返回结果给 iframe
+      var source = e.source;
+      if (source && source.postMessage) {
+        source.postMessage({
+          type: 'miya-quotes-library-response',
+          requestId: data.requestId,
+          result: result
+        }, '*');
+      }
+    } catch (err) {
+      console.log('语录库 postMessage 处理失败:', err);
+    }
+  });
+
   // 给 phoneLayer 添加捕获模式的点击事件监听器，拦截语录库应用的点击
   try {
     var phoneLayer = document.getElementById('miya-phone-layer');
@@ -7917,4 +8029,114 @@
     global.miyaSetCustomDeskTheme({ polaroids: polaroids });
     return isCustomLikeMode() ? applyCustomDeskTheme() : Promise.resolve();
   };
+
+  // ========== 定时刷新语录（页面可见时刷新，不可见时停止） ==========
+  var quoteRefreshTimer = null;
+  var QUOTE_REFRESH_INTERVAL = 45000; // 45秒刷新一次
+  var lastQuoteRefreshTime = 0;
+  var MIN_REFRESH_INTERVAL = 5000; // 最小刷新间隔5秒，避免频繁刷新
+
+  function refreshAllWidgetsQuotes() {
+    try {
+      // 检查最小刷新间隔，避免频繁刷新
+      var now = Date.now();
+      if (now - lastQuoteRefreshTime < MIN_REFRESH_INTERVAL) return;
+      lastQuoteRefreshTime = now;
+
+      // 刷新陪伴小组件的语录
+      var companionWidgets = document.querySelectorAll('.wg-companion');
+      companionWidgets.forEach(function(wgEl) {
+        try {
+          getRandomCompanionQuote();
+          refreshCompanionWidget(wgEl);
+        } catch (e) {}
+      });
+
+      // 刷新情侣空间入口小组件的对话
+      var coupleWidgets = document.querySelectorAll('.wg-couple-entry');
+      coupleWidgets.forEach(function(wgEl) {
+        try {
+          var coupleStore = global.miyaCoupleStore || null;
+          var homeContactId = '';
+          if (coupleStore && typeof coupleStore.getHomeDisplayContactId === 'function') {
+            homeContactId = coupleStore.getHomeDisplayContactId();
+          }
+          var quotesLib = global.miyaQuotesLibrary || null;
+          var msgEls = wgEl.querySelectorAll('.wg-couple-entry__msg');
+          if (quotesLib && typeof quotesLib.getRandom === 'function' && msgEls.length >= 2 && homeContactId) {
+            var coupleQuote = quotesLib.getRandom('couple', homeContactId, 'general');
+            if (coupleQuote && coupleQuote.left && coupleQuote.right) {
+              msgEls[0].textContent = coupleQuote.left;
+              msgEls[1].textContent = coupleQuote.right;
+            }
+          }
+        } catch (e) {}
+      });
+    } catch (e) {
+      console.log('定时刷新语录失败:', e);
+    }
+  }
+
+  function startQuoteRefreshTimer() {
+    if (quoteRefreshTimer) return;
+    quoteRefreshTimer = setInterval(refreshAllWidgetsQuotes, QUOTE_REFRESH_INTERVAL);
+  }
+
+  function stopQuoteRefreshTimer() {
+    if (quoteRefreshTimer) {
+      clearInterval(quoteRefreshTimer);
+      quoteRefreshTimer = null;
+    }
+  }
+
+  // 监听页面可见性（浏览器标签切换）
+  document.addEventListener('visibilitychange', function() {
+    if (document.hidden) {
+      // 页面不可见，停止刷新
+      stopQuoteRefreshTimer();
+    } else {
+      // 页面可见，恢复刷新
+      startQuoteRefreshTimer();
+      // 立即刷新一次
+      refreshAllWidgetsQuotes();
+    }
+  });
+
+  // 监听桌面显示状态（应用内切换：从其他应用退回到桌面时刷新）
+  try {
+    var deskObserver = new MutationObserver(function(mutations) {
+      mutations.forEach(function(mutation) {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'hidden') {
+          var target = mutation.target;
+          // 检查桌面元素是否从隐藏变为显示
+          if (!target.hidden) {
+            // 延迟一点刷新，等桌面完全显示
+            setTimeout(function() {
+              refreshAllWidgetsQuotes();
+            }, 300);
+          }
+        }
+      });
+    });
+
+    // 监听所有桌面视口元素的hidden属性变化
+    var deskViewports = document.querySelectorAll('#desk-viewport, #desk-custom-viewport, #desk-stellasei-viewport');
+    deskViewports.forEach(function(viewport) {
+      if (viewport) {
+        deskObserver.observe(viewport, { attributes: true, attributeFilter: ['hidden'] });
+      }
+    });
+  } catch (e) {
+    console.log('监听桌面显示状态失败:', e);
+  }
+
+  // 页面加载完成后启动定时刷新
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+      setTimeout(startQuoteRefreshTimer, 2000);
+    });
+  } else {
+    setTimeout(startQuoteRefreshTimer, 2000);
+  }
+
 })(window);

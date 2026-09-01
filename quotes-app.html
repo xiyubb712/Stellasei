@@ -15,12 +15,16 @@
     :root {
       --bg: #F7F5F2;
       --bg-soft: #EFEBE6;
+      --bg-card: #FDFCFA;
       --text-main: #2C2A28;
       --text-secondary: #8B8680;
       --text-light: #B5B0A9;
       --accent: #9E8B7D;
       --accent-soft: #C9BFB5;
+      --accent-warm: #B8956E;
       --line: #E0DBD4;
+      --shadow-soft: 0 1px 6px rgba(44,42,40,0.04);
+      --shadow-card: 0 2px 12px rgba(44,42,40,0.06);
     }
 
     body {
@@ -29,6 +33,21 @@
       min-height: 100vh;
       color: var(--text-main);
       letter-spacing: 0.02em;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* 极简背景纹理 */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.02'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
     }
 
     /* 顶部导航 */
@@ -36,8 +55,9 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 50px 24px 16px;
-      border-bottom: 1px solid var(--line);
+      padding: 52px 24px 20px;
+      position: relative;
+      z-index: 1;
     }
 
     .nav-back {
@@ -46,61 +66,156 @@
       letter-spacing: 0.15em;
       color: var(--text-secondary);
       background: none;
-      border: none;
+      border: 1px solid var(--line);
+      border-radius: 2px;
       cursor: pointer;
-      padding: 6px 10px;
+      padding: 7px 14px;
+      transition: all 0.3s;
+    }
+
+    .nav-back:hover {
+      border-color: var(--accent-soft);
+      color: var(--accent);
+    }
+
+    .nav-title-wrap {
+      text-align: center;
+      flex: 1;
+      position: relative;
+    }
+
+    .nav-title-deco {
+      font-family: Georgia, serif;
+      font-size: 9px;
+      font-style: italic;
+      letter-spacing: 0.25em;
+      color: var(--accent-warm);
+      margin-bottom: 6px;
+      opacity: 0.7;
     }
 
     .nav-title {
-      font-size: 16px;
+      font-size: 18px;
       font-weight: 600;
-      letter-spacing: 0.1em;
+      letter-spacing: 0.2em;
+      color: var(--text-main);
+      position: relative;
+      display: inline-block;
+    }
+
+    /* 语录库特色：标题两边的引号 */
+    .nav-title::before {
+      content: '"';
+      position: absolute;
+      left: -20px;
+      top: -4px;
+      font-size: 24px;
+      color: var(--accent-warm);
+      font-family: Georgia, serif;
+      font-style: italic;
+      opacity: 0.4;
+    }
+
+    .nav-title::after {
+      content: '"';
+      position: absolute;
+      right: -20px;
+      top: -4px;
+      font-size: 24px;
+      color: var(--accent-warm);
+      font-family: Georgia, serif;
+      font-style: italic;
+      opacity: 0.4;
     }
 
     .nav-add {
       font-family: -apple-system, BlinkMacSystemFont, sans-serif;
       font-size: 11px;
       letter-spacing: 0.15em;
-      color: var(--accent);
-      background: none;
+      color: white;
+      background: var(--accent);
       border: none;
+      border-radius: 2px;
       cursor: pointer;
-      padding: 6px 10px;
+      padding: 8px 14px;
+      transition: all 0.3s;
+      box-shadow: var(--shadow-soft);
     }
 
-    /* 分类标签 */
+    .nav-add:hover {
+      background: #8a786a;
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-card);
+    }
+
+    /* 分类标签 - 极简下划线样式 */
     .category-tabs {
       display: flex;
-      gap: 8px;
-      padding: 16px 24px;
+      gap: 0;
+      padding: 0 24px;
+      margin-bottom: 24px;
+      position: relative;
+      z-index: 1;
       border-bottom: 1px solid var(--line);
     }
 
     .category-tab {
-      padding: 8px 16px;
-      border: 1px solid var(--line);
-      border-radius: 2px;
+      padding: 12px 20px;
+      border: none;
       background: none;
       font-family: inherit;
-      font-size: 12px;
+      font-size: 13px;
       color: var(--text-secondary);
       cursor: pointer;
       transition: all 0.3s;
       letter-spacing: 0.05em;
+      position: relative;
+      font-weight: 500;
+    }
+
+    .category-tab::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 2px;
+      background: var(--accent-warm);
+      transition: width 0.3s;
     }
 
     .category-tab.active {
-      border-color: var(--accent);
-      background: rgba(158,139,125,0.08);
       color: var(--text-main);
+      font-weight: 600;
     }
 
-    /* 选择栏 */
+    .category-tab.active::after {
+      width: 28px;
+    }
+
+    .category-tab-en {
+      display: block;
+      font-family: Georgia, serif;
+      font-size: 8px;
+      letter-spacing: 0.15em;
+      color: var(--text-light);
+      margin-top: 2px;
+      font-style: italic;
+    }
+
+    .category-tab.active .category-tab-en {
+      color: var(--accent-warm);
+      opacity: 0.7;
+    }
+
+    /* 选择栏 - 极简样式 */
     .select-bar {
       display: flex;
       gap: 12px;
-      padding: 16px 24px;
-      border-bottom: 1px solid var(--line);
+      padding: 0 24px 20px;
+      position: relative;
+      z-index: 1;
     }
 
     .select-group {
@@ -113,90 +228,242 @@
       letter-spacing: 0.2em;
       color: var(--text-light);
       text-transform: uppercase;
-      margin-bottom: 6px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .select-label::before {
+      content: '';
+      width: 3px;
+      height: 3px;
+      background: var(--accent-warm);
+      border-radius: 50%;
     }
 
     .select-box {
       width: 100%;
-      padding: 8px 12px;
+      padding: 9px 30px 9px 12px;
       border: 1px solid var(--line);
       border-radius: 2px;
-      background: none;
+      background: var(--bg-card);
       font-family: inherit;
       font-size: 12px;
       color: var(--text-main);
       cursor: pointer;
+      transition: all 0.3s;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%238B8680' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .select-box:hover {
+      border-color: var(--accent-soft);
+    }
+
+    .select-box:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(158,139,125,0.08);
     }
 
     /* 语录列表 */
     .quotes-list {
-      padding: 16px 24px 80px;
+      padding: 0 24px 80px;
+      position: relative;
+      z-index: 1;
     }
 
+    /* 角色语录提示 - 极简样式 */
+    .quote-hint {
+      padding: 10px 14px;
+      background: rgba(184,149,110,0.06);
+      border: 1px solid rgba(184,149,110,0.15);
+      border-left: 2px solid var(--accent-warm);
+      border-radius: 2px;
+      font-size: 11px;
+      color: var(--text-secondary);
+      margin-bottom: 16px;
+      line-height: 1.6;
+    }
+
+    .quote-hint--custom {
+      background: rgba(184,149,110,0.1);
+      border-color: rgba(184,149,110,0.25);
+      color: var(--accent-warm);
+    }
+
+    /* 语录卡片 - 极简但有语录特色 */
     .quote-item {
-      padding: 16px;
+      padding: 20px 20px 18px;
+      background: var(--bg-card);
       border: 1px solid var(--line);
       border-radius: 4px;
-      margin-bottom: 12px;
-      background: rgba(255,255,255,0.5);
+      margin-bottom: 14px;
       position: relative;
+      transition: all 0.3s;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .quote-item:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-card);
+      border-color: var(--accent-soft);
+    }
+
+    /* 语录库特色：左侧大引号装饰 */
+    .quote-item::before {
+      content: '"';
+      position: absolute;
+      top: 10px;
+      left: 14px;
+      font-size: 36px;
+      color: var(--accent-warm);
+      font-family: Georgia, serif;
+      line-height: 1;
+      opacity: 0.25;
+      font-style: italic;
+      font-weight: bold;
+    }
+
+    /* 语录库特色：右下角小书签 */
+    .quote-item::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 20px;
+      width: 12px;
+      height: 18px;
+      background: var(--accent-warm);
+      opacity: 0.15;
+      clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 70%, 0 100%);
+      transition: opacity 0.3s;
+    }
+
+    .quote-item:hover::after {
+      opacity: 0.35;
     }
 
     .quote-text {
       font-size: 13px;
-      line-height: 1.8;
+      line-height: 1.9;
       color: var(--text-main);
-      padding-right: 30px;
+      padding-left: 28px;
+      padding-right: 28px;
+      position: relative;
+      z-index: 1;
     }
 
     .quote-item.couple .quote-text {
-      margin-bottom: 8px;
+      padding-left: 28px;
+      margin-bottom: 10px;
+      padding-bottom: 10px;
+      border-bottom: 1px dashed var(--line);
     }
 
     .quote-item.couple .quote-text:last-child {
       margin-bottom: 0;
+      padding-bottom: 0;
+      border-bottom: none;
     }
 
     .quote-left {
       color: var(--text-main);
+      position: relative;
+    }
+
+    .quote-left::before {
+      content: '他';
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      line-height: 18px;
+      text-align: center;
+      background: var(--accent-soft);
+      color: white;
+      border-radius: 2px;
+      font-size: 10px;
+      margin-right: 8px;
+      vertical-align: middle;
     }
 
     .quote-right {
       color: var(--text-secondary);
       text-align: right;
+      position: relative;
+    }
+
+    .quote-right::after {
+      content: '我';
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      line-height: 18px;
+      text-align: center;
+      background: var(--accent);
+      color: white;
+      border-radius: 2px;
+      font-size: 10px;
+      margin-left: 8px;
+      vertical-align: middle;
     }
 
     .quote-delete {
       position: absolute;
-      top: 12px;
-      right: 12px;
-      width: 24px;
-      height: 24px;
+      top: 10px;
+      right: 10px;
+      width: 22px;
+      height: 22px;
       border: none;
-      background: none;
+      background: rgba(158,139,125,0.06);
       color: var(--text-light);
-      font-size: 16px;
+      font-size: 12px;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
+      border-radius: 50%;
+      transition: all 0.3s;
+      opacity: 0;
+      z-index: 3;
+    }
+
+    .quote-item:hover .quote-delete {
+      opacity: 1;
+    }
+
+    .quote-delete:hover {
+      background: rgba(200,80,80,0.1);
+      color: #c85050;
+      transform: rotate(90deg);
     }
 
     .empty-state {
       text-align: center;
-      padding: 60px 24px;
+      padding: 70px 24px;
       color: var(--text-light);
       font-size: 13px;
+      line-height: 2;
     }
 
-    /* 添加弹窗 */
+    .empty-state-icon {
+      font-size: 44px;
+      margin-bottom: 16px;
+      opacity: 0.3;
+    }
+
+    /* 添加弹窗 - 极简样式 */
     .modal-overlay {
       position: fixed;
       top: 0;
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(0,0,0,0.4);
+      background: rgba(44,42,40,0.35);
+      backdrop-filter: blur(3px);
       display: none;
       align-items: center;
       justify-content: center;
@@ -209,69 +476,157 @@
     }
 
     .modal-content {
-      background: var(--bg);
-      border-radius: 8px;
-      padding: 24px;
+      background: var(--bg-card);
+      border-radius: 6px;
+      padding: 26px 22px 22px;
       width: 100%;
       max-width: 320px;
+      box-shadow: 0 16px 48px rgba(44,42,40,0.18);
+      animation: modalIn 0.3s ease;
+      position: relative;
+    }
+
+    /* 弹窗顶部语录特色装饰线 */
+    .modal-content::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, var(--accent-warm), transparent);
+      border-radius: 6px 6px 0 0;
+    }
+
+    @keyframes modalIn {
+      from {
+        opacity: 0;
+        transform: translateY(16px) scale(0.98);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
     }
 
     .modal-title {
       font-size: 15px;
       font-weight: 600;
-      margin-bottom: 16px;
+      margin-bottom: 4px;
       text-align: center;
+      letter-spacing: 0.1em;
+      color: var(--text-main);
+    }
+
+    .modal-subtitle {
+      font-family: Georgia, serif;
+      font-size: 9px;
+      font-style: italic;
+      letter-spacing: 0.15em;
+      color: var(--accent-warm);
+      text-align: center;
+      margin-bottom: 20px;
+      opacity: 0.7;
     }
 
     .modal-input {
       width: 100%;
       padding: 10px 12px;
       border: 1px solid var(--line);
-      border-radius: 4px;
-      background: none;
+      border-radius: 3px;
+      background: var(--bg);
       font-family: inherit;
       font-size: 13px;
       color: var(--text-main);
       margin-bottom: 12px;
       resize: vertical;
-      min-height: 60px;
+      min-height: 70px;
+      transition: all 0.3s;
+      line-height: 1.8;
+    }
+
+    .modal-input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(158,139,125,0.08);
+      background: white;
+    }
+
+    .modal-input::placeholder {
+      color: var(--text-light);
+      font-style: italic;
     }
 
     .modal-buttons {
       display: flex;
-      gap: 12px;
-      margin-top: 8px;
+      gap: 10px;
+      margin-top: 14px;
     }
 
     .modal-btn {
       flex: 1;
-      padding: 10px;
+      padding: 9px;
       border: 1px solid var(--line);
-      border-radius: 4px;
+      border-radius: 3px;
       background: none;
       font-family: inherit;
-      font-size: 13px;
+      font-size: 12px;
       color: var(--text-secondary);
       cursor: pointer;
+      transition: all 0.3s;
+      letter-spacing: 0.05em;
+    }
+
+    .modal-btn:hover {
+      border-color: var(--accent-soft);
+      color: var(--text-main);
     }
 
     .modal-btn.primary {
       border-color: var(--accent);
       background: var(--accent);
       color: white;
+      box-shadow: var(--shadow-soft);
     }
 
-    /* 底部装饰 */
+    .modal-btn.primary:hover {
+      background: #8a786a;
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-card);
+    }
+
+    /* 底部装饰 - 极简语录特色 */
     .page-footer {
       text-align: center;
-      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: Georgia, serif;
       font-size: 9px;
+      font-style: italic;
       letter-spacing: 0.2em;
       color: var(--text-light);
-      text-transform: uppercase;
       margin-top: 40px;
       margin-bottom: 40px;
-      opacity: 0.7;
+      opacity: 0.6;
+      position: relative;
+      z-index: 1;
+    }
+
+    .page-footer::before {
+      content: '"';
+      display: block;
+      font-size: 28px;
+      margin-bottom: 8px;
+      color: var(--accent-warm);
+      opacity: 0.3;
+      font-weight: bold;
+    }
+
+    .page-footer::after {
+      content: '';
+      display: block;
+      width: 50px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--line), transparent);
+      margin: 10px auto 0;
     }
   </style>
 </head>
@@ -279,14 +634,23 @@
   <!-- 顶部导航 -->
   <div class="nav-bar">
     <button class="nav-back" onclick="closeApp()">EXIT</button>
-    <span class="nav-title">语录库</span>
-    <button class="nav-add" onclick="showAddModal()">+ 添加</button>
+    <div class="nav-title-wrap">
+      <div class="nav-title-deco">Collection of Words</div>
+      <span class="nav-title">语录库</span>
+    </div>
+    <button class="nav-add" onclick="showAddModal()">+ 新增</button>
   </div>
 
   <!-- 分类标签 -->
   <div class="category-tabs">
-    <button class="category-tab active" data-category="companion" onclick="switchCategory('companion')">陪伴语录</button>
-    <button class="category-tab" data-category="couple" onclick="switchCategory('couple')">情侣对话</button>
+    <button class="category-tab active" data-category="companion" onclick="switchCategory('companion')">
+      陪伴语录
+      <span class="category-tab-en">Companion</span>
+    </button>
+    <button class="category-tab" data-category="couple" onclick="switchCategory('couple')">
+      情侣对话
+      <span class="category-tab-en">Couple</span>
+    </button>
   </div>
 
   <!-- 选择栏 -->
@@ -317,38 +681,124 @@
   <div class="modal-overlay" id="addModal">
     <div class="modal-content">
       <div class="modal-title" id="modalTitle">添加语录</div>
+      <div class="modal-subtitle">Add New Quote</div>
       <div id="modalInputs">
         <textarea class="modal-input" id="quoteInput" placeholder="输入语录内容..."></textarea>
       </div>
       <div class="modal-buttons">
         <button class="modal-btn" onclick="hideAddModal()">取消</button>
-        <button class="modal-btn primary" onclick="addQuote()">添加</button>
+        <button class="modal-btn primary" onclick="addQuote()">确认添加</button>
       </div>
     </div>
   </div>
 
+  <!-- 底部装饰 -->
+  <div class="page-footer">Words are the voice of the heart</div>
+
   <script>
     var currentCategory = 'companion';
     var quotesLib = null;
+    var contactsList = [];
+    var requestIdCounter = 0;
+    var pendingRequests = {};
+
+    // 语录库代理（用 postMessage 跟父页面通信，解决跨域问题）
+    var quotesLibProxy = {
+      _request: function(action, params) {
+        return new Promise(function(resolve, reject) {
+          var requestId = ++requestIdCounter;
+          pendingRequests[requestId] = { resolve: resolve, reject: reject };
+          
+          var message = Object.assign({
+            type: 'miya-quotes-library-request',
+            requestId: requestId,
+            action: action
+          }, params || {});
+          
+          if (window.parent && window.parent.postMessage) {
+            window.parent.postMessage(message, '*');
+          } else {
+            reject(new Error('无法访问父页面'));
+          }
+          
+          // 超时处理
+          setTimeout(function() {
+            if (pendingRequests[requestId]) {
+              delete pendingRequests[requestId];
+              reject(new Error('请求超时'));
+            }
+          }, 5000);
+        });
+      },
+      
+      getAll: function() {
+        return this._request('getAll');
+      },
+      
+      saveAll: function(data) {
+        return this._request('saveAll', { data: data });
+      },
+      
+      getRandom: function(category, characterId, scene) {
+        return this._request('getRandom', { category: category, characterId: characterId, scene: scene });
+      },
+      
+      addQuote: function(category, characterId, scene, quote) {
+        return this._request('addQuote', { category: category, characterId: characterId, scene: scene, quote: quote });
+      },
+      
+      resetToDefault: function() {
+        return this._request('resetToDefault');
+      }
+    };
+
+    // 监听父页面的响应
+    window.addEventListener('message', function(e) {
+      var data = e.data;
+      if (!data || data.type !== 'miya-quotes-library-response') return;
+      var requestId = data.requestId;
+      if (pendingRequests[requestId]) {
+        pendingRequests[requestId].resolve(data.result);
+        delete pendingRequests[requestId];
+      }
+    });
 
     // 初始化
     function init() {
-      // 等待父页面的语录库加载
-      var checkCount = 0;
-      function checkLib() {
-        if (window.parent && window.parent.miyaQuotesLibrary) {
-          quotesLib = window.parent.miyaQuotesLibrary;
-          renderQuotes();
-          return;
+      quotesLib = quotesLibProxy;
+      loadContacts();
+    }
+
+    // 从父页面加载联系人列表（用 postMessage，解决跨域问题）
+    async function loadContacts() {
+      try {
+        var contacts = await quotesLibProxy._request('getContacts');
+        if (contacts && Array.isArray(contacts)) {
+          contactsList = contacts;
         }
-        checkCount++;
-        if (checkCount < 20) {
-          setTimeout(checkLib, 250);
-        } else {
-          document.getElementById('quotesList').innerHTML = '<div class="empty-state">语录库加载中...</div>';
-        }
+        updateCharacterSelect();
+        renderQuotes();
+      } catch (e) {
+        console.log('加载联系人列表失败:', e);
+        updateCharacterSelect();
+        renderQuotes();
       }
-      checkLib();
+    }
+
+    // 更新角色选择下拉框
+    function updateCharacterSelect() {
+      var select = document.getElementById('characterSelect');
+      var currentValue = select.value;
+      var html = '<option value="default">通用</option>';
+      contactsList.forEach(function(contact) {
+        var name = contact.name || contact.charName || '未命名角色';
+        html += '<option value="' + contact.id + '">' + escapeHtml(name) + '</option>';
+      });
+      select.innerHTML = html;
+      // 恢复之前选中的值
+      if (currentValue) {
+        select.value = currentValue;
+      }
     }
 
     // 切换分类
@@ -363,37 +813,58 @@
     }
 
     // 渲染语录列表
-    function renderQuotes() {
+    async function renderQuotes() {
       if (!quotesLib) return;
       var characterId = document.getElementById('characterSelect').value;
       var scene = currentCategory === 'couple' ? 'general' : document.getElementById('sceneSelect').value;
-      var data = quotesLib.getAll();
-      var catData = data[currentCategory] || {};
-      var charData = catData[characterId] || catData['default'] || {};
-      var quotes = charData[scene] || [];
-
-      var listEl = document.getElementById('quotesList');
-      if (quotes.length === 0) {
-        listEl.innerHTML = '<div class="empty-state">暂无语录，点击右上角添加</div>';
-        return;
-      }
-
-      var html = '';
-      quotes.forEach(function(quote, index) {
-        if (currentCategory === 'couple') {
-          html += '<div class="quote-item couple">' +
-            '<div class="quote-text quote-left">' + escapeHtml(quote.left) + '</div>' +
-            '<div class="quote-text quote-right">' + escapeHtml(quote.right) + '</div>' +
-            '<button class="quote-delete" onclick="deleteQuote(' + index + ')">×</button>' +
-            '</div>';
-        } else {
-          html += '<div class="quote-item">' +
-            '<div class="quote-text">' + escapeHtml(quote) + '</div>' +
-            '<button class="quote-delete" onclick="deleteQuote(' + index + ')">×</button>' +
-            '</div>';
+      
+      try {
+        var data = await quotesLib.getAll();
+        var catData = data[currentCategory] || {};
+        
+        // 角色判定：优先用角色专属语录，没有则用通用语录
+        var hasCharacterQuotes = !!(catData[characterId] && catData[characterId][scene] && catData[characterId][scene].length > 0);
+        var charData = catData[characterId] || catData['default'] || {};
+        var quotes = charData[scene] || [];
+        
+        // 如果是通用语录且不是选中"通用"，显示提示
+        var listEl = document.getElementById('quotesList');
+        var hintHtml = '';
+        if (characterId !== 'default' && !hasCharacterQuotes) {
+          var contact = contactsList.find(function(c) { return c.id === characterId; });
+          var contactName = contact ? (contact.name || contact.charName || '该角色') : '该角色';
+          hintHtml = '<div class="quote-hint">📌 ' + escapeHtml(contactName) + ' 暂无专属语录，当前显示通用语录</div>';
+        } else if (characterId !== 'default' && hasCharacterQuotes) {
+          var contact = contactsList.find(function(c) { return c.id === characterId; });
+          var contactName = contact ? (contact.name || contact.charName || '该角色') : '该角色';
+          hintHtml = '<div class="quote-hint quote-hint--custom">✨ 当前显示 ' + escapeHtml(contactName) + ' 的专属语录</div>';
         }
-      });
-      listEl.innerHTML = html;
+
+        if (quotes.length === 0) {
+          listEl.innerHTML = hintHtml + '<div class="empty-state"><div class="empty-state-icon">📖</div>暂无语录<br>点击右上角「新增」添加第一条语录</div>';
+          return;
+        }
+
+        var html = hintHtml;
+        quotes.forEach(function(quote, index) {
+          if (currentCategory === 'couple') {
+            html += '<div class="quote-item couple">' +
+              '<div class="quote-text quote-left">' + escapeHtml(quote.left) + '</div>' +
+              '<div class="quote-text quote-right">' + escapeHtml(quote.right) + '</div>' +
+              '<button class="quote-delete" onclick="deleteQuote(' + index + ')">×</button>' +
+              '</div>';
+          } else {
+            html += '<div class="quote-item">' +
+              '<div class="quote-text">' + escapeHtml(quote) + '</div>' +
+              '<button class="quote-delete" onclick="deleteQuote(' + index + ')">×</button>' +
+              '</div>';
+          }
+        });
+        listEl.innerHTML = html;
+      } catch (err) {
+        console.log('渲染语录失败:', err);
+        document.getElementById('quotesList').innerHTML = '<div class="empty-state">语录加载失败，请刷新重试</div>';
+      }
     }
 
     // 显示添加弹窗
@@ -415,7 +886,7 @@
     }
 
     // 添加语录
-    function addQuote() {
+    async function addQuote() {
       if (!quotesLib) return;
       var characterId = document.getElementById('characterSelect').value;
       var scene = currentCategory === 'couple' ? 'general' : document.getElementById('sceneSelect').value;
@@ -427,14 +898,14 @@
           alert('请输入完整的对话');
           return;
         }
-        quotesLib.addQuote(currentCategory, characterId, scene, { left: left, right: right });
+        await quotesLib.addQuote(currentCategory, characterId, scene, { left: left, right: right });
       } else {
         var quote = document.getElementById('quoteInput').value.trim();
         if (!quote) {
           alert('请输入语录内容');
           return;
         }
-        quotesLib.addQuote(currentCategory, characterId, scene, quote);
+        await quotesLib.addQuote(currentCategory, characterId, scene, quote);
       }
 
       hideAddModal();
@@ -442,17 +913,23 @@
     }
 
     // 删除语录
-    function deleteQuote(index) {
+    async function deleteQuote(index) {
       if (!quotesLib) return;
       if (!confirm('确定要删除这条语录吗？')) return;
 
       var characterId = document.getElementById('characterSelect').value;
       var scene = currentCategory === 'couple' ? 'general' : document.getElementById('sceneSelect').value;
-      var data = quotesLib.getAll();
-      if (data[currentCategory] && data[currentCategory][characterId] && data[currentCategory][characterId][scene]) {
-        data[currentCategory][characterId][scene].splice(index, 1);
-        quotesLib.saveAll(data);
-        renderQuotes();
+      
+      try {
+        var data = await quotesLib.getAll();
+        if (data[currentCategory] && data[currentCategory][characterId] && data[currentCategory][characterId][scene]) {
+          data[currentCategory][characterId][scene].splice(index, 1);
+          await quotesLib.saveAll(data);
+          renderQuotes();
+        }
+      } catch (err) {
+        console.log('删除语录失败:', err);
+        alert('删除失败，请重试');
       }
     }
 
