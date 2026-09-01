@@ -1637,35 +1637,20 @@ html.is-custom-wg-editing .desk-custom-viewport {
 }
 
 .wg-profile4x4__photo {
-  width: 190px;
-  height: 142px;
-  padding: 7px;
-  background: #fafafa;
-  box-shadow: 0 5px 14px rgba(0, 0, 0, 0.18);
+  width: 185px;
+  height: 138px;
+  padding: 5px;
+  background: #f8f6f2;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
   position: relative;
   box-sizing: border-box;
   border-radius: 2px;
-  /* 邮票齿孔效果 */
-  -webkit-mask: 
-    radial-gradient(circle at 10px -3px, transparent 3.5px, black 3.5px),
-    radial-gradient(circle at 10px calc(100% + 3px), transparent 3.5px, black 3.5px),
-    radial-gradient(circle at -3px 10px, transparent 3.5px, black 3.5px),
-    radial-gradient(circle at calc(100% + 3px) 10px, transparent 3.5px, black 3.5px);
-  -webkit-mask-size: 20px 100%, 20px 100%, 100% 20px, 100% 20px;
-  -webkit-mask-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
-  -webkit-mask-composite: source-over;
-  mask: 
-    radial-gradient(circle at 10px -3px, transparent 3.5px, black 3.5px),
-    radial-gradient(circle at 10px calc(100% + 3px), transparent 3.5px, black 3.5px),
-    radial-gradient(circle at -3px 10px, transparent 3.5px, black 3.5px),
-    radial-gradient(circle at calc(100% + 3px) 10px, transparent 3.5px, black 3.5px);
-  mask-size: 20px 100%, 20px 100%, 100% 20px, 100% 20px;
-  mask-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
+  transform: rotate(-2deg);
+  transition: transform 0.3s ease;
 }
 
 .wg-profile4x4__photo:hover {
-  transform: scale(1.02);
-  transition: transform 0.3s ease;
+  transform: rotate(0deg) scale(1.02);
 }
 
 .wg-profile4x4__photo-inner {
