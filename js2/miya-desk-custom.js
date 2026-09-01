@@ -6,7 +6,7 @@
   var CUSTOM_PRESETS_KEY = 'miya-desk-custom-presets-v1';
 
   var GRID_COLS = 4;
-  var GRID_ROWS = 7;
+  var GRID_ROWS = 8;
   var GRID_SLOT_COUNT = GRID_COLS * GRID_ROWS;
   var DOCK_SLOT_COUNT = 4;
 

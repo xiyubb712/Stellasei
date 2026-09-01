@@ -90,10 +90,10 @@ html.is-custom-edit-mode:not(.is-custom-dragging) .desk-custom__cell:not(.desk-c
   --dc-cell-h-2: calc(2 * var(--dc-row-h) + var(--dc-row-gap));
   --dc-cell-h-3: calc(3 * var(--dc-row-h) + 2 * var(--dc-row-gap));
   --dc-cell-h-4: calc(4 * var(--dc-row-h) + 3 * var(--dc-row-gap));
-  grid-template-rows: repeat(7, minmax(var(--dc-row-h), auto));
+  grid-template-rows: repeat(8, minmax(var(--dc-row-h), auto));
   gap: var(--dc-row-gap) var(--dc-col-gap);
   align-content: start;
-  min-height: calc(7 * var(--dc-row-h) + 6 * var(--dc-row-gap));
+  min-height: calc(8 * var(--dc-row-h) + 7 * var(--dc-row-gap));
   /* 4×1 左右内缩：与首列/末列图标外缘对齐 */
   --dc-icon-edge-inset: max(0px, calc((100% - 3 * var(--dc-col-gap)) / 8 - var(--dc-icon-size) / 2));
 }
