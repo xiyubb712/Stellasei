@@ -765,7 +765,63 @@
     window.miyaRequestPersistentStorage();
   }
 
-  // ===== 头像自动刷新机制（参考旧代码实现，简洁版）=====
+  // ===== 头像自动刷新机制（参考旧代码实现，含 base64 缓存）=====
+  // 把图片 URL 转成 base64（用于缓存）
+  function imageUrlToBase64(url, callback) {
+    if (!url) { callback(null); return; }
+    // 如果已经是 base64 了，直接返回
+    if (url.indexOf('data:') === 0) { callback(url); return; }
+    try {
+      var img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = function () {
+        try {
+          var canvas = document.createElement('canvas');
+          canvas.width = img.naturalWidth || img.width;
+          canvas.height = img.naturalHeight || img.height;
+          var ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0);
+          var base64 = canvas.toDataURL('image/png');
+          callback(base64);
+        } catch (e) {
+          callback(null);
+        }
+      };
+      img.onerror = function () { callback(null); };
+      img.src = url;
+    } catch (e) {
+      callback(null);
+    }
+  }
+
+  // 从缓存立即显示所有名片小组件头像（页面加载时调用，不需要等 miyaChatStore）
+  function applyAllAvatarsFromCache() {
+    try {
+      var base64 = localStorage.getItem('miya_home_avatar_base64');
+      if (!base64) return;
+      // 原作者的名片小组件头像
+      var ava = document.getElementById('wg-profile-avatar');
+      if (ava) {
+        ava.style.backgroundImage = 'url("' + base64 + '")';
+        ava.style.backgroundSize = 'cover';
+        ava.style.backgroundPosition = 'center';
+        ava.classList.add('has-custom-ava');
+      }
+      // 我们的 4×5 名片小组件头像
+      var avas = document.querySelectorAll('.wg-profile4x4__avatar');
+      if (avas && avas.length) {
+        for (var i = 0; i < avas.length; i++) {
+          avas[i].style.backgroundImage = 'url("' + base64 + '")';
+          avas[i].style.backgroundSize = 'cover';
+          avas[i].style.backgroundPosition = 'center';
+          avas[i].classList.add('has-custom-ava');
+        }
+      }
+    } catch (e) {}
+  }
+  // 立即执行，不需要等
+  applyAllAvatarsFromCache();
+
   // 获取当前人设的头像 ID
   function getCurrentAvatarId() {
     try {
@@ -782,7 +838,7 @@
     }
   }
 
-  // 应用头像到所有名片小组件
+  // 应用头像到所有名片小组件（并且保存到 base64 缓存）
   function applyAvatarToAllWidgets(avatarId) {
     if (!avatarId) return;
     try {
@@ -808,6 +864,14 @@
             avas[i].classList.add('has-custom-ava');
           }
         }
+        // 把头像转成 base64 缓存（异步，不阻塞显示）
+        imageUrlToBase64(url, function (base64) {
+          if (base64) {
+            try {
+              localStorage.setItem('miya_home_avatar_base64', base64);
+            } catch (e) {}
+          }
+        });
       };
       // 优先从缓存读取
       if (typeof cs.getCachedBlobUrl === 'function') {
@@ -837,6 +901,7 @@
     var currentAvatarId = getCurrentAvatarId();
     if (currentAvatarId && currentAvatarId !== lastAvatarId) {
       lastAvatarId = currentAvatarId;
+      applyAllAvatarsFromCache();
       applyAvatarToAllWidgets(currentAvatarId);
     }
   }
