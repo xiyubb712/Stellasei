@@ -7242,19 +7242,47 @@
       var currentProfileId = '';
       
       try {
-        // 1. 读取面具数据
+        // 1. 读取面具数据（通过 miyaChatStore 读取，因为数据可能存在 IndexedDB 里）
         try {
-          var chatMetaRaw = localStorage.getItem('miya-chat-meta');
-          if (chatMetaRaw) {
-            var chatMeta = JSON.parse(chatMetaRaw);
-            profiles = (chatMeta.profiles || []).map(function(p) {
+          var csForProfiles = global.miyaChatStore || null;
+          if (csForProfiles && typeof csForProfiles.getProfiles === 'function') {
+            var rawProfiles = csForProfiles.getProfiles() || [];
+            profiles = rawProfiles.map(function(p) {
               return {
                 id: p.id,
                 name: p.name || '面具',
                 avatar: p.displayAvatar || p.avatar || null
               };
             });
-            currentProfileId = chatMeta.activeProfileId || (profiles.length > 0 ? profiles[0].id : '');
+            // 获取当前面具 ID
+            if (typeof csForProfiles.getActiveProfile === 'function') {
+              var activeProfile = csForProfiles.getActiveProfile();
+              if (activeProfile && activeProfile.id) {
+                currentProfileId = activeProfile.id;
+              }
+            }
+            // 如果没有获取到当前面具 ID，用第一个
+            if (!currentProfileId && profiles.length > 0) {
+              currentProfileId = profiles[0].id;
+            }
+            console.log('陪伴系统：通过 miyaChatStore 读取到', profiles.length, '个面具，当前面具:', currentProfileId);
+          } else {
+            // 备用方案：直接从 localStorage 读取
+            console.log('陪伴系统：miyaChatStore 不可用，尝试从 localStorage 读取面具');
+            var chatMetaRaw = localStorage.getItem('miya-chat-meta');
+            if (chatMetaRaw) {
+              var chatMeta = JSON.parse(chatMetaRaw);
+              if (chatMeta.profiles) {
+                profiles = (chatMeta.profiles || []).map(function(p) {
+                  return {
+                    id: p.id,
+                    name: p.name || '面具',
+                    avatar: p.displayAvatar || p.avatar || null
+                  };
+                });
+                currentProfileId = chatMeta.activeProfileId || (profiles.length > 0 ? profiles[0].id : '');
+              }
+            }
           }
         } catch (err) {
           console.log('读取面具数据失败:', err);
