@@ -37,7 +37,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 20px 24px;
+      padding: 28px 24px 12px;
     }
 
     .nav-exit {
@@ -1006,6 +1006,41 @@
     // 初始化
     function init() {
       loadCharacters();
+      // 页面加载后直接读取面具数据（最保险的方案）
+      setTimeout(loadProfilesDirectly, 300);
+      setTimeout(loadProfilesDirectly, 1000);
+    }
+
+    // 直接从 localStorage 读取面具数据（最保险的方案）
+    function loadProfilesDirectly() {
+      try {
+        console.log('loadProfilesDirectly: 开始读取面具数据');
+        var chatMetaRaw = localStorage.getItem('miya-chat-meta');
+        console.log('loadProfilesDirectly: miya-chat-meta 是否存在:', !!chatMetaRaw);
+        if (chatMetaRaw) {
+          var chatMeta = JSON.parse(chatMetaRaw);
+          console.log('loadProfilesDirectly: chatMeta keys:', Object.keys(chatMeta));
+          console.log('loadProfilesDirectly: profiles 是否存在:', !!chatMeta.profiles, '数量:', chatMeta.profiles ? chatMeta.profiles.length : 0);
+          if (chatMeta.profiles && chatMeta.profiles.length > 0) {
+            profiles = chatMeta.profiles.map(function(p) {
+              return {
+                id: p.id,
+                name: p.name || '面具',
+                avatar: p.displayAvatar || p.avatar || null
+              };
+            });
+            if (!currentProfileId) {
+              currentProfileId = chatMeta.activeProfileId || (profiles.length > 0 ? profiles[0].id : '');
+            }
+            console.log('loadProfilesDirectly: 成功读取到', profiles.length, '个面具，当前面具:', currentProfileId);
+            updateCurrentProfileDisplay();
+            filterCharactersByProfile();
+            renderCharacterList();
+          }
+        }
+      } catch (err) {
+        console.log('loadProfilesDirectly: 读取面具数据失败:', err);
+      }
     }
 
     // 加载角色列表（优先用父页面发送的数据，包含解析后的头像 URL）
