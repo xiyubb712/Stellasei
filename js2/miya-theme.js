@@ -1808,6 +1808,23 @@
     return global.miyaApplyTheme();
   };
 
+  global.miyaSetWidgetColor = function (key, color) {
+    var theme = global.miyaGetTheme();
+    var colors = Object.assign({}, theme.widgetColors || {});
+    if (color && typeof color === 'string') {
+      colors[key] = color;
+    } else {
+      delete colors[key];
+    }
+    global.miyaSetTheme({ widgetColors: colors });
+    return global.miyaApplyTheme();
+  };
+
+  global.miyaGetWidgetColors = function () {
+    var theme = global.miyaGetTheme();
+    return Object.assign({}, theme.widgetColors || {});
+  };
+
   global.miyaSetPlayerCover = function (ref) {
     global.miyaSetTheme({ playerCover: ref || null });
     return global.miyaApplyTheme();

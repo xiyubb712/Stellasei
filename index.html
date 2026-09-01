@@ -1125,6 +1125,9 @@
       <button type="button" class="ins-atelier-tab" data-bf-tab="type">
         <span class="ins-atelier-tab-glyph">✦</span><span class="ins-atelier-tab-txt">字体</span>
       </button>
+      <button type="button" class="ins-atelier-tab" data-bf-tab="color">
+        <span class="ins-atelier-tab-glyph">◐</span><span class="ins-atelier-tab-txt">颜色</span>
+      </button>
       <button type="button" class="ins-atelier-tab" data-bf-tab="vault">
         <span class="ins-atelier-tab-glyph">❖</span><span class="ins-atelier-tab-txt">方案</span>
       </button>
@@ -1405,8 +1408,85 @@
           </div>
         </section>
 
+        <section class="ins-atelier-panel" data-bf-panel="color" hidden>
+          <p class="ins-atelier-panel-kicker">05 · 颜色</p>
+          <h2 class="ins-atelier-panel-title">小组件文字颜色</h2>
+          <p class="ins-atelier-panel-desc ins-atelier-panel-desc--tight">分别调整名片和拍立得的文字颜色与透明度</p>
+          <div class="ins-atelier-type-stack">
+            <div class="ins-atelier-type-card" id="miya-bf-widget-color-card">
+              <label class="ins-field-label">自定义小组件</label>
+              <div class="ins-widget-color-section">
+                <p class="ins-widget-color-section-title">1・名片文字顏色</p>
+                <div class="ins-widget-color-grid" id="miya-bf-widget-color-list">
+                  <div class="ins-widget-color-cell" data-widget-color-key="profileName">
+                    <span class="ins-widget-color-label">名字</span>
+                    <div class="ins-widget-color-swatch-wrap">
+                      <input type="color" class="ins-widget-color-picker" value="#1c1e22" aria-label="名字颜色">
+                    </div>
+                    <input type="range" class="ins-widget-color-alpha" min="0" max="100" value="92" aria-label="名字透明度">
+                    <button type="button" class="ins-widget-color-reset">恢复默认</button>
+                  </div>
+                  <div class="ins-widget-color-cell" data-widget-color-key="profileBio">
+                    <span class="ins-widget-color-label">簡介</span>
+                    <div class="ins-widget-color-swatch-wrap">
+                      <input type="color" class="ins-widget-color-picker" value="#646a72" aria-label="簡介颜色">
+                    </div>
+                    <input type="range" class="ins-widget-color-alpha" min="0" max="100" value="78" aria-label="簡介透明度">
+                    <button type="button" class="ins-widget-color-reset">恢复默认</button>
+                  </div>
+                  <div class="ins-widget-color-cell" data-widget-color-key="profileDate">
+                    <span class="ins-widget-color-label">日期</span>
+                    <div class="ins-widget-color-swatch-wrap">
+                      <input type="color" class="ins-widget-color-picker" value="#646a72" aria-label="日期颜色">
+                    </div>
+                    <input type="range" class="ins-widget-color-alpha" min="0" max="100" value="70" aria-label="日期透明度">
+                    <button type="button" class="ins-widget-color-reset">恢复默认</button>
+                  </div>
+                  <div class="ins-widget-color-cell" data-widget-color-key="profileTime">
+                    <span class="ins-widget-color-label">時間</span>
+                    <div class="ins-widget-color-swatch-wrap">
+                      <input type="color" class="ins-widget-color-picker" value="#1c1e22" aria-label="時間颜色">
+                    </div>
+                    <input type="range" class="ins-widget-color-alpha" min="0" max="100" value="88" aria-label="時間透明度">
+                    <button type="button" class="ins-widget-color-reset">恢复默认</button>
+                  </div>
+                </div>
+              </div>
+              <div class="ins-widget-color-section">
+                <p class="ins-widget-color-section-title">2・拍立得文字顏色</p>
+                <div class="ins-widget-color-grid" id="miya-bf-polaroid-color-list">
+                  <div class="ins-widget-color-cell" data-widget-color-key="polaroidText1">
+                    <span class="ins-widget-color-label">文字1</span>
+                    <div class="ins-widget-color-swatch-wrap">
+                      <input type="color" class="ins-widget-color-picker" value="#1c1e22" aria-label="文字1颜色">
+                    </div>
+                    <input type="range" class="ins-widget-color-alpha" min="0" max="100" value="92" aria-label="文字1透明度">
+                    <button type="button" class="ins-widget-color-reset">恢复默认</button>
+                  </div>
+                  <div class="ins-widget-color-cell" data-widget-color-key="polaroidText2">
+                    <span class="ins-widget-color-label">文字2</span>
+                    <div class="ins-widget-color-swatch-wrap">
+                      <input type="color" class="ins-widget-color-picker" value="#1c1e22" aria-label="文字2颜色">
+                    </div>
+                    <input type="range" class="ins-widget-color-alpha" min="0" max="100" value="92" aria-label="文字2透明度">
+                    <button type="button" class="ins-widget-color-reset">恢复默认</button>
+                  </div>
+                  <div class="ins-widget-color-cell" data-widget-color-key="polaroidText3">
+                    <span class="ins-widget-color-label">文字3</span>
+                    <div class="ins-widget-color-swatch-wrap">
+                      <input type="color" class="ins-widget-color-picker" value="#646a72" aria-label="文字3颜色">
+                    </div>
+                    <input type="range" class="ins-widget-color-alpha" min="0" max="100" value="60" aria-label="文字3透明度">
+                    <button type="button" class="ins-widget-color-reset">恢复默认</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <section class="ins-atelier-panel" data-bf-panel="vault" hidden>
-          <p class="ins-atelier-panel-kicker">05 · 方案</p>
+          <p class="ins-atelier-panel-kicker">06 · 方案</p>
           <h2 class="ins-atelier-panel-title" id="miya-bf-preset-title">外观方案</h2>
           <p class="ins-atelier-panel-desc ins-atelier-panel-desc--tight" id="miya-bf-preset-hint">保存壁纸、图标与字体组合，可随时切换</p>
           <div class="ins-vault-compose">

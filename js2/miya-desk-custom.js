@@ -3143,6 +3143,43 @@
         }
       }, true); // 用捕获模式，确保在冒泡阶段之前拦截
     }
+    // 点击背景照片上传图片（绑定到整个小组件容器，判断点击的是不是背景区域）
+    // 因为 .wg-profile4x4__content 覆盖了整个小组件，点击背景区域时事件会被内容容器捕获
+    el.addEventListener('pointerdown', function (e) {
+      // 判断点击的是不是需要排除的元素（头像、名字、简介、时间、右下角照片、删除按钮）
+      var target = e.target;
+      if (target.closest && (
+        target.closest('.wg-profile4x4__avatar') ||
+        target.closest('.wg-profile4x4__name') ||
+        target.closest('.wg-profile4x4__bio') ||
+        target.closest('.wg-profile4x4__clock') ||
+        target.closest('.wg-profile4x4__photo') ||
+        target.closest('.desk-custom__wg-remove')
+      )) {
+        return; // 点击的是其他元素，不触发背景照片上传
+      }
+      // 点击的是背景区域，触发背景照片上传
+      e.stopImmediatePropagation();
+      var itemEl = el.closest('[data-item-id]');
+      var itemId = itemEl ? itemEl.getAttribute('data-item-id') : '';
+      if (itemId && typeof triggerWidgetQuickUpload === 'function') {
+        triggerWidgetQuickUpload(itemId, 'profileBg');
+      }
+    }, true); // 用捕获模式，确保在冒泡阶段之前拦截
+    // 点击右下角照片上传图片
+    var photoEl = el.querySelector('.wg-profile4x4__photo');
+    if (photoEl) {
+      photoEl.style.cursor = 'pointer';
+      photoEl.setAttribute('aria-label', '点击更换右下角照片');
+      photoEl.addEventListener('pointerdown', function (e) {
+        e.stopImmediatePropagation();
+        var itemEl = el.closest('[data-item-id]');
+        var itemId = itemEl ? itemEl.getAttribute('data-item-id') : '';
+        if (itemId && typeof triggerWidgetQuickUpload === 'function') {
+          triggerWidgetQuickUpload(itemId, 'cornerPhoto');
+        }
+      }, true);
+    }
     return el;
   }
 
@@ -5938,17 +5975,20 @@
         drag.fromSlot = null;
         return;
       }
-      // 长按后打开单个小组件的编辑面板，而不是进入整体编辑模式
-      var itemId = drag.tapItemId;
-      if (itemId) {
-        drag.wasWidgetTap = false;
-        drag.tapItemId = null;
-        openWidgetEditor(itemId);
-      } else {
-        drag.wasWidgetTap = false;
-        drag.tapItemId = null;
-        enterEditMode();
+      // 只有长按应用图标才进入编辑模式，长按小组件不进入
+      // 小组件的编辑改成直接点击上传/输入了
+      if (drag.wasWidgetTap) {
+        // 长按小组件不做任何事情
+        cancelPending();
+        drag.pointerId = null;
+        drag.sourceEl = null;
+        drag.fromSlot = null;
+        return;
       }
+      // 长按应用图标进入编辑模式
+      drag.wasWidgetTap = false;
+      drag.tapItemId = null;
+      enterEditMode();
     }, LONG_PRESS_MS);
   }
 
@@ -6313,24 +6353,18 @@
       endDrag(false, e);
       return;
     }
-    /* 安卓顶部：点按常被系统收成 pointercancel，短按仍视为打开编辑 */
+    // 短按小组件不打开编辑面板，所有编辑改成直接点击上传/输入
+    // pointercancel 时也不打开编辑面板
     if (drag.pending && drag.wasWidgetTap && drag.tapItemId) {
-      var pressAge = Date.now() - (drag.pressAt || 0);
-      var itemId = drag.tapItemId;
-      if (pressAge < LONG_PRESS_MS - 40 && !hasPendingScrollMoved()) {
-        // 检查是否点击了 profile4x4 小组件的头像，如果是则跳转到"我的"页面，不打开编辑面板
-        var isProfileAvatarCancel = drag.isProfileAvatar;
-        cancelPending();
-        drag.pointerId = null;
-        drag.sourceEl = null;
-        drag.fromSlot = null;
-        var phoneKeep = $('miya-phone-layer');
-        if (phoneKeep && e.pointerId != null) {
-          try { phoneKeep.releasePointerCapture(e.pointerId); } catch (err) {}
-        }
-        tryOpenWidgetFromTap(itemId, e);
-        return;
+      cancelPending();
+      drag.pointerId = null;
+      drag.sourceEl = null;
+      drag.fromSlot = null;
+      var phoneKeep = $('miya-phone-layer');
+      if (phoneKeep && e.pointerId != null) {
+        try { phoneKeep.releasePointerCapture(e.pointerId); } catch (err) {}
       }
+      return;
     }
     cancelPending();
     drag.pointerId = null;
@@ -6356,10 +6390,9 @@
     if (!touch) return;
     /* 若 pointer 路径已接管，不再重复打开 */
     if (drag.pending || drag.pointerId != null) return;
-    var widgetItem = resolveWidgetAtPoint(touch.clientX, touch.clientY, e.target);
-    if (!widgetItem) return;
-    var itemId = widgetItem.getAttribute('data-item-id');
-    if (tryOpenWidgetFromTap(itemId, e)) return;
+    // 短按小组件不打开编辑面板，所有编辑改成直接点击上传/输入
+    // 安卓 touch fallback 也不打开编辑面板
+    return;
   }
 
   function onWidgetClickFallback(e) {
@@ -6367,10 +6400,9 @@
     if (mode !== 'custom' && mode !== 'stellasei' || editMode || drag.active || drag.pending) return;
     if (Date.now() < dragConsumedUntil) return;
     if (wgEditorState.open || isCustomOverlayTarget(e.target)) return;
-    var widgetItem = resolveWidgetAtPoint(e.clientX, e.clientY, e.target);
-    if (!widgetItem || (e.target.closest && e.target.closest('.desk-custom__wg-remove'))) return;
-    var itemId = widgetItem.getAttribute('data-item-id');
-    if (tryOpenWidgetFromTap(itemId, e)) return;
+    // 短按小组件不打开编辑面板，所有编辑改成直接点击上传/输入
+    // click fallback 也不打开编辑面板
+    return;
   }
 
   function onEditModeTap(e) {

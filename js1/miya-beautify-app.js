@@ -540,6 +540,66 @@
     });
   }
 
+  function rgbaToHexAndAlpha(rgba) {
+    if (!rgba || typeof rgba !== 'string') return { hex: '#1c1e22', alpha: 1 };
+    var m = rgba.match(/rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*([\d.]+)\s*)?\)/i);
+    if (!m) return { hex: '#1c1e22', alpha: 1 };
+    var r = parseInt(m[1], 10);
+    var g = parseInt(m[2], 10);
+    var b = parseInt(m[3], 10);
+    var a = m[4] != null ? parseFloat(m[4]) : 1;
+    var hex = '#' + [r, g, b].map(function (v) {
+      var s = Math.max(0, Math.min(255, v)).toString(16);
+      return s.length === 1 ? '0' + s : s;
+    }).join('');
+    return { hex: hex, alpha: Math.max(0, Math.min(1, a)) };
+  }
+
+  function hexAndAlphaToRgba(hex, alpha) {
+    var h = String(hex || '#1c1e22').replace('#', '');
+    if (h.length === 3) h = h.split('').map(function (c) { return c + c; }).join('');
+    var r = parseInt(h.substring(0, 2), 10);
+    var g = parseInt(h.substring(2, 4), 10);
+    var b = parseInt(h.substring(4, 6), 10);
+    var a = Math.max(0, Math.min(1, parseFloat(alpha) || 0));
+    return 'rgba(' + r + ',' + g + ',' + b + ',' + a.toFixed(2) + ')';
+  }
+
+  var WIDGET_COLOR_DEFAULTS = {
+    profileName: 'rgba(28,30,34,0.92)',
+    profileBio: 'rgba(100,106,114,0.78)',
+    profileDate: 'rgba(100,106,114,0.70)',
+    profileTime: 'rgba(28,30,34,0.88)',
+    polaroidText1: 'rgba(28,30,34,0.92)',
+    polaroidText2: 'rgba(28,30,34,0.92)',
+    polaroidText3: 'rgba(100,106,114,0.60)'
+  };
+
+  function syncWidgetColors() {
+    var lists = ['miya-bf-widget-color-list', 'miya-bf-polaroid-color-list'];
+    lists.forEach(function (listId) {
+      var list = $(listId);
+      if (!list || !global.miyaGetWidgetColors) return;
+      var colors = global.miyaGetWidgetColors();
+      list.querySelectorAll('.ins-widget-color-cell').forEach(function (cell) {
+        var key = cell.getAttribute('data-widget-color-key');
+        var picker = cell.querySelector('.ins-widget-color-picker');
+        var alpha = cell.querySelector('.ins-widget-color-alpha');
+        if (!key || !picker || !alpha) return;
+        var color = colors[key];
+        var displayColor = (color && typeof color === 'string') ? color : (WIDGET_COLOR_DEFAULTS[key] || 'rgba(0,0,0,1)');
+        var parsed = rgbaToHexAndAlpha(displayColor);
+        picker.value = parsed.hex;
+        alpha.value = Math.round(parsed.alpha * 100);
+        if (color && typeof color === 'string') {
+          cell.classList.add('is-custom');
+        } else {
+          cell.classList.remove('is-custom');
+        }
+      });
+    });
+  }
+
   function renderPresets() {
     var listEl = $('miya-bf-preset-list');
     if (!listEl) return;
@@ -1618,6 +1678,57 @@
         importCustomWidgetJsonFiles(fileArr);
       });
     }
+
+    // 颜色选择器事件绑定
+    var colorLists = ['miya-bf-widget-color-list', 'miya-bf-polaroid-color-list'];
+    colorLists.forEach(function (listId) {
+      var colorList = $(listId);
+      if (!colorList) return;
+      colorList.querySelectorAll('.ins-widget-color-cell').forEach(function (cell) {
+        var key = cell.getAttribute('data-widget-color-key');
+        var picker = cell.querySelector('.ins-widget-color-picker');
+        var alpha = cell.querySelector('.ins-widget-color-alpha');
+        var resetBtn = cell.querySelector('.ins-widget-color-reset');
+        if (!key || !picker || !alpha) return;
+
+        function applyColor() {
+          var rgba = hexAndAlphaToRgba(picker.value, parseFloat(alpha.value) / 100);
+          cell.classList.add('is-custom');
+          if (global.miyaSetWidgetColor) {
+            global.miyaSetWidgetColor(key, rgba);
+          }
+        }
+
+        picker.addEventListener('input', applyColor);
+        alpha.addEventListener('input', applyColor);
+
+        if (resetBtn) {
+          resetBtn.addEventListener('click', function () {
+            var defaultColor = WIDGET_COLOR_DEFAULTS[key] || 'rgba(0,0,0,1)';
+            if (global.miyaSetWidgetColor) {
+              global.miyaSetWidgetColor(key, null);
+            }
+            var varMap = {
+              profileName: '--profile-name-color',
+              profileBio: '--profile-bio-color',
+              profileDate: '--profile-date-color',
+              profileTime: '--profile-time-color',
+              polaroidText1: '--polaroid-text1-color',
+              polaroidText2: '--polaroid-text2-color',
+              polaroidText3: '--polaroid-text3-color'
+            };
+            if (varMap[key]) {
+              document.documentElement.style.removeProperty(varMap[key]);
+            }
+            var parsed = rgbaToHexAndAlpha(defaultColor);
+            picker.value = parsed.hex;
+            alpha.value = Math.round(parsed.alpha * 100);
+            cell.classList.remove('is-custom');
+            toast('已恢复默认颜色');
+          });
+        }
+      });
+    });
   }
 
   function openCustomWidgetTemplates() {
@@ -1722,6 +1833,7 @@
     buildIconGrid();
     buildCustomIconGrid();
     buildCustomWidgetGallery();
+    syncWidgetColors();
     syncUiFromTheme();
     app.classList.add('is-open');
     app.setAttribute('aria-hidden', 'false');
