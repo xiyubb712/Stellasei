@@ -976,6 +976,53 @@
     }
   }
 
+  // 修改在一起日期相关函数
+  function openAnnivModal() {
+    var modal = $('cp-anniv-modal');
+    var input = $('cp-anniv-modal-input');
+    if (!modal || !input) return;
+    var st = store();
+    if (!st || !state.activeSpaceContactId) return;
+    var sp = st.getSpace(state.activeSpaceContactId);
+    if (sp && sp.annivDate) {
+      input.value = sp.annivDate;
+    } else {
+      input.value = st.isoToday ? st.isoToday() : new Date().toISOString().split('T')[0];
+    }
+    modal.hidden = false;
+  }
+
+  function closeAnnivModal() {
+    var modal = $('cp-anniv-modal');
+    if (modal) modal.hidden = true;
+  }
+
+  function confirmAnnivChange() {
+    var input = $('cp-anniv-modal-input');
+    if (!input || !input.value) {
+      toast('请选择日期');
+      return;
+    }
+    var st = store();
+    if (!st || !state.activeSpaceContactId) return;
+    var success = false;
+    if (typeof st.setAnnivDate === 'function') {
+      success = st.setAnnivDate(state.activeSpaceContactId, input.value);
+    }
+    if (success) {
+      toast('日期已修改');
+      closeAnnivModal();
+      // 重新渲染情侣空间页面
+      if (typeof renderAll === 'function') renderAll();
+      // 刷新主页布局
+      if (global.miyaRefreshCustomLayout) {
+        setTimeout(function () { global.miyaRefreshCustomLayout(); }, 100);
+      }
+    } else {
+      toast('修改失败，请重试');
+    }
+  }
+
   function bindEvents() {
     var back = $('cp-back');
     if (back) {
@@ -1001,6 +1048,30 @@
 
     var imageGenToggle = $('cp-image-gen-toggle');
     if (imageGenToggle) imageGenToggle.addEventListener('click', toggleImageGenSetting);
+
+    // 修改在一起日期
+    var annivEditBtn = $('cp-anniv-edit-btn');
+    if (annivEditBtn) {
+      annivEditBtn.addEventListener('click', function () {
+        openAnnivModal();
+      });
+    }
+    var annivModalClose = $('cp-anniv-modal-close');
+    if (annivModalClose) {
+      annivModalClose.addEventListener('click', closeAnnivModal);
+    }
+    var annivModalCancel = $('cp-anniv-modal-cancel');
+    if (annivModalCancel) {
+      annivModalCancel.addEventListener('click', closeAnnivModal);
+    }
+    var annivModalMask = document.querySelector('.cp-anniv-modal__mask');
+    if (annivModalMask) {
+      annivModalMask.addEventListener('click', closeAnnivModal);
+    }
+    var annivModalConfirm = $('cp-anniv-modal-confirm');
+    if (annivModalConfirm) {
+      annivModalConfirm.addEventListener('click', confirmAnnivChange);
+    }
 
     var sendBtn = $('cp-send-invite');
     if (sendBtn) sendBtn.addEventListener('click', sendInvite);

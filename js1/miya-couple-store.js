@@ -72,7 +72,7 @@
     commemoration: true
   };
 
-  var MILESTONE_DAYS = [1, 7, 30, 100, 365, 520, 999];
+  var MILESTONE_DAYS = [1, 7, 30, 100, 365, 520, 999, 1314];
 
   function normalizeTimelineEntry(raw) {
     if (!raw || typeof raw !== 'object') return null;
@@ -667,6 +667,63 @@
     return getSpace(contactId);
   }
 
+  // 修改在一起的日期（annivDate），并重新生成时光轴里程碑
+  function setAnnivDate(contactId, dateIso) {
+    var data = loadRaw();
+    var sp = data.spaces[contactId];
+    if (!sp || sp.status !== 'open') return false;
+    var normalized = normalizeSpace(sp, contactId);
+    if (!normalized) return false;
+
+    // 验证日期格式
+    var d = String(dateIso || '').trim();
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) return false;
+
+    // 修改日期
+    normalized.annivDate = d;
+    normalized.updatedAt = Date.now();
+
+    // 清除旧的里程碑记录，重新生成
+    if (normalized.timelineMeta) {
+      normalized.timelineMeta.milestoneDaysLogged = [];
+    }
+    // 删除旧的里程碑条目（包括在一起第N天和Our Space开启）
+    if (Array.isArray(normalized.timeline)) {
+      normalized.timeline = normalized.timeline.filter(function (item) {
+        if (!item || !item.meta) return true;
+        // 清除在一起第N天的里程碑（key以days_开头）
+        if (item.meta.key && String(item.meta.key).indexOf('days_') === 0) return false;
+        // 清除Our Space开启的里程碑
+        if (item.meta.key === 'space_open') return false;
+        return true;
+      });
+    }
+
+    data.spaces[contactId] = normalized;
+    saveRaw();
+
+    // 重新生成Our Space开启里程碑（日期为新的annivDate）
+    try {
+      addMilestoneIfNeeded(contactId, 'space_open', {
+        title: 'Our Space 开启',
+        body: '只属于两个人的领地，从今天起有了坐标。',
+        dateIso: d,
+        meta: { key: 'space_open', event: 'open' }
+      });
+    } catch (e) {
+      console.error('重新生成Our Space开启里程碑失败:', e);
+    }
+
+    // 重新生成在一起第N天的里程碑
+    try {
+      syncAnniversaryMilestones(contactId);
+    } catch (e) {
+      console.error('重新生成里程碑失败:', e);
+    }
+
+    return true;
+  }
+
   function getCheckIns(contactId) {
     var sp = getSpace(contactId);
     return sp && Array.isArray(sp.checkIns) ? sp.checkIns.slice() : [];
@@ -965,6 +1022,7 @@
           d === 100 ? '一百天，值得被记住。' :
           d === 365 ? '一整年，我们的编年史翻过一页。' :
           d === 520 ? '520 天，数字也在说爱你。' :
+          d === 1314 ? '1314 天，一生一世都有你。' :
           '第 ' + d + ' 天，还在写。',
         dateIso: sp.annivDate ? addDaysToIso(sp.annivDate, d - 1) : isoToday(),
         meta: { key: key, days: d }
@@ -1129,7 +1187,8 @@
     boardSortKey: boardSortKey,
     getHomeDisplayContactId: getHomeDisplayContactId,
     setHomeDisplayContactId: setHomeDisplayContactId,
-    getHomeDisplaySpace: getHomeDisplaySpace
+    getHomeDisplaySpace: getHomeDisplaySpace,
+    setAnnivDate: setAnnivDate
   };
 
   if (global.miyaRegisterKvStore) {

@@ -6725,7 +6725,18 @@
           loadingOverlay.classList.add('is-active');
           loadingOverlay.setAttribute('aria-hidden', 'false');
         }
-        // 延迟 1.5 秒后刷新页面，让用户看到加载动画
+        // 强制保存一次数据，确保刷新前数据已经保存
+        try {
+          var payload = snapshotCustomTheme();
+          if (typeof global.miyaWriteLsJsonKey === 'function') {
+            global.miyaWriteLsJsonKey(CUSTOM_META_KEY, payload);
+          } else {
+            try { localStorage.setItem(CUSTOM_META_KEY, JSON.stringify(payload)); } catch (e) {}
+          }
+        } catch (e) {
+          console.error('刷新前保存数据失败:', e);
+        }
+        // 延迟 1.5 秒后刷新页面，让用户看到加载动画，并且确保数据保存完成
         setTimeout(function () {
           try { sessionStorage.setItem('miya_is_refreshing', 'true'); } catch (e) {}
           window.location.reload();
