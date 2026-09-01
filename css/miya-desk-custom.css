@@ -1287,6 +1287,14 @@ html.is-custom-wg-editing .desk-custom-viewport {
   display: none;
 }
 
+.desk-custom-wg-editor__img--square {
+  width: 160px;
+  height: 120px;
+  min-height: 120px;
+  flex-shrink: 0;
+  margin: 0 auto;
+}
+
 .desk-custom-wg-editor__img-actions {
   display: flex;
   flex-wrap: wrap;
@@ -1491,4 +1499,194 @@ html.is-custom-wg-editing .desk-custom-viewport {
   overflow: hidden;
   background-size: cover;
   background-position: center;
+}
+
+/* ===== 4x4 星绥名片小组件 ===== */
+.wg-profile4x4 {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 16px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #f5f3ef 0%, #e8e4de 100%);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.wg-profile4x4__bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 0;
+}
+
+.wg-profile4x4__bg-photo {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-size: cover;
+  background-position: center;
+  opacity: 0.5;
+}
+
+.wg-profile4x4__bg-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(245, 243, 239, 0.6) 0%, rgba(232, 228, 222, 0.4) 100%);
+}
+
+.wg-profile4x4__content {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 8px 16px 16px;
+  box-sizing: border-box;
+}
+
+.wg-profile4x4__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.wg-profile4x4__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.wg-profile4x4__name {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a1a1a;
+  line-height: 1.3;
+  word-break: break-word;
+}
+
+.wg-profile4x4__bio {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: #666;
+  line-height: 1.4;
+  word-break: break-word;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.wg-profile4x4__avatar {
+  position: absolute;
+  top: 8px;
+  right: 16px;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+  background: linear-gradient(145deg, rgba(244, 246, 248, 0.98), rgba(228, 232, 236, 0.92));
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+  overflow: hidden;
+  background-size: cover;
+  background-position: center;
+  z-index: 2;
+}
+
+.wg-profile4x4__clock {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 2px;
+  margin-top: 0;
+  margin-bottom: 8px;
+  flex-shrink: 0;
+}
+
+.wg-profile4x4__clock-date {
+  font-size: 12px;
+  color: #888;
+  letter-spacing: 1px;
+  order: 1;
+}
+
+.wg-profile4x4__clock-time {
+  font-size: 42px;
+  font-weight: 300;
+  color: #1a1a1a;
+  letter-spacing: 2px;
+  line-height: 1;
+  order: 2;
+}
+
+.wg-profile4x4__bottom {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-end;
+}
+
+.wg-profile4x4__photo {
+  width: 195px;
+  height: 175px;
+  border-radius: 2px;
+  overflow: hidden;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25), inset 0 0 30px rgba(139, 119, 101, 0.1);
+  background: linear-gradient(135deg, #f5f0e6 0%, #ebe4d6 50%, #e8e0d0 100%);
+  padding: 9px 9px 28px;
+  box-sizing: border-box;
+  transform: rotate(-2.5deg);
+  transition: transform 0.3s ease;
+  position: relative;
+}
+
+.wg-profile4x4__photo::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(ellipse at center, transparent 50%, rgba(101, 67, 33, 0.08) 100%);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.wg-profile4x4__photo::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 3;
+}
+
+.wg-profile4x4__photo:hover {
+  transform: rotate(0deg) scale(1.02);
+}
+
+.wg-profile4x4__photo-inner {
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  background: linear-gradient(135deg, #c8c0b0 0%, #a89e8e 100%);
+  border-radius: 1px;
+  filter: sepia(0.12) contrast(0.92) brightness(0.96) saturate(0.85);
+  position: relative;
+  z-index: 1;
 }

@@ -17,7 +17,7 @@
     'weather', 'map', 'apps', 'theater'
   ];
 
-  var DEFAULT_DOCK = ['contacts', 'pet', 'pen'];
+  var DEFAULT_DOCK = ['chat', 'contacts', 'book', 'set'];
   var ALL_APPS = CUSTOM_GRID_APPS.concat(DEFAULT_DOCK);
   var CUSTOM_ICON_KEYS = ALL_APPS.slice();
 
@@ -313,6 +313,7 @@
     cat.blank_4x4_2 = { w: 4, h: 4, label: '双人ins风头像', widget: 'inspair', editable: true };
     cat.blank_4x4_3 = { w: 4, h: 4, label: '灰白ins主页', widget: 'inshome', editable: true };
     cat.blank_4x4_4 = { w: 4, h: 4, label: '朋友圈', widget: 'wxmoments', editable: true };
+    cat.blank_4x4_5 = { w: 4, h: 5, label: '星绥名片', widget: 'profile4x4', editable: true };
     cat.blank_2x2_1 = { w: 2, h: 2, label: '双头像 MEMO', widget: 'memo', editable: true };
     cat.blank_2x2_2 = { w: 2, h: 2, label: '拍立得', widget: 'polaroid', editable: true };
     cat.blank_2x2_3 = { w: 2, h: 2, label: '吧唧相', widget: 'badgepin', editable: true };
@@ -341,6 +342,12 @@
       { key: 'avatar', type: 'image', label: '头像' },
       { key: 'name', type: 'text', label: '标题', maxLength: 24 },
       { key: 'bio', type: 'text', label: '简介', maxLength: 48, multiline: true }
+    ],
+    profile4x4: [
+      { key: 'profileBg', type: 'image', label: '背景照片' },
+      { key: 'name', type: 'text', label: '名字', maxLength: 24 },
+      { key: 'bio', type: 'text', label: '简介', maxLength: 48, multiline: true },
+      { key: 'cornerPhoto', type: 'image', label: '右下角照片' }
     ],
     memo: [
       { key: 'ava1', type: 'image', label: '左头像' },
@@ -1107,6 +1114,28 @@
       promises.push(applyMediaToEl(ava, cfg.avatar, { doneClass: 'has-custom-ava' }).then(function () {
         wgEl.classList.toggle('has-custom-ava', !!cfg.avatar);
       }));
+    } else if (type === 'profile4x4') {
+      var bgPhoto = wgEl.querySelector('.wg-profile4x4__bg-photo');
+      var ava4x4 = wgEl.querySelector('.wg-profile4x4__avatar');
+      var nameEl4x4 = wgEl.querySelector('.wg-profile4x4__name');
+      var bioEl4x4 = wgEl.querySelector('.wg-profile4x4__bio');
+      var cornerPhoto = wgEl.querySelector('.wg-profile4x4__photo-inner');
+      if (nameEl4x4) nameEl4x4.textContent = cfg.name || '星绥 Stellasei';
+      if (bioEl4x4) bioEl4x4.textContent = cfg.bio || '白日太长，适合慢慢过';
+      updateProfileClock(wgEl);
+      var bgPos = cfg.profileBgPosition || 'center center';
+      var cornerPos = cfg.cornerPhotoPosition || 'center center';
+      promises.push(applyMediaToEl(bgPhoto, cfg.profileBg, { bgMode: true, doneClass: 'has-custom-bg' }).then(function () {
+        wgEl.classList.toggle('has-custom-bg', !!cfg.profileBg);
+        if (bgPhoto) bgPhoto.style.backgroundPosition = bgPos;
+      }));
+      promises.push(applyMediaToEl(ava4x4, cfg.avatar, { doneClass: 'has-custom-ava' }).then(function () {
+        wgEl.classList.toggle('has-custom-ava', !!cfg.avatar);
+      }));
+      promises.push(applyMediaToEl(cornerPhoto, cfg.cornerPhoto, { bgMode: true, doneClass: 'has-custom-photo' }).then(function () {
+        wgEl.classList.toggle('has-custom-photo', !!cfg.cornerPhoto);
+        if (cornerPhoto) cornerPhoto.style.backgroundPosition = cornerPos;
+      }));
     } else if (type === 'memo') {
       setMemoBubble(wgEl.querySelector('.wg-memo__person:nth-child(1) .wg-memo__bubble'), '01', cfg.line1);
       setMemoBubble(wgEl.querySelector('.wg-memo__person:nth-child(2) .wg-memo__bubble'), '02', cfg.line2);
@@ -1558,9 +1587,12 @@
     body.querySelectorAll('[data-wg-ed-img]').forEach(function (el) {
       var key = el.getAttribute('data-wg-ed-img');
       var ref = wgEditorState.draft[key];
+      var posKey = key + 'Position';
+      var pos = wgEditorState.draft[posKey] || 'center center';
       var ph = el.querySelector('.desk-custom-wg-editor__img-ph');
       if (!ref) {
         el.style.backgroundImage = '';
+        el.style.backgroundPosition = '';
         el.classList.remove('has-image');
         if (ph) ph.hidden = false;
         return;
@@ -1568,6 +1600,7 @@
       global.miyaResolveMediaUrl(ref).then(function (url) {
         if (!url) return;
         el.style.backgroundImage = 'url("' + String(url).replace(/"/g, '%22') + '")';
+        el.style.backgroundPosition = pos;
         el.classList.add('has-image');
         if (ph) ph.hidden = true;
       });
@@ -1597,8 +1630,10 @@
       if (field.type === 'image') {
         var imgWrap = document.createElement('div');
         imgWrap.className = 'desk-custom-wg-editor__img-wrap';
+        var isSquare = field.key === 'cornerPhoto' || field.ratio === 'square';
+        var imgClass = 'desk-custom-wg-editor__img' + (isSquare ? ' desk-custom-wg-editor__img--square' : '');
         imgWrap.innerHTML =
-          '<button type="button" class="desk-custom-wg-editor__img" data-wg-ed-img="' + field.key + '" aria-label="' + field.label + '">' +
+          '<button type="button" class="' + imgClass + '" data-wg-ed-img="' + field.key + '" aria-label="' + field.label + '">' +
             '<span class="desk-custom-wg-editor__img-ph">点击上传</span>' +
           '</button>' +
           '<div class="desk-custom-wg-editor__img-actions">' +
@@ -1644,6 +1679,82 @@
       body.appendChild(row);
     });
     refreshWgEditorImagePreviews();
+    initWgEditorImageDrag();
+  }
+
+  function initWgEditorImageDrag() {
+    var body = $('desk-custom-wg-editor-body');
+    if (!body) return;
+    body.querySelectorAll('[data-wg-ed-img]').forEach(function (el) {
+      var key = el.getAttribute('data-wg-ed-img');
+      var posKey = key + 'Position';
+      var isDragging = false;
+      var startX = 0;
+      var startY = 0;
+      var startPosX = 50;
+      var startPosY = 50;
+
+      var parsePos = function (posStr) {
+        if (!posStr) return { x: 50, y: 50 };
+        var parts = String(posStr).split(/\s+/);
+        var x = 50, y = 50;
+        if (parts[0]) {
+          if (parts[0] === 'left') x = 0;
+          else if (parts[0] === 'center') x = 50;
+          else if (parts[0] === 'right') x = 100;
+          else x = parseFloat(parts[0]) || 50;
+        }
+        if (parts[1]) {
+          if (parts[1] === 'top') y = 0;
+          else if (parts[1] === 'center') y = 50;
+          else if (parts[1] === 'bottom') y = 100;
+          else y = parseFloat(parts[1]) || 50;
+        }
+        return { x: x, y: y };
+      };
+
+      var onStart = function (e) {
+        if (!wgEditorState.draft || !wgEditorState.draft[key]) return;
+        isDragging = true;
+        var point = e.touches ? e.touches[0] : e;
+        startX = point.clientX;
+        startY = point.clientY;
+        var currentPos = parsePos(wgEditorState.draft[posKey]);
+        startPosX = currentPos.x;
+        startPosY = currentPos.y;
+        el.style.cursor = 'grabbing';
+        e.preventDefault();
+      };
+
+      var onMove = function (e) {
+        if (!isDragging) return;
+        var point = e.touches ? e.touches[0] : e;
+        var rect = el.getBoundingClientRect();
+        var dx = (point.clientX - startX) / rect.width * 100;
+        var dy = (point.clientY - startY) / rect.height * 100;
+        var newX = Math.max(0, Math.min(100, startPosX - dx));
+        var newY = Math.max(0, Math.min(100, startPosY - dy));
+        var newPos = newX + '% ' + newY + '%';
+        el.style.backgroundPosition = newPos;
+        if (wgEditorState.draft) {
+          wgEditorState.draft[posKey] = newPos;
+        }
+        e.preventDefault();
+      };
+
+      var onEnd = function () {
+        if (!isDragging) return;
+        isDragging = false;
+        el.style.cursor = '';
+      };
+
+      el.addEventListener('mousedown', onStart);
+      el.addEventListener('touchstart', onStart, { passive: false });
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('touchmove', onMove, { passive: false });
+      document.addEventListener('mouseup', onEnd);
+      document.addEventListener('touchend', onEnd);
+    });
   }
 
   function collectWgEditorDraft() {
@@ -2779,10 +2890,41 @@
     return el;
   }
 
+  function createProfile4x4WidgetEl() {
+    var el = document.createElement('article');
+    el.className = 'wg wg-profile4x4 desk-custom__wg desk-custom__wg--profile4x4';
+    el.setAttribute('aria-label', '星绥名片');
+    el.innerHTML =
+      '<div class="wg-profile4x4__bg" aria-hidden="true">' +
+        '<div class="wg-profile4x4__bg-photo"></div>' +
+        '<div class="wg-profile4x4__bg-overlay"></div>' +
+      '</div>' +
+      '<div class="wg-profile4x4__content">' +
+        '<div class="wg-profile4x4__clock">' +
+          '<span class="wg-profile4x4__clock-date">--月--日</span>' +
+          '<span class="wg-profile4x4__clock-time">--:--</span>' +
+        '</div>' +
+        '<div class="wg-profile4x4__top">' +
+          '<div class="wg-profile4x4__info">' +
+            '<h2 class="wg-profile4x4__name" data-miya-copy="profileName">星绥 Stellasei</h2>' +
+            '<p class="wg-profile4x4__bio" data-miya-copy="profileBio">白日太长，适合慢慢过</p>' +
+          '</div>' +
+          '<div class="wg-profile4x4__avatar desk-custom__wg-avatar" aria-hidden="true" style="cursor: pointer;"></div>' +
+        '</div>' +
+        '<div class="wg-profile4x4__bottom">' +
+          '<div class="wg-profile4x4__photo" aria-hidden="true">' +
+            '<div class="wg-profile4x4__photo-inner"></div>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+      '<button type="button" class="desk-custom__wg-remove" aria-label="移除小组件">×</button>';
+    return el;
+  }
+
   function updateProfileClock(wgEl) {
     if (!wgEl) return;
-    var timeEl = wgEl.querySelector('.wg-profile__clock-time');
-    var dateEl = wgEl.querySelector('.wg-profile__clock-date');
+    var timeEl = wgEl.querySelector('.wg-profile__clock-time, .wg-profile4x4__clock-time');
+    var dateEl = wgEl.querySelector('.wg-profile__clock-date, .wg-profile4x4__clock-date');
     if (!timeEl && !dateEl) return;
     var now = new Date();
     var pad = function (n) { return n < 10 ? '0' + n : '' + n; };
@@ -2791,7 +2933,7 @@
   }
 
   function updateAllProfileClocks() {
-    var wgEls = document.querySelectorAll('.desk-custom__wg--profile');
+    var wgEls = document.querySelectorAll('.desk-custom__wg--profile, .desk-custom__wg--profile4x4');
     for (var i = 0; i < wgEls.length; i++) {
       updateProfileClock(wgEls[i]);
     }
@@ -3805,6 +3947,7 @@
     if (!def) return null;
     if (def.blank) return createBlankWidgetEl(widgetId, def);
     if (def.widget === 'profile') return createProfileWidgetEl();
+    if (def.widget === 'profile4x4') return createProfile4x4WidgetEl();
     if (def.widget === 'memo') return createMemoWidgetEl();
     if (def.widget === 'polaroid') return createPolaroidWidgetEl();
     if (def.widget === 'filmstrip') return createFilmstripWidgetEl();
@@ -4532,58 +4675,49 @@
       }
     }
 
-    // 第1-2行：名片小组件（占 4x2）
+    // 第1-5行：星绥名片小组件（占 4x5）
     items.push({
       id: genItemId(),
       kind: 'widget',
-      widgetId: 'blank_4x2_7',
-      x: 0, y: 0, w: 4, h: 2,
+      widgetId: 'blank_4x4_5',
+      x: 0, y: 0, w: 4, h: 5,
       config: {}
     });
-    markOccupied(0, 0, 4, 2);
+    markOccupied(0, 0, 4, 5);
 
-    // 第3-4行：双头像 MEMO 小组件（占 2x2，左上角）
+    // 第6-7行：双头像 MEMO 小组件（占 2x2，左上角）
     items.push({
       id: genItemId(),
       kind: 'widget',
       widgetId: 'blank_2x2_1',
-      x: 0, y: 2, w: 2, h: 2,
+      x: 0, y: 5, w: 2, h: 2,
       config: {}
     });
-    markOccupied(0, 2, 2, 2);
+    markOccupied(0, 5, 2, 2);
 
-    // 第5-6行：拍立得小组件（占 2x2，左上角）
+    // 第6-7行：拍立得小组件（占 2x2，右上角）
     items.push({
       id: genItemId(),
       kind: 'widget',
       widgetId: 'blank_2x2_2',
-      x: 0, y: 4, w: 2, h: 2,
+      x: 2, y: 5, w: 2, h: 2,
       config: {}
     });
-    markOccupied(0, 4, 2, 2);
+    markOccupied(2, 5, 2, 2);
 
-    // 应用图标 - 依次放到空闲的位置
-    var apps = [
-      'music', 'memo', 'set', 'book',
-      'memory', 'chat', 'beauty', 'store',
-      'couple', 'itinerary', 'cstore', 'rift',
-      'deep', 'notes', 'match', 'fun',
-      'echo', 'log', 'weather', 'map',
-      'theater', 'apps'
-    ];
+    // 应用图标 - 第一页只放 4 个常用的，其余放第二页
+    var firstPageApps = ['music', 'memo', 'couple', 'itinerary'];
     var appIndex = 0;
-    for (var yy = 4; yy < GRID_ROWS && appIndex < apps.length; yy++) {
-      for (var xx = 0; xx < GRID_COLS && appIndex < apps.length; xx++) {
-        if (!occupied[yy][xx]) {
-          items.push({
-            id: genItemId(),
-            kind: 'app',
-            key: apps[appIndex],
-            x: xx, y: yy, w: 1, h: 1
-          });
-          occupied[yy][xx] = true;
-          appIndex++;
-        }
+    for (var xx = 0; xx < GRID_COLS && appIndex < firstPageApps.length; xx++) {
+      if (!occupied[7][xx]) {
+        items.push({
+          id: genItemId(),
+          kind: 'app',
+          key: firstPageApps[appIndex],
+          x: xx, y: 7, w: 1, h: 1
+        });
+        occupied[7][xx] = true;
+        appIndex++;
       }
     }
 
