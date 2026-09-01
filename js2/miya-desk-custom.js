@@ -7234,6 +7234,169 @@
     }
   }
 
+  // 获取陪伴系统的角色列表（包含解析后的头像 URL）
+  function getCompanionCharactersData() {
+    return new Promise(function(resolve) {
+      var characters = [];
+      var profiles = [];
+      var currentProfileId = '';
+      
+      try {
+        // 1. 读取面具数据
+        try {
+          var chatMetaRaw = localStorage.getItem('miya-chat-meta');
+          if (chatMetaRaw) {
+            var chatMeta = JSON.parse(chatMetaRaw);
+            profiles = (chatMeta.profiles || []).map(function(p) {
+              return {
+                id: p.id,
+                name: p.name || '面具',
+                avatar: p.displayAvatar || p.avatar || null
+              };
+            });
+            currentProfileId = chatMeta.activeProfileId || (profiles.length > 0 ? profiles[0].id : '');
+          }
+        } catch (err) {
+          console.log('读取面具数据失败:', err);
+        }
+        
+        // 2. 读取情侣空间数据
+        var coupleRaw = localStorage.getItem('miya-couple-v1');
+        if (!coupleRaw) {
+          resolve({ characters: characters, profiles: profiles, currentProfileId: currentProfileId });
+          return;
+        }
+        
+        var coupleData = JSON.parse(coupleRaw);
+        var spaces = coupleData.spaces || {};
+        
+        // 3. 读取联系人数据
+        var contacts = [];
+        try {
+          var cs = global.miyaChatStore || null;
+          if (cs && typeof cs.getContacts === 'function') {
+            contacts = cs.getContacts() || [];
+          } else {
+            // 备用方案：直接从 localStorage 读取
+            var contactsRaw = localStorage.getItem('miya-chat-meta');
+            if (contactsRaw) {
+              var contactsMeta = JSON.parse(contactsRaw);
+              contacts = contactsMeta.contacts || [];
+            }
+          }
+        } catch (err) {
+          console.log('读取联系人数据失败:', err);
+        }
+        
+        // 4. 获取头像解析函数
+        var resolveFn = null;
+        try {
+          if (typeof global.miyaResolveAvatarUrl === 'function') {
+            resolveFn = global.miyaResolveAvatarUrl;
+          } else if (global.miyaCoupleApp && typeof global.miyaCoupleApp.resolveAvatarUrl === 'function') {
+            resolveFn = global.miyaCoupleApp.resolveAvatarUrl;
+          }
+        } catch (err) {
+          console.log('获取头像解析函数失败:', err);
+        }
+        
+        console.log('陪伴系统：找到', Object.keys(spaces).length, '个情侣空间，', contacts.length, '个联系人，头像解析函数:', resolveFn ? '有' : '无');
+        
+        // 5. 遍历所有情侣空间，只取已开启的
+        var spaceList = [];
+        Object.keys(spaces).forEach(function(contactId) {
+          var space = spaces[contactId];
+          if (!space || space.status !== 'open') return;
+          spaceList.push({ contactId: contactId, space: space });
+        });
+        
+        // 6. 并行解析所有头像
+        var resolvePromises = spaceList.map(function(item) {
+          return new Promise(function(resolveItem) {
+            var contactId = item.contactId;
+            var space = item.space;
+            
+            // 从联系人数据里找对应的联系人
+            var contact = contacts.find(function(c) { 
+              return c && (c.id === contactId || c.characterId === contactId); 
+            });
+            
+            // 角色名字
+            var charName = '';
+            if (contact && contact.name) {
+              charName = contact.name;
+            } else if (space.charName) {
+              charName = space.charName;
+            } else if (space.profileName) {
+              charName = space.profileName;
+            } else {
+              charName = '角色';
+            }
+            
+            // 解析头像
+            if (resolveFn && contact) {
+              try {
+                var result = resolveFn(contact);
+                if (result && typeof result.then === 'function') {
+                  result.then(function(url) {
+                    console.log('陪伴系统：解析头像成功', charName, url ? '有URL' : '无URL');
+                    resolveItem({
+                      id: contactId,
+                      name: charName,
+                      avatar: url || null,
+                      profileId: space.profileId || ''
+                    });
+                  }).catch(function() {
+                    // 解析失败，用备用方案
+                    var backupAvatar = (contact && contact.displayAvatar) || (contact && contact.avatar) || null;
+                    resolveItem({
+                      id: contactId,
+                      name: charName,
+                      avatar: backupAvatar,
+                      profileId: space.profileId || ''
+                    });
+                  });
+                  return;
+                } else if (result) {
+                  resolveItem({
+                    id: contactId,
+                    name: charName,
+                    avatar: result,
+                    profileId: space.profileId || ''
+                  });
+                  return;
+                }
+              } catch (err) {
+                console.log('解析头像失败:', err);
+              }
+            }
+            
+            // 兜底
+            resolveItem({
+              id: contactId,
+              name: charName,
+              avatar: (contact && contact.displayAvatar) || (contact && contact.avatar) || null,
+              profileId: space.profileId || ''
+            });
+          });
+        });
+        
+        Promise.all(resolvePromises).then(function(results) {
+          characters = results;
+          console.log('陪伴系统：所有角色数据准备完成，共', characters.length, '个角色');
+          resolve({ characters: characters, profiles: profiles, currentProfileId: currentProfileId });
+        }).catch(function(err) {
+          console.log('解析头像出错:', err);
+          resolve({ characters: characters, profiles: profiles, currentProfileId: currentProfileId });
+        });
+        
+      } catch (err) {
+        console.log('获取陪伴系统角色数据失败:', err);
+        resolve({ characters: characters, profiles: profiles, currentProfileId: currentProfileId });
+      }
+    });
+  }
+
   // 打开陪伴系统
   function openCompanionApp() {
     try {
@@ -7242,7 +7405,38 @@
       if (container && frame) {
         // 如果还没有加载过，加载页面
         if (!frame.src || frame.src === 'about:blank' || frame.src.indexOf('companion-app.html') === -1) {
+          // 等 iframe 加载完成后，主动发送角色列表
+          frame.onload = function() {
+            console.log('陪伴系统 iframe 加载完成，准备发送角色数据');
+            getCompanionCharactersData().then(function(data) {
+              try {
+                frame.contentWindow.postMessage({
+                  type: 'miya-companion-characters-init',
+                  characters: data.characters,
+                  profiles: data.profiles,
+                  currentProfileId: data.currentProfileId
+                }, '*');
+                console.log('陪伴系统：角色数据已发送');
+              } catch (err) {
+                console.log('发送角色数据失败:', err);
+              }
+            });
+          };
           frame.src = 'companion-app.html';
+        } else {
+          // 已经加载过了，直接发送一次
+          getCompanionCharactersData().then(function(data) {
+            try {
+              frame.contentWindow.postMessage({
+                type: 'miya-companion-characters-init',
+                characters: data.characters,
+                profiles: data.profiles,
+                currentProfileId: data.currentProfileId
+              }, '*');
+            } catch (err) {
+              console.log('发送角色数据失败:', err);
+            }
+          });
         }
         container.classList.add('show');
         container.setAttribute('aria-hidden', 'false');
@@ -7277,8 +7471,169 @@
   window.addEventListener('message', function (e) {
     try {
       var data = e.data;
-      if (data && data.type === 'miya-close-companion-app') {
+      if (!data || typeof data !== 'object') return;
+      
+      // 关闭陪伴系统
+      if (data.type === 'miya-close-companion-app') {
         closeCompanionApp();
+        return;
+      }
+      
+      // 请求角色列表（包含解析后的头像 URL）
+      if (data.type === 'miya-get-companion-characters') {
+        // 用异步函数处理，因为头像解析是异步的
+        (async function() {
+          var characters = [];
+          var profiles = [];
+          var currentProfileId = '';
+          
+          try {
+            // 读取当前面具和所有面具列表
+            try {
+              var chatMetaRaw = localStorage.getItem('miya-chat-meta');
+              if (chatMetaRaw) {
+                var chatMeta = JSON.parse(chatMetaRaw);
+                profiles = (chatMeta.profiles || []).map(function(p) {
+                  return {
+                    id: p.id,
+                    name: p.name || '面具',
+                    avatar: p.displayAvatar || p.avatar || null
+                  };
+                });
+                currentProfileId = chatMeta.activeProfileId || (profiles.length > 0 ? profiles[0].id : '');
+              }
+            } catch (err) {
+              console.log('读取面具数据失败:', err);
+            }
+            
+            // 读取情侣空间数据
+            var coupleRaw = localStorage.getItem('miya-couple-v1');
+            if (coupleRaw) {
+              var coupleData = JSON.parse(coupleRaw);
+              var spaces = coupleData.spaces || {};
+              
+              // 读取联系人数据
+              var contacts = [];
+              try {
+                var contactsRaw = localStorage.getItem('miya-chat-meta');
+                if (contactsRaw) {
+                  var contactsMeta = JSON.parse(contactsRaw);
+                  contacts = contactsMeta.contacts || [];
+                }
+              } catch (err) {
+                console.log('读取联系人数据失败:', err);
+              }
+              
+              // 获取头像解析函数
+              var resolveFn = null;
+              try {
+                if (global.miyaCoupleApp && typeof global.miyaCoupleApp.resolveAvatarUrl === 'function') {
+                  resolveFn = global.miyaCoupleApp.resolveAvatarUrl;
+                } else if (typeof global.miyaResolveAvatarUrl === 'function') {
+                  resolveFn = global.miyaResolveAvatarUrl;
+                }
+              } catch (err) {
+                console.log('获取头像解析函数失败:', err);
+              }
+              
+              // 遍历所有情侣空间，只取已开启的（返回所有面具的，前端过滤）
+              var spaceList = [];
+              Object.keys(spaces).forEach(function(contactId) {
+                var space = spaces[contactId];
+                if (!space || space.status !== 'open') return;
+                spaceList.push({ contactId: contactId, space: space });
+              });
+              
+              // 并行解析所有头像
+              var resolvePromises = spaceList.map(function(item) {
+                return new Promise(function(resolve) {
+                  var contactId = item.contactId;
+                  var space = item.space;
+                  
+                  // 从联系人数据里找对应的联系人
+                  var contact = contacts.find(function(c) { 
+                    return c && (c.id === contactId || c.characterId === contactId); 
+                  });
+                  
+                  // 角色名字
+                  var charName = '';
+                  if (contact && contact.name) {
+                    charName = contact.name;
+                  } else if (space.charName) {
+                    charName = space.charName;
+                  } else if (space.profileName) {
+                    charName = space.profileName;
+                  } else {
+                    charName = '角色';
+                  }
+                  
+                  // 解析头像
+                  if (resolveFn && contact) {
+                    try {
+                      var result = resolveFn(contact);
+                      if (result && typeof result.then === 'function') {
+                        result.then(function(url) {
+                          resolve({
+                            id: contactId,
+                            name: charName,
+                            avatar: url || null,
+                            profileId: space.profileId || ''
+                          });
+                        }).catch(function() {
+                          resolve({
+                            id: contactId,
+                            name: charName,
+                            avatar: (contact && contact.displayAvatar) || (contact && contact.avatar) || null,
+                            profileId: space.profileId || ''
+                          });
+                        });
+                        return;
+                      } else if (result) {
+                        resolve({
+                          id: contactId,
+                          name: charName,
+                          avatar: result,
+                          profileId: space.profileId || ''
+                        });
+                        return;
+                      }
+                    } catch (err) {
+                      console.log('解析头像失败:', err);
+                    }
+                  }
+                  
+                  // 兜底
+                  resolve({
+                    id: contactId,
+                    name: charName,
+                    avatar: (contact && contact.displayAvatar) || (contact && contact.avatar) || null,
+                    profileId: space.profileId || ''
+                  });
+                });
+              });
+              
+              characters = await Promise.all(resolvePromises);
+            }
+          } catch (err) {
+            console.log('读取情侣空间数据失败:', err);
+          }
+          
+          // 返回角色列表和面具列表给 iframe
+          try {
+            var frame = document.getElementById('companionAppFrame');
+            if (frame && frame.contentWindow) {
+              frame.contentWindow.postMessage({
+                type: 'miya-companion-characters',
+                characters: characters,
+                profiles: profiles,
+                currentProfileId: currentProfileId
+              }, '*');
+            }
+          } catch (err) {
+            console.log('返回角色列表失败:', err);
+          }
+        })();
+        return;
       }
     } catch (err) {
       console.error('处理陪伴系统消息失败:', err);
