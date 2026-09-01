@@ -3135,55 +3135,12 @@
       avaEl.setAttribute('aria-label', '点击更换头像');
       avaEl.addEventListener('pointerdown', function (e) {
         e.stopImmediatePropagation();
-        // 不要调用 e.preventDefault()，否则可能阻止 fileInput.click() 的触发
-        var fileInput = document.createElement('input');
-        fileInput.type = 'file';
-        fileInput.accept = 'image/*';
-        // 用 opacity: 0 而不是 display: none，手机端更容易触发
-        fileInput.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;opacity:0;pointer-events:none;z-index:-1;';
-        fileInput.addEventListener('change', function (ev) {
-          var file = ev.target.files && ev.target.files[0];
-          if (!file) {
-            if (fileInput.parentNode) document.body.removeChild(fileInput);
-            return;
-          }
-          var reader = new FileReader();
-          reader.onload = function (event) {
-            var dataUrl = event.target.result;
-            if (avaEl) {
-              avaEl.style.backgroundImage = 'url("' + dataUrl + '")';
-              avaEl.style.backgroundSize = 'cover';
-              avaEl.style.backgroundPosition = 'center';
-              avaEl.classList.add('has-custom-ava');
-            }
-            // 保存到小组件配置
-            var itemEl = el.closest('[data-item-id]');
-            var itemId = itemEl ? itemEl.getAttribute('data-item-id') : '';
-            if (itemId) {
-              var layout = getLayout();
-              var found = false;
-              for (var pi = 0; pi < layout.pages.length && !found; pi++) {
-                var page = layout.pages[pi];
-                for (var ii = 0; ii < page.items.length && !found; ii++) {
-                  var it = page.items[ii];
-                  if (it.id === itemId) {
-                    if (!it.config) it.config = {};
-                    it.config.avatar = dataUrl;
-                    found = true;
-                  }
-                }
-              }
-              if (found) saveLayout(layout);
-            }
-            if (fileInput.parentNode) document.body.removeChild(fileInput);
-          };
-          reader.readAsDataURL(file);
-        });
-        document.body.appendChild(fileInput);
-        // 用 setTimeout 延迟触发，确保事件处理完成后再触发
-        setTimeout(function () {
-          fileInput.click();
-        }, 50);
+        // 用原作者的快速上传方式，兼容性更好，手机端也能正常工作
+        var itemEl = el.closest('[data-item-id]');
+        var itemId = itemEl ? itemEl.getAttribute('data-item-id') : '';
+        if (itemId && typeof triggerWidgetQuickUpload === 'function') {
+          triggerWidgetQuickUpload(itemId, 'avatar');
+        }
       }, true); // 用捕获模式，确保在冒泡阶段之前拦截
     }
     return el;
@@ -6124,8 +6081,6 @@
 
     /* 安卓：重叠格子可能抢走 target，用坐标回找真正的小组件 */
     var widgetItem = resolveWidgetAtPoint(e.clientX, e.clientY, e.target);
-    // 记录是否点击了 profile4x4 小组件的头像
-    var isProfileAvatarTap = !!(e.target && e.target.closest && e.target.closest('.wg-profile4x4__avatar'));
     if (widgetItem && !e.target.closest('.desk-custom__wg-remove')) {
       if (editMode) {
         dismissCustomPagerGesture();
@@ -6137,7 +6092,6 @@
         drag.tapItemId = widgetItem.getAttribute('data-item-id');
         drag.itemWrap = widgetItem;
         drag.sourceEl = widgetItem.querySelector('.desk-custom__wg') || widgetItem;
-        drag.isProfileAvatar = isProfileAvatarTap;
         drag.fromSlot = parseSlotEl(widgetItem);
         if (drag.fromSlot) {
           drag.fromSlot.itemId = widgetItem.getAttribute('data-item-id');
@@ -6162,7 +6116,6 @@
       drag.tapItemId = widgetItem.getAttribute('data-item-id');
       drag.sourceEl = widgetItem;
       drag.itemWrap = widgetItem;
-      drag.isProfileAvatar = isProfileAvatarTap;
       widgetItem.classList.add('is-press-pending');
       /* 安卓顶部：不 preventDefault / 不 capture 时，首行点按常被过度滚动掐掉 */
       if (e.cancelable) e.preventDefault();
@@ -6236,18 +6189,6 @@
 
   function tryOpenWidgetFromTap(itemId, e) {
     if (!itemId || wgEditorState.open) return false;
-    // 检查是否点击了 profile4x4 小组件的头像，如果是则跳转到"我的"页面，不打开编辑面板
-    if (e && e.target) {
-      var targetEl = e.target;
-      if (targetEl.closest && targetEl.closest('.wg-profile4x4__avatar')) {
-        if (global.miyaChatMe && typeof global.miyaChatMe.openProfiles === 'function') {
-          global.miyaChatMe.openProfiles();
-        }
-        if (e.cancelable) e.preventDefault();
-        e.stopPropagation();
-        return true;
-      }
-    }
     var found = findLayoutItemById(itemId);
     if (!found || !isEditableWidgetItem(found.item)) return false;
     dragConsumedUntil = Date.now() + 380;
@@ -6332,7 +6273,6 @@
         ? sourceEl : null;
       var appKey = appBtn ? appBtn.getAttribute('data-app') : null;
       var pressAge = Date.now() - (drag.pressAt || 0);
-      var isProfileAvatarTap = !!drag.isProfileAvatar;
       cancelPending();
       drag.pointerId = null;
       drag.sourceEl = null;
@@ -6342,13 +6282,6 @@
         try { phone.releasePointerCapture(e.pointerId); } catch (err) {}
       }
       if (wasTap && itemId && pressAge < LONG_PRESS_MS - 40) {
-        // 检查是否点击了 profile4x4 小组件的头像，如果是则跳转到"我的"页面，不打开编辑面板
-        if (isProfileAvatarTap) {
-          if (global.miyaChatMe && typeof global.miyaChatMe.openProfiles === 'function') {
-            global.miyaChatMe.openProfiles();
-          }
-          return;
-        }
         if (tryOpenWidgetFromTap(itemId, e)) return;
       }
       if (wasTap && appKey && !editMode && pressAge < LONG_PRESS_MS - 40) {
@@ -6385,12 +6318,6 @@
         var phoneKeep = $('miya-phone-layer');
         if (phoneKeep && e.pointerId != null) {
           try { phoneKeep.releasePointerCapture(e.pointerId); } catch (err) {}
-        }
-        if (isProfileAvatarCancel) {
-          if (global.miyaChatMe && typeof global.miyaChatMe.openProfiles === 'function') {
-            global.miyaChatMe.openProfiles();
-          }
-          return;
         }
         tryOpenWidgetFromTap(itemId, e);
         return;
