@@ -7583,3 +7583,75 @@ html.miya-app-open .miya-couple-app .cp-shell {
 }
 
 .cp-b-cell-message .cp-b-badge[hidden] { display: none !important; }
+
+/* ===== 主页显示开关（滑动开关，在 OPEN 徽章左边，同一行） ===== */
+.cp-gate-card__right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.cp-gate-home-toggle-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.cp-gate-home-toggle__label {
+  font-size: 9px;
+  color: rgba(44, 36, 40, 0.5);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.cp-gate-home-toggle-wrapper:has(.cp-gate-home-toggle.is-on) .cp-gate-home-toggle__label {
+  color: #ff8fa3;
+  font-weight: 600;
+}
+
+.cp-gate-home-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.cp-gate-home-toggle__track {
+  position: relative;
+  width: 32px;
+  height: 18px;
+  background: rgba(44, 36, 40, 0.15);
+  border-radius: 9px;
+  transition: background 0.2s ease;
+  flex-shrink: 0;
+}
+
+.cp-gate-home-toggle.is-on .cp-gate-home-toggle__track {
+  background: #ff8fa3;
+}
+
+.cp-gate-home-toggle__thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  background: #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease;
+}
+
+.cp-gate-home-toggle.is-on .cp-gate-home-toggle__thumb {
+  transform: translateX(14px);
+}

@@ -1231,51 +1231,80 @@
         if (cornerPhoto) cornerPhoto.style.backgroundPosition = cornerPos;
       }));
     } else if (type === 'coupleentry') {
+      // 从情侣空间存储读取当前显示在主页的情侣空间
+      var coupleStore = global.miyaCoupleStore || null;
+      var homeSpace = null;
+      var homeContactId = '';
+      if (coupleStore && typeof coupleStore.getHomeDisplaySpace === 'function') {
+        homeSpace = coupleStore.getHomeDisplaySpace();
+        homeContactId = coupleStore.getHomeDisplayContactId();
+      }
+
       // 更新在一起的天数
       var daysNumEl = wgEl.querySelector('.wg-couple-entry__days-num');
       if (daysNumEl) {
-        try {
-          var coupleData = null;
-          if (global.miyaSyncReadJsonKey) {
-            coupleData = global.miyaSyncReadJsonKey('miya-couple-v1');
+        if (homeSpace && homeSpace.annivDate && typeof coupleStore.daysTogether === 'function') {
+          var days = coupleStore.daysTogether(homeSpace.annivDate);
+          daysNumEl.textContent = days;
+        } else if (homeSpace && homeSpace.annivDate) {
+          // 备用计算方式
+          try {
+            var start = new Date(String(homeSpace.annivDate) + 'T00:00:00');
+            var now = new Date();
+            now.setHours(0, 0, 0, 0);
+            var diff = Math.floor((now - start) / 86400000);
+            daysNumEl.textContent = diff >= 0 ? diff : 0;
+          } catch (e) {
+            daysNumEl.textContent = '--';
           }
-          if (!coupleData) {
-            try {
-              var raw = localStorage.getItem('miya-couple-v1');
-              if (raw) coupleData = JSON.parse(raw);
-            } catch (e) {}
-          }
-          if (coupleData && coupleData.spaces) {
-            var spaceIds = Object.keys(coupleData.spaces);
-            if (spaceIds.length > 0) {
-              var space = coupleData.spaces[spaceIds[0]];
-              if (space && space.anniversary) {
-                var anniversary = new Date(space.anniversary);
-                var today = new Date();
-                var diffTime = Math.abs(today - anniversary);
-                var diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                daysNumEl.textContent = diffDays;
-              }
-            }
-          }
-        } catch (e) {
-          console.error('更新情侣空间天数失败:', e);
+        } else {
+          daysNumEl.textContent = '--';
         }
       }
-      // 更新头像（左边：用户头像）
+
+      // 更新头像（左边：用户头像，右边：角色头像）
       var avatarImgs = wgEl.querySelectorAll('.wg-couple-entry__avatar-img');
-      if (avatarImgs.length >= 1) {
+      if (avatarImgs.length >= 2 && homeSpace && homeContactId) {
+        // 左边：用户头像
         try {
-          var userAvatar = null;
-          if (global.miyaGetUserProfile && typeof global.miyaGetUserProfile === 'function') {
-            var profile = global.miyaGetUserProfile();
-            if (profile && profile.avatar) userAvatar = profile.avatar;
+          var cs = global.miyaChatStore || null;
+          var profile = null;
+          if (cs && homeSpace.profileId && typeof cs.getProfiles === 'function') {
+            var profiles = cs.getProfiles() || [];
+            profile = profiles.find(function (p) { return p && p.id === homeSpace.profileId; }) || null;
           }
-          if (userAvatar) {
-            avatarImgs[0].style.backgroundImage = 'url(' + userAvatar + ')';
+          if (profile && typeof global.miyaResolveProfileAvatarUrl === 'function') {
+            global.miyaResolveProfileAvatarUrl(profile).then(function (url) {
+              if (url && avatarImgs[0]) {
+                avatarImgs[0].style.backgroundImage = 'url(' + url + ')';
+              }
+            }).catch(function () {});
+          } else if (profile && profile.avatar) {
+            avatarImgs[0].style.backgroundImage = 'url(' + profile.avatar + ')';
           }
         } catch (e) {
-          console.error('更新情侣空间头像失败:', e);
+          console.error('更新用户头像失败:', e);
+        }
+
+        // 右边：角色头像
+        try {
+          var contact = null;
+          var cs2 = global.miyaChatStore || null;
+          if (cs2 && typeof cs2.getContacts === 'function') {
+            var contacts = cs2.getContacts() || [];
+            contact = contacts.find(function (c) { return c && c.id === homeContactId; }) || null;
+          }
+          if (contact && typeof global.miyaResolveAvatarUrl === 'function') {
+            global.miyaResolveAvatarUrl(contact).then(function (url) {
+              if (url && avatarImgs[1]) {
+                avatarImgs[1].style.backgroundImage = 'url(' + url + ')';
+              }
+            }).catch(function () {});
+          } else if (contact && contact.avatar) {
+            avatarImgs[1].style.backgroundImage = 'url(' + contact.avatar + ')';
+          }
+        } catch (e) {
+          console.error('更新角色头像失败:', e);
         }
       }
     } else if (type === 'memo') {
@@ -3270,16 +3299,32 @@
         return; // 点击的是删除按钮，不触发进入情侣空间
       }
       e.stopImmediatePropagation();
-      try {
-        if (global.miyaCoupleApp && typeof global.miyaCoupleApp.open === 'function') {
-          global.miyaCoupleApp.open();
-        } else {
-          showToast('情侣空间应用未加载');
+      // 打开情侣空间应用（支持延迟加载，手机端可能加载较慢）
+      function openCoupleApp() {
+        try {
+          if (global.miyaCoupleApp && typeof global.miyaCoupleApp.open === 'function') {
+            global.miyaCoupleApp.open();
+          } else {
+            // 如果还没加载完成，延迟 500ms 再试一次
+            setTimeout(function () {
+              try {
+                if (global.miyaCoupleApp && typeof global.miyaCoupleApp.open === 'function') {
+                  global.miyaCoupleApp.open();
+                } else {
+                  showToast('情侣空间加载中，请稍候再试');
+                }
+              } catch (err2) {
+                console.error('打开情侣空间失败:', err2);
+                showToast('打开情侣空间失败');
+              }
+            }, 500);
+          }
+        } catch (err) {
+          console.error('打开情侣空间失败:', err);
+          showToast('打开情侣空间失败');
         }
-      } catch (err) {
-        console.error('打开情侣空间失败:', err);
-        showToast('打开情侣空间失败');
       }
+      openCoupleApp();
     }, true); // 用捕获模式，确保在冒泡阶段之前拦截
     return el;
   }

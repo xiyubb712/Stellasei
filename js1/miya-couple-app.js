@@ -326,8 +326,11 @@
       }
       var ch = contact ? String(contact.name || '?').charAt(0) : '?';
       var ph = String(profileName).charAt(0);
+      var isHomeDisplay = st && typeof st.getHomeDisplayContactId === 'function'
+        ? st.getHomeDisplayContactId() === sp.contactId
+        : false;
       return (
-        '<button type="button" class="cp-gate-card" data-cp-gate-card="' + esc(sp.contactId) + '" data-cp-status="' + esc(sp.status) + '">' +
+        '<button type="button" class="cp-gate-card' + (isHomeDisplay ? ' is-home-display' : '') + '" data-cp-gate-card="' + esc(sp.contactId) + '" data-cp-status="' + esc(sp.status) + '">' +
           '<div class="cp-gate-card__avas">' +
             '<div class="cp-gate-card__ava" data-cp-gate-ava="p-' + esc(sp.contactId) + '">' + esc(ph) + '</div>' +
             '<div class="cp-gate-card__ava cp-gate-card__ava--b" data-cp-gate-ava="c-' + esc(sp.contactId) + '">' + esc(ch) + '</div>' +
@@ -336,7 +339,19 @@
             '<p class="cp-gate-card__names">' + esc(profileName) + ' & ' + esc(charName) + '</p>' +
             '<p class="cp-gate-card__meta">' + esc(meta) + '</p>' +
           '</div>' +
-          '<span class="cp-gate-card__badge' + badgeCls + '">' + esc(badge) + '</span>' +
+          '<div class="cp-gate-card__right">' +
+            (sp.status === 'open' ? (
+              '<div class="cp-gate-home-toggle-wrapper">' +
+                '<span class="cp-gate-home-toggle__label">' + (isHomeDisplay ? '主页显示中' : '显示到主页') + '</span>' +
+                '<button type="button" class="cp-gate-home-toggle' + (isHomeDisplay ? ' is-on' : '') + '" data-cp-home-toggle="' + esc(sp.contactId) + '" title="' + (isHomeDisplay ? '取消主页显示' : '显示到主页') + '">' +
+                  '<span class="cp-gate-home-toggle__track">' +
+                    '<span class="cp-gate-home-toggle__thumb"></span>' +
+                  '</span>' +
+                '</button>' +
+              '</div>'
+            ) : '') +
+            '<span class="cp-gate-card__badge' + badgeCls + '">' + esc(badge) + '</span>' +
+          '</div>' +
         '</button>'
       );
     }).join('');
@@ -360,6 +375,31 @@
           if (url) cEl.innerHTML = '<img src="' + esc(url) + '" alt="" loading="lazy">';
         });
       }
+    });
+
+    // 主页显示开关按钮的点击事件
+    var toggleBtns = listEl.querySelectorAll('[data-cp-home-toggle]');
+    toggleBtns.forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        e.preventDefault();
+        var contactId = btn.getAttribute('data-cp-home-toggle');
+        if (!contactId) return;
+        var st2 = store();
+        if (!st2 || typeof st2.getHomeDisplayContactId !== 'function') return;
+        var currentId = st2.getHomeDisplayContactId();
+        if (currentId === contactId) {
+          // 取消显示
+          st2.setHomeDisplayContactId('');
+          showToast('已取消主页显示');
+        } else {
+          // 设置显示（互斥，会自动关闭其他的）
+          st2.setHomeDisplayContactId(contactId);
+          showToast('已设置为主页显示');
+        }
+        // 重新渲染列表
+        renderGateList(true);
+      });
     });
   }
 
@@ -999,6 +1039,10 @@
     var gateList = $('cp-gate-list');
     if (gateList) {
       gateList.addEventListener('click', function (e) {
+        // 如果点击的是主页显示开关按钮，不触发卡片点击
+        if (e.target.closest('[data-cp-home-toggle]')) {
+          return;
+        }
         var card = e.target.closest('[data-cp-gate-card]');
         if (!card) return;
         var cid = card.getAttribute('data-cp-gate-card');
@@ -1138,4 +1182,8 @@
     renderBoardPreview: renderBoardPreview,
     renderPhotosPreview: renderPhotosPreview
   };
+
+  // 暴露头像解析函数，供主页情侣空间入口小组件使用
+  global.miyaResolveAvatarUrl = resolveAvatarUrl;
+  global.miyaResolveProfileAvatarUrl = resolveProfileAvatarUrl;
 })(typeof window !== 'undefined' ? window : global);

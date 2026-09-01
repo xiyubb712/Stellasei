@@ -636,6 +636,37 @@
     return diff >= 0 ? diff : 0;
   }
 
+  /* ===== 主页显示的情侣空间 ===== */
+  var HOME_DISPLAY_KEY = 'miya-couple-home-display-contact-id';
+
+  function getHomeDisplayContactId() {
+    try {
+      var raw = localStorage.getItem(HOME_DISPLAY_KEY);
+      return raw ? String(raw).trim() : '';
+    } catch (e) {
+      return '';
+    }
+  }
+
+  function setHomeDisplayContactId(contactId) {
+    try {
+      if (contactId) {
+        localStorage.setItem(HOME_DISPLAY_KEY, String(contactId));
+      } else {
+        localStorage.removeItem(HOME_DISPLAY_KEY);
+      }
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function getHomeDisplaySpace() {
+    var contactId = getHomeDisplayContactId();
+    if (!contactId) return null;
+    return getSpace(contactId);
+  }
+
   function getCheckIns(contactId) {
     var sp = getSpace(contactId);
     return sp && Array.isArray(sp.checkIns) ? sp.checkIns.slice() : [];
@@ -1095,7 +1126,10 @@
     markBoardCharRefresh: markBoardCharRefresh,
     markBoardPromptWeek: markBoardPromptWeek,
     getBoardPromptForWeek: getBoardPromptForWeek,
-    boardSortKey: boardSortKey
+    boardSortKey: boardSortKey,
+    getHomeDisplayContactId: getHomeDisplayContactId,
+    setHomeDisplayContactId: setHomeDisplayContactId,
+    getHomeDisplaySpace: getHomeDisplaySpace
   };
 
   if (global.miyaRegisterKvStore) {
