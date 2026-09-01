@@ -1348,8 +1348,8 @@
         if (quotesLib && typeof quotesLib.getRandom === 'function' && msgEls.length >= 2 && homeContactId) {
           var coupleQuote = quotesLib.getRandom('couple', homeContactId, 'general');
           if (coupleQuote && coupleQuote.left && coupleQuote.right) {
-            msgEls[0].textContent = truncateQuote(coupleQuote.left, 30);
-            msgEls[1].textContent = truncateQuote(coupleQuote.right, 30);
+            msgEls[0].textContent = truncateQuote(coupleQuote.left, 20);
+            msgEls[1].textContent = truncateQuote(coupleQuote.right, 20);
           }
         }
       } catch (e) {
@@ -3636,7 +3636,7 @@
 
       // 更新语录（截断太长的）
       var textEl = wgEl.querySelector('.wg-companion__bubble-text');
-      if (textEl) textEl.textContent = truncateQuote(quote, 40);
+      if (textEl) textEl.textContent = truncateQuote(quote, 28);
 
       // 更新头像（跟情侣空间入口小组件用同样的方式）
       var avatarEl = wgEl.querySelector('.wg-companion__avatar');
