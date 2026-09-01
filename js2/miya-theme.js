@@ -1647,6 +1647,11 @@
           applyWallToPhone(url);
         })
       );
+    } else {
+      // 自定义布局或星绥布局时，调用 applyCustomDeskTheme 来应用壁纸
+      if (global.miyaApplyCustomDesk && typeof global.miyaApplyCustomDesk === 'function') {
+        promises.push(global.miyaApplyCustomDesk());
+      }
     }
     APP_KEYS.forEach(function (key) {
       var btn = document.querySelector('.desk-viewport [data-app="' + key + '"], .desk--p1 [data-app="' + key + '"]');
