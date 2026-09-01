@@ -3183,62 +3183,6 @@
     return el;
   }
 
-  // 监听聊天应用关闭，手动刷新名片头像
-  var profileAvatarRefreshBound = false;
-  function refreshProfile4x4Avatars() {
-    var wgEls = document.querySelectorAll('.wg-profile4x4');
-    if (!wgEls || !wgEls.length) return;
-    var userAvatar = null;
-    try {
-      var themeForAva = global.miyaGetTheme();
-      if (themeForAva && themeForAva.memoAvas && themeForAva.memoAvas.profile_ava) {
-        userAvatar = themeForAva.memoAvas.profile_ava;
-      }
-    } catch (e) {}
-    for (var i = 0; i < wgEls.length; i++) {
-      var avaEl = wgEls[i].querySelector('.wg-profile4x4__avatar');
-      if (!avaEl) continue;
-      if (userAvatar) {
-        (function (el, ref) {
-          global.miyaResolveMediaUrl(ref).then(function (url) {
-            if (!url) return;
-            el.style.backgroundImage = 'url("' + url.replace(/"/g, '%22') + '")';
-            el.style.backgroundSize = 'cover';
-            el.style.backgroundPosition = 'center';
-            el.classList.add('has-custom-ava');
-          });
-        })(avaEl, userAvatar);
-      } else {
-        avaEl.style.backgroundImage = '';
-        avaEl.classList.remove('has-custom-ava');
-      }
-    }
-  }
-  function bindProfileAvatarRefresh() {
-    if (profileAvatarRefreshBound) return;
-    profileAvatarRefreshBound = true;
-    var chatApp = document.getElementById('miya-chat-app');
-    if (!chatApp) {
-      setTimeout(bindProfileAvatarRefresh, 1000);
-      return;
-    }
-    var wasOpen = chatApp.classList.contains('is-open');
-    var observer = new MutationObserver(function () {
-      var isOpen = chatApp.classList.contains('is-open');
-      if (wasOpen && !isOpen) {
-        // 聊天应用关闭了，手动刷新名片头像
-        setTimeout(refreshProfile4x4Avatars, 200);
-      }
-      wasOpen = isOpen;
-    });
-    observer.observe(chatApp, { attributes: true, attributeFilter: ['class'] });
-  }
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', bindProfileAvatarRefresh);
-  } else {
-    bindProfileAvatarRefresh();
-  }
-
   function updateProfileClock(wgEl) {
     if (!wgEl) return;
     var timeEl = wgEl.querySelector('.wg-profile__clock-time, .wg-profile4x4__clock-time');

@@ -764,4 +764,84 @@
   if (window.miyaRequestPersistentStorage) {
     window.miyaRequestPersistentStorage();
   }
+
+  // ===== 头像自动刷新机制（参考旧代码实现）=====
+  // 获取当前用户头像引用
+  function getCurrentAvatarRef() {
+    try {
+      if (window.miyaGetTheme && typeof window.miyaGetTheme === 'function') {
+        var theme = window.miyaGetTheme();
+        if (theme && theme.memoAvas && theme.memoAvas.profile_ava) {
+          return theme.memoAvas.profile_ava;
+        }
+      }
+    } catch (e) {}
+    return '';
+  }
+
+  // 应用头像到所有名片小组件
+  function applyAvatarToAllWidgets(ref) {
+    if (!ref) return;
+    try {
+      if (!window.miyaResolveMediaUrl || typeof window.miyaResolveMediaUrl !== 'function') return;
+      window.miyaResolveMediaUrl(ref).then(function (url) {
+        if (!url) return;
+        // 原作者的名片小组件头像
+        var ava = document.getElementById('wg-profile-avatar');
+        if (ava) {
+          ava.style.backgroundImage = 'url("' + url.replace(/"/g, '%22') + '")';
+          ava.style.backgroundSize = 'cover';
+          ava.style.backgroundPosition = 'center';
+          ava.classList.add('has-custom-ava');
+        }
+        // 我们的 4×5 名片小组件头像
+        var avas = document.querySelectorAll('.wg-profile4x4__avatar');
+        if (avas && avas.length) {
+          for (var i = 0; i < avas.length; i++) {
+            avas[i].style.backgroundImage = 'url("' + url.replace(/"/g, '%22') + '")';
+            avas[i].style.backgroundSize = 'cover';
+            avas[i].style.backgroundPosition = 'center';
+            avas[i].classList.add('has-custom-ava');
+          }
+        }
+      }).catch(function () {});
+    } catch (e) {}
+  }
+
+  // 检测主页是否可见（只在主页可见时才检测头像）
+  function isHomePageVisible() {
+    if (document.hidden) return false;
+    var deskShell = document.querySelector('.desk-shell');
+    if (!deskShell) return true;
+    var style = window.getComputedStyle(deskShell);
+    return style.display !== 'none' && style.visibility !== 'hidden';
+  }
+
+  // 检查并更新头像
+  var lastAvatarRef = '';
+  function checkAndUpdateAvatar() {
+    if (!isHomePageVisible()) return;
+    var currentRef = getCurrentAvatarRef();
+    if (currentRef && currentRef !== lastAvatarRef) {
+      lastAvatarRef = currentRef;
+      applyAvatarToAllWidgets(currentRef);
+    }
+  }
+
+  // 页面加载时立即同步头像
+  lastAvatarRef = getCurrentAvatarRef();
+  if (lastAvatarRef) {
+    applyAvatarToAllWidgets(lastAvatarRef);
+  }
+
+  // 每隔 2 秒检查一次（只在主页可见时才会真正更新）
+  setInterval(checkAndUpdateAvatar, 2000);
+
+  // 页面重新可见时立即检查一次
+  document.addEventListener('visibilitychange', function () {
+    if (!document.hidden) {
+      setTimeout(checkAndUpdateAvatar, 100);
+    }
+  });
+  // ===== 头像自动刷新机制结束 =====
 })();
