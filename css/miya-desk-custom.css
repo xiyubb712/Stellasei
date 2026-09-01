@@ -1296,12 +1296,13 @@ html.is-custom-wg-editing .desk-custom-viewport {
 }
 
 .desk-custom-wg-editor__img--wide {
-  width: 100%;
+  width: 55%;
   aspect-ratio: 4 / 5;
   min-height: 0;
   height: auto;
   flex-shrink: 0;
   display: block;
+  margin: 0 auto;
 }
 
 .desk-custom-wg-editor__img-actions {
