@@ -364,16 +364,16 @@
 
     /* 每个场景的配色 */
     .scene-card[data-scene="study"].active {
-      background: linear-gradient(135deg, #F5F0E8 0%, #EDE4D3 100%);
+      background: linear-gradient(135deg, #EEF2E6 0%, #DDE5CC 100%);
     }
     .scene-card[data-scene="study"].active::before {
-      background: linear-gradient(90deg, #C4A77D, #A68B5B);
+      background: linear-gradient(90deg, #8BA870, #6B8E50);
     }
     .scene-card[data-scene="study"].active .scene-name {
-      color: #6B5330;
+      color: #4A6630;
     }
     .scene-card[data-scene="study"].active .scene-en {
-      color: #A68B5B;
+      color: #6B8E50;
     }
 
     .scene-card[data-scene="work"].active {
@@ -403,16 +403,16 @@
     }
 
     .scene-card[data-scene="meal"].active {
-      background: linear-gradient(135deg, #F7EEE5 0%, #F0E0CC 100%);
+      background: linear-gradient(135deg, #FBF0E0 0%, #F5DDB8 100%);
     }
     .scene-card[data-scene="meal"].active::before {
-      background: linear-gradient(90deg, #D4A574, #B8895A);
+      background: linear-gradient(90deg, #D49A5A, #B87D3A);
     }
     .scene-card[data-scene="meal"].active .scene-name {
-      color: #7A5A35;
+      color: #7A5020;
     }
     .scene-card[data-scene="meal"].active .scene-en {
-      color: #B8895A;
+      color: #B87D3A;
     }
 
     .scene-card[data-scene="sleep"].active {
@@ -620,28 +620,42 @@
       bottom: 0;
       background-size: cover;
       background-position: center;
-      opacity: 0.75;
+      opacity: 0.85;
       z-index: 0;
+      transition: background 0.8s ease;
+      filter: blur(25px);
+      transform: scale(1.15);
+    }
+
+    /* 渐变遮罩层 - 叠加在头像背景上面 */
+    .companion-bg-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 0;
+      opacity: 0.5;
       transition: background 0.8s ease;
     }
 
-    /* 每个场景的背景氛围色 */
-    .companion-bg.scene-study {
-      background: radial-gradient(ellipse at top, #F5F0E8 0%, #EDE4D3 50%, #E5D9C5 100%);
+    /* 每个场景的背景氛围色 - 用在遮罩层上 */
+    .companion-bg-overlay.scene-study {
+      background: radial-gradient(ellipse at top, #EEF2E6 0%, #DDE5CC 50%, #CCD8B8 100%);
     }
-    .companion-bg.scene-work {
+    .companion-bg-overlay.scene-work {
       background: radial-gradient(ellipse at top, #EBF0F5 0%, #DCE5EE 50%, #CDD9E5 100%);
     }
-    .companion-bg.scene-rest {
+    .companion-bg-overlay.scene-rest {
       background: radial-gradient(ellipse at top, #EAF2EC 0%, #D8E8DC 50%, #C5DCCB 100%);
     }
-    .companion-bg.scene-meal {
-      background: radial-gradient(ellipse at top, #F7EEE5 0%, #F0E0CC 50%, #E8D2B8 100%);
+    .companion-bg-overlay.scene-meal {
+      background: radial-gradient(ellipse at top, #FBF0E0 0%, #F5DDB8 50%, #EFCB9A 100%);
     }
-    .companion-bg.scene-sleep {
+    .companion-bg-overlay.scene-sleep {
       background: radial-gradient(ellipse at top, #E8EAF2 0%, #D5D9E8 50%, #C2C8DE 100%);
     }
-    .companion-bg.scene-chill {
+    .companion-bg-overlay.scene-chill {
       background: radial-gradient(ellipse at top, #F2EAF0 0%, #E8D8E2 50%, #DEC5D4 100%);
     }
 
@@ -942,17 +956,17 @@
               <div class="scene-en">MEAL</div>
               <div class="scene-desc">温馨治愈</div>
             </div>
-            <div class="scene-card" data-scene="sleep" onclick="selectScene('sleep')">
-              <div class="scene-icon">☾</div>
-              <div class="scene-name">睡前</div>
-              <div class="scene-en">SLEEP</div>
-              <div class="scene-desc">安静助眠</div>
-            </div>
             <div class="scene-card" data-scene="chill" onclick="selectScene('chill')">
               <div class="scene-icon">♪</div>
               <div class="scene-name">放空</div>
               <div class="scene-en">CHILL</div>
               <div class="scene-desc">轻松愉悦</div>
+            </div>
+            <div class="scene-card" data-scene="sleep" onclick="selectScene('sleep')">
+              <div class="scene-icon">☾</div>
+              <div class="scene-name">睡前</div>
+              <div class="scene-en">SLEEP</div>
+              <div class="scene-desc">安静助眠</div>
             </div>
           </div>
         </div>
@@ -990,6 +1004,7 @@
   <!-- 陪伴进行中页面 -->
   <div class="companion-page" id="companionPage">
     <div class="companion-bg" id="companionBg"></div>
+    <div class="companion-bg-overlay" id="companionBgOverlay"></div>
     <div class="companion-content">
       <div class="companion-top">
         <button class="companion-exit" onclick="exitCompanion()">EXIT</button>
@@ -1764,12 +1779,22 @@
       document.getElementById('companionNameLarge').textContent = currentCharacter.name;
       document.getElementById('companionSceneLabel').textContent = sceneLabels[currentScene] || '陪伴中';
       
-      // 设置场景背景氛围色
+      // 设置头像背景 + 场景渐变遮罩
       const bgEl = document.getElementById('companionBg');
-      // 移除所有场景 class
-      bgEl.className = 'companion-bg';
-      // 添加当前场景 class
-      bgEl.classList.add('scene-' + currentScene);
+      const bgOverlayEl = document.getElementById('companionBgOverlay');
+      
+      // 头像作为背景（模糊处理）
+      if (currentCharacter.avatar) {
+        bgEl.style.backgroundImage = `url(${currentCharacter.avatar})`;
+        bgEl.style.opacity = '0.85';
+      } else {
+        bgEl.style.backgroundImage = 'none';
+        bgEl.style.opacity = '0.3';
+      }
+      
+      // 场景渐变遮罩层
+      bgOverlayEl.className = 'companion-bg-overlay';
+      bgOverlayEl.classList.add('scene-' + currentScene);
 
       // 重置计时器
       elapsedSeconds = 0;
