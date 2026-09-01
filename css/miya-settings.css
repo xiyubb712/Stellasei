@@ -1987,3 +1987,58 @@
   cursor: pointer;
 }
 
+/* ===== 软件刷新按钮 ===== */
+.st-soft-refresh-wrap {
+  position: absolute;
+  top: calc(env(safe-area-inset-top, 0px) + 10px);
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  z-index: 10;
+}
+
+.st-soft-refresh {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  color: rgba(120, 115, 105, 0.65);
+  transition: color 0.2s ease, background 0.2s ease;
+}
+
+.st-soft-refresh:active {
+  transform: scale(0.96);
+}
+
+.st-soft-refresh__icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.st-soft-refresh__text {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  font-family: "Jost", "Noto Sans SC", sans-serif;
+  white-space: nowrap;
+}
+
+.st-soft-refresh__hint {
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  font-family: "Jost", "Noto Sans SC", sans-serif;
+  color: rgba(140, 135, 125, 0.5);
+  margin: 0;
+  padding: 0;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+

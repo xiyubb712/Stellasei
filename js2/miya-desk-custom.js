@@ -4506,7 +4506,27 @@
 
   function getStellaseiDefaultLayout() {
     var items = [];
-    // 名片小组件 - 占 4x2，位置在顶部
+    // 创建一个 4x8 的网格，标记哪些位置被占用了
+    var occupied = [];
+    for (var y = 0; y < GRID_ROWS; y++) {
+      occupied[y] = [];
+      for (var x = 0; x < GRID_COLS; x++) {
+        occupied[y][x] = false;
+      }
+    }
+
+    // 标记小组件占用的位置
+    function markOccupied(x, y, w, h) {
+      for (var dy = 0; dy < h; dy++) {
+        for (var dx = 0; dx < w; dx++) {
+          if (y + dy < GRID_ROWS && x + dx < GRID_COLS) {
+            occupied[y + dy][x + dx] = true;
+          }
+        }
+      }
+    }
+
+    // 第1-2行：名片小组件（占 4x2）
     items.push({
       id: genItemId(),
       kind: 'widget',
@@ -4514,20 +4534,53 @@
       x: 0, y: 0, w: 4, h: 2,
       config: {}
     });
-    // 应用图标 - 从第3行开始
-    var apps = ['couple', 'itinerary', 'cstore', 'rift', 'music', 'memo', 'set', 'book', 'memory', 'chat', 'beauty', 'store', 'deep', 'notes', 'match', 'fun', 'echo', 'log', 'weather', 'map'];
-    apps.forEach(function (appKey, i) {
-      var y = 2 + Math.floor(i / 4);
-      var x = i % 4;
-      if (y < GRID_ROWS) {
-        items.push({
-          id: genItemId(),
-          kind: 'app',
-          key: appKey,
-          x: x, y: y, w: 1, h: 1
-        });
-      }
+    markOccupied(0, 0, 4, 2);
+
+    // 第3-4行：MEMO双头像小组件（占 4x2）
+    items.push({
+      id: genItemId(),
+      kind: 'widget',
+      widgetId: 'blank_4x2_6',
+      x: 0, y: 2, w: 4, h: 2,
+      config: {}
     });
+    markOccupied(0, 2, 4, 2);
+
+    // 第5-6行：拍立得小组件（占 2x2）
+    items.push({
+      id: genItemId(),
+      kind: 'widget',
+      widgetId: 'blank_2x2_2',
+      x: 0, y: 4, w: 2, h: 2,
+      config: {}
+    });
+    markOccupied(0, 4, 2, 2);
+
+    // 应用图标 - 依次放到空闲的位置
+    var apps = [
+      'music', 'memo', 'set', 'book',
+      'memory', 'chat', 'beauty', 'store',
+      'couple', 'itinerary', 'cstore', 'rift',
+      'deep', 'notes', 'match', 'fun',
+      'echo', 'log', 'weather', 'map',
+      'theater', 'apps'
+    ];
+    var appIndex = 0;
+    for (var yy = 4; yy < GRID_ROWS && appIndex < apps.length; yy++) {
+      for (var xx = 0; xx < GRID_COLS && appIndex < apps.length; xx++) {
+        if (!occupied[yy][xx]) {
+          items.push({
+            id: genItemId(),
+            kind: 'app',
+            key: apps[appIndex],
+            x: xx, y: yy, w: 1, h: 1
+          });
+          occupied[yy][xx] = true;
+          appIndex++;
+        }
+      }
+    }
+
     var dockSlots = emptyDockSlots();
     DEFAULT_DOCK.forEach(function (k, i) { dockSlots[i] = k; });
     return { pages: [{ items: items }], dockSlots: dockSlots };
@@ -6010,6 +6063,13 @@
       return ready.then(function () {
         syncCustomWidgetCatalog();
         ensureLayoutCustomWidgetsInCatalog(customThemeState && customThemeState.layout);
+        // 检测 URL 参数 ?reset-layout=1，自动恢复默认布局
+        try {
+          var urlParams = new URLSearchParams(window.location.search);
+          if (urlParams.get('reset-layout') === '1') {
+            localStorage.removeItem(STELLASEI_INIT_FLAG);
+          }
+        } catch (e) {}
         if (getLayoutMode() === 'stellasei') {
           ensureStellaseiDefaultLayout();
         }
@@ -6040,7 +6100,7 @@
       switchDeskLayout(mode);
     });
 
-    var resetBtn = document.getElementById('miya-stellasei-reset-layout');
+    var resetBtn = document.getElementById('miya-st-reset-layout');
     if (resetBtn && !resetBtn.dataset.bound) {
       resetBtn.dataset.bound = '1';
       resetBtn.addEventListener('click', function () {
@@ -6051,6 +6111,15 @@
         ensureStellaseiDefaultLayout();
         applyActiveLayout();
         alert('已恢复星绥布局的默认预设！');
+      });
+    }
+
+    var softRefreshBtn = document.getElementById('miya-st-soft-refresh');
+    if (softRefreshBtn && !softRefreshBtn.dataset.bound) {
+      softRefreshBtn.dataset.bound = '1';
+      softRefreshBtn.addEventListener('click', function () {
+        if (!confirm('确定要刷新应用吗？将重新加载页面，数据安全保留。')) return;
+        window.location.reload();
       });
     }
   }

@@ -1117,6 +1117,13 @@
               </div>
               <button type="button" class="ins-btn ins-btn--ghost" id="miya-stellasei-reset-layout">恢复</button>
             </div>
+            <div class="ins-atelier-splash-pill ins-atelier-splash-pill--card" style="margin-top: 8px;">
+              <div>
+                <strong>刷新应用</strong>
+                <span>重新加载页面，获取最新代码</span>
+              </div>
+              <button type="button" class="ins-btn ins-btn--ghost" id="miya-app-refresh">刷新</button>
+            </div>
           </article>
 
           <article class="ins-atelier-splash-card">
@@ -1397,6 +1404,17 @@
           <button type="button" class="st-header-badge" id="miya-st-header-back" aria-label="返回">Preferences</button>
           <h2>Settings <em>&amp;</em><br><span class="st-header-script">Configuration</span></h2>
           <p class="st-header-sub">精细打理接口、数据与日常偏好</p>
+          <div class="st-soft-refresh-wrap">
+            <button type="button" class="st-soft-refresh" id="miya-st-soft-refresh" aria-label="软件刷新">
+              <svg class="st-soft-refresh__icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M20 12a8 8 0 1 1-2.34-5.66" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+                <path d="M20 4v4h-4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M12 9.0l1.1 2.2 2.4.35-1.75 1.7.41 2.4L12 14.4l-2.16 1.1.41-2.4-1.75-1.7 2.4-.35L12 9.0z" fill="currentColor"/>
+              </svg>
+              <span class="st-soft-refresh__text">软件刷新</span>
+            </button>
+            <p class="st-soft-refresh__hint">仅刷新应用，数据安全保留</p>
+          </div>
         </header>
 
         <div class="st-section-label">接口集成</div>
@@ -1491,6 +1509,16 @@
           <div>
             <div class="st-io-title">导入数据</div>
             <div class="st-io-desc">从 ZIP 或 JSON 备份恢复</div>
+          </div>
+          <svg class="st-io-arrow" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+        <button type="button" class="st-io-card" id="miya-st-reset-layout">
+          <div class="st-io-icon st-io-icon--import">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+          </div>
+          <div>
+            <div class="st-io-title">恢复默认布局</div>
+            <div class="st-io-desc">一键恢复星绥布局的默认预设</div>
           </div>
           <svg class="st-io-arrow" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
         </button>
