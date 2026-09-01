@@ -329,6 +329,9 @@
       return;
     }
     function kick() {
+      // 优先预加载情侣空间应用，确保第一次点击时已经加载完成
+      ensureGroup('coupleUi').catch(function () {});
+      // 然后再预加载其他应用
       setTimeout(prefetchAllIdle, 400);
     }
     if (document.readyState === 'complete') kick();

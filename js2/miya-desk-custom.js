@@ -3291,7 +3291,7 @@
         '</div>' +
       '</div>' +
       '<button type="button" class="desk-custom__wg-remove" aria-label="移除小组件">×</button>';
-    // 点击进入情侣空间应用
+    // 点击进入情侣空间应用（支持懒加载，自动等待加载完成）
     el.addEventListener('pointerdown', function (e) {
       // 判断点击的是不是删除按钮
       var target = e.target;
@@ -3299,32 +3299,35 @@
         return; // 点击的是删除按钮，不触发进入情侣空间
       }
       e.stopImmediatePropagation();
-      // 打开情侣空间应用（支持延迟加载，手机端可能加载较慢）
-      function openCoupleApp() {
+
+      // 如果已经加载完成，直接打开
+      if (global.miyaCoupleApp && typeof global.miyaCoupleApp.open === 'function') {
+        global.miyaCoupleApp.open();
+        return;
+      }
+
+      // 如果还没加载完成，显示加载提示，轮询等待加载完成
+      showToast('正在打开情侣空间...');
+      var retryCount = 0;
+      var maxRetry = 20; // 最多重试 20 次，每次 250ms，总共 5 秒
+      function tryOpen() {
         try {
           if (global.miyaCoupleApp && typeof global.miyaCoupleApp.open === 'function') {
             global.miyaCoupleApp.open();
-          } else {
-            // 如果还没加载完成，延迟 500ms 再试一次
-            setTimeout(function () {
-              try {
-                if (global.miyaCoupleApp && typeof global.miyaCoupleApp.open === 'function') {
-                  global.miyaCoupleApp.open();
-                } else {
-                  showToast('情侣空间加载中，请稍候再试');
-                }
-              } catch (err2) {
-                console.error('打开情侣空间失败:', err2);
-                showToast('打开情侣空间失败');
-              }
-            }, 500);
+            return;
           }
+          retryCount++;
+          if (retryCount >= maxRetry) {
+            showToast('情侣空间加载较慢，请从应用列表打开一次');
+            return;
+          }
+          setTimeout(tryOpen, 250);
         } catch (err) {
           console.error('打开情侣空间失败:', err);
           showToast('打开情侣空间失败');
         }
       }
-      openCoupleApp();
+      tryOpen();
     }, true); // 用捕获模式，确保在冒泡阶段之前拦截
     return el;
   }

@@ -329,6 +329,11 @@
       var isHomeDisplay = st && typeof st.getHomeDisplayContactId === 'function'
         ? st.getHomeDisplayContactId() === sp.contactId
         : false;
+      var switchHtml = sp.status === 'open'
+        ? '<div class="cp-gate-card__switch' + (isHomeDisplay ? ' is-on' : '') + '" data-cp-home-switch="' + esc(sp.contactId) + '" role="switch" aria-checked="' + (isHomeDisplay ? 'true' : 'false') + '" title="' + (isHomeDisplay ? '取消主页显示' : '显示到主页') + '" onclick="var e=window.event||arguments[0];if(e){e.stopPropagation();e.preventDefault();}var cid=this.getAttribute(\'data-cp-home-switch\');var st=window.miyaCoupleStore;if(st&&cid){var cur=st.getHomeDisplayContactId?st.getHomeDisplayContactId():\'\';if(cur===cid){st.setHomeDisplayContactId(\'\');}else{st.setHomeDisplayContactId(cid);}if(window.miyaCoupleApp&&window.miyaCoupleApp.renderAll){window.miyaCoupleApp.renderAll();}}return false;">' +
+            '<span class="cp-gate-card__switch-knob"></span>' +
+          '</div>'
+        : '';
       return (
         '<button type="button" class="cp-gate-card' + (isHomeDisplay ? ' is-home-display' : '') + '" data-cp-gate-card="' + esc(sp.contactId) + '" data-cp-status="' + esc(sp.status) + '">' +
           '<div class="cp-gate-card__avas">' +
@@ -339,19 +344,8 @@
             '<p class="cp-gate-card__names">' + esc(profileName) + ' & ' + esc(charName) + '</p>' +
             '<p class="cp-gate-card__meta">' + esc(meta) + '</p>' +
           '</div>' +
-          '<div class="cp-gate-card__right">' +
-            (sp.status === 'open' ? (
-              '<div class="cp-gate-home-toggle-wrapper">' +
-                '<span class="cp-gate-home-toggle__label">' + (isHomeDisplay ? '主页显示中' : '显示到主页') + '</span>' +
-                '<button type="button" class="cp-gate-home-toggle' + (isHomeDisplay ? ' is-on' : '') + '" data-cp-home-toggle="' + esc(sp.contactId) + '" title="' + (isHomeDisplay ? '取消主页显示' : '显示到主页') + '">' +
-                  '<span class="cp-gate-home-toggle__track">' +
-                    '<span class="cp-gate-home-toggle__thumb"></span>' +
-                  '</span>' +
-                '</button>' +
-              '</div>'
-            ) : '') +
-            '<span class="cp-gate-card__badge' + badgeCls + '">' + esc(badge) + '</span>' +
-          '</div>' +
+          switchHtml +
+          '<span class="cp-gate-card__badge' + badgeCls + '">' + esc(badge) + '</span>' +
         '</button>'
       );
     }).join('');
@@ -375,31 +369,6 @@
           if (url) cEl.innerHTML = '<img src="' + esc(url) + '" alt="" loading="lazy">';
         });
       }
-    });
-
-    // 主页显示开关按钮的点击事件
-    var toggleBtns = listEl.querySelectorAll('[data-cp-home-toggle]');
-    toggleBtns.forEach(function (btn) {
-      btn.addEventListener('click', function (e) {
-        e.stopPropagation();
-        e.preventDefault();
-        var contactId = btn.getAttribute('data-cp-home-toggle');
-        if (!contactId) return;
-        var st2 = store();
-        if (!st2 || typeof st2.getHomeDisplayContactId !== 'function') return;
-        var currentId = st2.getHomeDisplayContactId();
-        if (currentId === contactId) {
-          // 取消显示
-          st2.setHomeDisplayContactId('');
-          showToast('已取消主页显示');
-        } else {
-          // 设置显示（互斥，会自动关闭其他的）
-          st2.setHomeDisplayContactId(contactId);
-          showToast('已设置为主页显示');
-        }
-        // 重新渲染列表
-        renderGateList(true);
-      });
     });
   }
 
@@ -1039,10 +1008,28 @@
     var gateList = $('cp-gate-list');
     if (gateList) {
       gateList.addEventListener('click', function (e) {
-        // 如果点击的是主页显示开关按钮，不触发卡片点击
-        if (e.target.closest('[data-cp-home-toggle]')) {
+        // 先判断是不是点击了主页显示开关
+        var switchEl = e.target.closest('[data-cp-home-switch]');
+        if (switchEl) {
+          e.stopPropagation();
+          var cid = switchEl.getAttribute('data-cp-home-switch');
+          var st = store();
+          if (!st || !cid) return;
+          var currentId = st.getHomeDisplayContactId ? st.getHomeDisplayContactId() : '';
+          if (currentId === cid) {
+            // 取消显示
+            st.setHomeDisplayContactId('');
+            showToast('已取消主页显示');
+          } else {
+            // 设置显示（互斥，会自动关闭其他的）
+            st.setHomeDisplayContactId(cid);
+            showToast('已设置为主页显示');
+          }
+          renderGateList(true);
           return;
         }
+
+        // 再判断是不是点击了卡片
         var card = e.target.closest('[data-cp-gate-card]');
         if (!card) return;
         var cid = card.getAttribute('data-cp-gate-card');
