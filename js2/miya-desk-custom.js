@@ -346,9 +346,12 @@
     profile4x4: [
       { key: 'profileBg', type: 'image', label: '背景照片' },
       { key: 'name', type: 'text', label: '名字', maxLength: 24 },
+      { key: 'nameColor', type: 'color', label: '名字颜色', opacityKey: 'nameColorOpacity' },
       { key: 'bio', type: 'text', label: '简介', maxLength: 48, multiline: true },
-      { key: 'cornerPhoto', type: 'image', label: '右下角照片' },
-      { key: 'textColor', type: 'color', label: '文字颜色' }
+      { key: 'bioColor', type: 'color', label: '简介颜色', opacityKey: 'bioColorOpacity' },
+      { key: 'timeColor', type: 'color', label: '时间颜色', opacityKey: 'timeColorOpacity' },
+      { key: 'dateColor', type: 'color', label: '日期颜色', opacityKey: 'dateColorOpacity' },
+      { key: 'cornerPhoto', type: 'image', label: '右下角照片' }
     ],
     memo: [
       { key: 'ava1', type: 'image', label: '左头像' },
@@ -1094,6 +1097,87 @@
     minHand.setAttribute('transform', 'rotate(' + minDeg + ' 23 23)');
   }
 
+  // 十六进制颜色转 rgba
+  function hexToRgba(hex, opacity) {
+    hex = String(hex || '#3c4046').replace('#', '');
+    if (hex.length === 3) {
+      hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+    }
+    var r = parseInt(hex.substring(0, 2), 16) || 0;
+    var g = parseInt(hex.substring(2, 4), 16) || 0;
+    var b = parseInt(hex.substring(4, 6), 16) || 0;
+    var op = opacity == null ? 1 : Math.max(0, Math.min(1, opacity));
+    return 'rgba(' + r + ', ' + g + ', ' + b + ', ' + op + ')';
+  }
+
+  // 颜色字段 key 对应的 CSS 选择器映射
+  var PROFILE4X4_COLOR_SELECTORS = {
+    nameColor: '.wg-profile4x4__name',
+    bioColor: '.wg-profile4x4__bio',
+    timeColor: '.wg-profile4x4__clock-time',
+    dateColor: '.wg-profile4x4__clock-date'
+  };
+
+  // 实时预览名片颜色
+  function previewWidgetColor(colorKey, color, opacity) {
+    var selector = PROFILE4X4_COLOR_SELECTORS[colorKey];
+    if (!selector) return;
+    var els = document.querySelectorAll(selector);
+    if (!els.length) return;
+    var rgba = hexToRgba(color, opacity);
+    els.forEach(function (el) {
+      el.style.color = rgba;
+    });
+  }
+
+  // 更新编辑面板里的完整名片预览
+  function updateProfile4x4Preview(cfg) {
+    var preview = document.getElementById('profile4x4-editor-preview');
+    if (!preview || !cfg) return;
+    // 更新名字和简介
+    var nameEl = document.getElementById('preview-name');
+    var bioEl = document.getElementById('preview-bio');
+    if (nameEl) nameEl.textContent = cfg.name || '星绥 Stellasei';
+    if (bioEl) bioEl.textContent = cfg.bio || '白日太长，适合慢慢过';
+    // 更新颜色和透明度
+    if (nameEl) nameEl.style.color = hexToRgba(cfg.nameColor || '#3c4046', cfg.nameColorOpacity != null ? cfg.nameColorOpacity : 0.9);
+    if (bioEl) bioEl.style.color = hexToRgba(cfg.bioColor || '#646a72', cfg.bioColorOpacity != null ? cfg.bioColorOpacity : 0.75);
+    var timeEl = document.getElementById('preview-time');
+    var dateEl = document.getElementById('preview-date');
+    if (timeEl) timeEl.style.color = hexToRgba(cfg.timeColor || '#1c1e22', cfg.timeColorOpacity != null ? cfg.timeColorOpacity : 0.85);
+    if (dateEl) dateEl.style.color = hexToRgba(cfg.dateColor || '#646a72', cfg.dateColorOpacity != null ? cfg.dateColorOpacity : 0.7);
+    // 更新背景图片
+    var bgPhoto = document.getElementById('preview-bg-photo');
+    if (bgPhoto) {
+      if (cfg.profileBg) {
+        global.miyaResolveMediaUrl(cfg.profileBg).then(function (url) {
+          if (url) {
+            bgPhoto.style.backgroundImage = 'url("' + String(url).replace(/"/g, '%22') + '")';
+            bgPhoto.style.backgroundSize = 'cover';
+            bgPhoto.style.backgroundPosition = cfg.profileBgPosition || 'center center';
+          }
+        });
+      } else {
+        bgPhoto.style.backgroundImage = '';
+      }
+    }
+    // 更新右下角照片
+    var cornerPhoto = document.getElementById('preview-corner-photo');
+    if (cornerPhoto) {
+      if (cfg.cornerPhoto) {
+        global.miyaResolveMediaUrl(cfg.cornerPhoto).then(function (url) {
+          if (url) {
+            cornerPhoto.style.backgroundImage = 'url("' + String(url).replace(/"/g, '%22') + '")';
+            cornerPhoto.style.backgroundSize = 'cover';
+            cornerPhoto.style.backgroundPosition = cfg.cornerPhotoPosition || 'center center';
+          }
+        });
+      } else {
+        cornerPhoto.style.backgroundImage = '';
+      }
+    }
+  }
+
   function paintWidgetElement(wgEl, item) {
     if (!wgEl || !item || item.kind !== 'widget') return Promise.resolve();
     var type = getWidgetType(item.widgetId);
@@ -1126,11 +1210,11 @@
       if (nameEl4x4) nameEl4x4.textContent = cfg.name || '星绥 Stellasei';
       if (bioEl4x4) bioEl4x4.textContent = cfg.bio || '白日太长，适合慢慢过';
       updateProfileClock(wgEl);
-      var textColor = cfg.textColor || '#3c4046';
-      if (nameEl4x4) nameEl4x4.style.color = textColor;
-      if (bioEl4x4) bioEl4x4.style.color = textColor;
-      if (timeEl4x4) timeEl4x4.style.color = textColor;
-      if (dateEl4x4) dateEl4x4.style.color = textColor;
+      // 四个独立的颜色+透明度设置
+      if (nameEl4x4) nameEl4x4.style.color = hexToRgba(cfg.nameColor || '#3c4046', cfg.nameColorOpacity != null ? cfg.nameColorOpacity : 0.9);
+      if (bioEl4x4) bioEl4x4.style.color = hexToRgba(cfg.bioColor || '#646a72', cfg.bioColorOpacity != null ? cfg.bioColorOpacity : 0.75);
+      if (timeEl4x4) timeEl4x4.style.color = hexToRgba(cfg.timeColor || '#1c1e22', cfg.timeColorOpacity != null ? cfg.timeColorOpacity : 0.85);
+      if (dateEl4x4) dateEl4x4.style.color = hexToRgba(cfg.dateColor || '#646a72', cfg.dateColorOpacity != null ? cfg.dateColorOpacity : 0.7);
       var bgPos = cfg.profileBgPosition || 'center center';
       var cornerPos = cfg.cornerPhotoPosition || 'center center';
       promises.push(applyMediaToEl(bgPhoto, cfg.profileBg, { bgMode: true, doneClass: 'has-custom-bg' }).then(function () {
@@ -1613,6 +1697,10 @@
         if (ph) ph.hidden = true;
       });
     });
+    // 同时更新完整名片预览
+    if (wgEditorState.draft && document.getElementById('profile4x4-editor-preview')) {
+      updateProfile4x4Preview(wgEditorState.draft);
+    }
   }
 
   function buildWgEditorBody(widgetType, cfg) {
@@ -1624,6 +1712,40 @@
       fields = tpl && tpl.editorFieldsFromConfig ? tpl.editorFieldsFromConfig(cfg) : [];
     }
     body.innerHTML = '';
+    // 对于 profile4x4 类型，在顶部添加完整的名片预览
+    if (widgetType === 'profile4x4') {
+      var previewRow = document.createElement('div');
+      previewRow.className = 'desk-custom-wg-editor__field desk-custom-wg-editor__preview-row';
+      previewRow.innerHTML =
+        '<label class="desk-custom-wg-editor__label">实时预览</label>' +
+        '<div class="desk-custom-wg-editor__profile4x4-preview" id="profile4x4-editor-preview">' +
+          '<div class="wg-profile4x4__bg" aria-hidden="true">' +
+            '<div class="wg-profile4x4__bg-photo" id="preview-bg-photo"></div>' +
+            '<div class="wg-profile4x4__bg-overlay"></div>' +
+          '</div>' +
+          '<div class="wg-profile4x4__content">' +
+            '<div class="wg-profile4x4__clock">' +
+              '<span class="wg-profile4x4__clock-date" id="preview-date">9月1日 · 周二</span>' +
+              '<span class="wg-profile4x4__clock-time" id="preview-time">14:53</span>' +
+            '</div>' +
+            '<div class="wg-profile4x4__top">' +
+              '<div class="wg-profile4x4__info">' +
+                '<h2 class="wg-profile4x4__name" id="preview-name">星绥 Stellasei</h2>' +
+                '<p class="wg-profile4x4__bio" id="preview-bio">白日太长，适合慢慢过</p>' +
+              '</div>' +
+              '<div class="wg-profile4x4__avatar" aria-hidden="true"></div>' +
+            '</div>' +
+            '<div class="wg-profile4x4__bottom">' +
+              '<div class="wg-profile4x4__photo" aria-hidden="true">' +
+                '<div class="wg-profile4x4__photo-inner" id="preview-corner-photo"></div>' +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+        '</div>';
+      body.appendChild(previewRow);
+      // 初始化预览
+      updateProfile4x4Preview(cfg);
+    }
     if (widgetType === 'custom' && !fields.length) {
       var empty = document.createElement('p');
       empty.className = 'desk-custom-wg-editor__hint';
@@ -1675,15 +1797,87 @@
         colorInput.type = 'color';
         colorInput.className = 'desk-custom-wg-editor__color-input';
         colorInput.setAttribute('data-wg-ed-color', field.key);
-        colorInput.value = cfg[field.key] || '#3c4046';
+        var defaultColor = field.default || '#3c4046';
+        colorInput.value = cfg[field.key] || defaultColor;
         var colorText = document.createElement('span');
         colorText.className = 'desk-custom-wg-editor__color-text';
-        colorText.textContent = cfg[field.key] || '#3c4046';
+        colorText.textContent = cfg[field.key] || defaultColor;
+        // 预览文本
+        var previewText = document.createElement('div');
+        previewText.className = 'desk-custom-wg-editor__color-preview';
+        var previewContent = '预览文字';
+        if (field.key === 'nameColor') previewContent = '星绥 Stellasei';
+        else if (field.key === 'bioColor') previewContent = '白日太长，适合慢慢过';
+        else if (field.key === 'timeColor') previewContent = '14:53';
+        else if (field.key === 'dateColor') previewContent = '9月1日 · 周二';
+        previewText.textContent = previewContent;
+        var defaultOpacity = field.defaultOpacity != null ? field.defaultOpacity : 0.85;
+        var currentOpacity = cfg[field.opacityKey] != null ? cfg[field.opacityKey] : defaultOpacity;
+        previewText.style.color = hexToRgba(cfg[field.key] || defaultColor, currentOpacity);
+        // 根据字段类型设置预览文本的字体样式
+        if (field.key === 'nameColor') {
+          previewText.style.fontFamily = '"Cormorant Garamond", "Noto Serif SC", serif';
+          previewText.style.fontSize = '20px';
+          previewText.style.fontWeight = '600';
+        } else if (field.key === 'bioColor') {
+          previewText.style.fontFamily = '"Noto Serif SC", "Cormorant Garamond", serif';
+          previewText.style.fontSize = '12px';
+          previewText.style.fontWeight = '400';
+        } else if (field.key === 'timeColor') {
+          previewText.style.fontFamily = '"Cormorant Garamond", serif';
+          previewText.style.fontSize = '32px';
+          previewText.style.fontWeight = '600';
+        } else if (field.key === 'dateColor') {
+          previewText.style.fontFamily = '"Noto Serif SC", serif';
+          previewText.style.fontSize = '13px';
+          previewText.style.fontWeight = '400';
+        }
         colorInput.addEventListener('input', function () {
           colorText.textContent = colorInput.value;
+          if (wgEditorState.draft) {
+            wgEditorState.draft[field.key] = colorInput.value;
+          }
+          // 实时预览
+          var op = cfg[field.opacityKey] != null ? cfg[field.opacityKey] : defaultOpacity;
+          previewText.style.color = hexToRgba(colorInput.value, op);
+          previewWidgetColor(field.key, colorInput.value, op);
+          // 更新完整名片预览
+          if (wgEditorState.draft) updateProfile4x4Preview(wgEditorState.draft);
         });
         colorWrap.appendChild(colorInput);
         colorWrap.appendChild(colorText);
+        colorWrap.appendChild(previewText);
+        // 透明度拉条
+        if (field.opacityKey) {
+          var opacityWrap = document.createElement('div');
+          opacityWrap.className = 'desk-custom-wg-editor__opacity-wrap';
+          var opacityLabel = document.createElement('span');
+          opacityLabel.className = 'desk-custom-wg-editor__opacity-label';
+          opacityLabel.textContent = '透明度: ' + Math.round(currentOpacity * 100) + '%';
+          var opacityInput = document.createElement('input');
+          opacityInput.type = 'range';
+          opacityInput.className = 'desk-custom-wg-editor__opacity-input';
+          opacityInput.min = '0';
+          opacityInput.max = '100';
+          opacityInput.value = String(Math.round(currentOpacity * 100));
+          opacityInput.setAttribute('data-wg-ed-opacity', field.opacityKey);
+          opacityInput.addEventListener('input', function () {
+            var op = parseInt(opacityInput.value, 10) / 100;
+            opacityLabel.textContent = '透明度: ' + opacityInput.value + '%';
+            if (wgEditorState.draft) {
+              wgEditorState.draft[field.opacityKey] = op;
+            }
+            // 实时预览
+            var colorVal = cfg[field.key] || colorInput.value;
+            previewText.style.color = hexToRgba(colorVal, op);
+            previewWidgetColor(field.key, colorVal, op);
+            // 更新完整名片预览
+            if (wgEditorState.draft) updateProfile4x4Preview(wgEditorState.draft);
+          });
+          opacityWrap.appendChild(opacityLabel);
+          opacityWrap.appendChild(opacityInput);
+          colorWrap.appendChild(opacityWrap);
+        }
         row.appendChild(colorWrap);
       } else {
         var input;
@@ -1700,6 +1894,13 @@
         input.value = cfg[field.key] != null ? String(cfg[field.key]) : '';
         if (field.maxLength) input.maxLength = field.maxLength;
         input.placeholder = field.label;
+        // 文本改变时更新完整名片预览
+        input.addEventListener('input', function () {
+          if (wgEditorState.draft) {
+            wgEditorState.draft[field.key] = input.value.trim();
+            updateProfile4x4Preview(wgEditorState.draft);
+          }
+        });
         row.appendChild(input);
       }
       body.appendChild(row);
@@ -1797,6 +1998,10 @@
     });
     body.querySelectorAll('[data-wg-ed-color]').forEach(function (input) {
       draft[input.getAttribute('data-wg-ed-color')] = input.value;
+    });
+    body.querySelectorAll('[data-wg-ed-opacity]').forEach(function (input) {
+      var op = parseInt(input.value, 10) / 100;
+      draft[input.getAttribute('data-wg-ed-opacity')] = op;
     });
     return draft;
   }
