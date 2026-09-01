@@ -6812,6 +6812,15 @@
 
   global.miyaMountCustomWidgetEmbed = mountCustomWidgetEmbed;
 
+  // 触发主页自定义布局重新渲染（用于开关切换后更新情侣空间入口等）
+  global.miyaRefreshCustomLayout = function () {
+    try {
+      renderCustomLayout();
+    } catch (e) {
+      console.error('刷新自定义布局失败:', e);
+    }
+  };
+
   global.miyaGetEditableCustomWidgetIds = function () {
     syncCustomWidgetCatalog();
     return Object.keys(WIDGET_CATALOG).filter(function (id) {
