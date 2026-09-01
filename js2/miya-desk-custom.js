@@ -2929,8 +2929,17 @@
     if (!timeEl && !dateEl) return;
     var now = new Date();
     var pad = function (n) { return n < 10 ? '0' + n : '' + n; };
+    var weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+    var weekday = weekdays[now.getDay()];
     if (timeEl) timeEl.textContent = pad(now.getHours()) + ':' + pad(now.getMinutes());
-    if (dateEl) dateEl.textContent = (now.getMonth() + 1) + '月' + now.getDate() + '日';
+    if (dateEl) {
+      var is4x4 = wgEl.classList.contains('wg-profile4x4') || wgEl.closest('.wg-profile4x4');
+      if (is4x4) {
+        dateEl.textContent = (now.getMonth() + 1) + '月' + now.getDate() + '日 · ' + weekday;
+      } else {
+        dateEl.textContent = (now.getMonth() + 1) + '月' + now.getDate() + '日';
+      }
+    }
   }
 
   function updateAllProfileClocks() {

@@ -1587,22 +1587,28 @@ html.is-custom-wg-editing .desk-custom-viewport {
 .wg-profile4x4__info {
   flex: 1;
   min-width: 0;
+  margin-top: 10px;
 }
 
 .wg-profile4x4__name {
   margin: 0;
-  font-size: 18px;
+  font-family: "Cormorant Garamond", "Noto Serif SC", serif;
+  font-size: 20px;
   font-weight: 600;
-  color: #1a1a1a;
+  letter-spacing: 0.02em;
   line-height: 1.3;
+  color: rgba(28, 30, 34, 0.92);
   word-break: break-word;
 }
 
 .wg-profile4x4__bio {
   margin: 4px 0 0;
+  font-family: "Noto Serif SC", "Cormorant Garamond", serif;
   font-size: 12px;
-  color: #666;
+  font-weight: 400;
+  letter-spacing: 0.02em;
   line-height: 1.4;
+  color: rgba(100, 106, 114, 0.78);
   word-break: break-word;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -1632,24 +1638,27 @@ html.is-custom-wg-editing .desk-custom-viewport {
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
-  gap: 2px;
+  gap: 0px;
   margin-top: 0;
   margin-bottom: 8px;
   flex-shrink: 0;
 }
 
 .wg-profile4x4__clock-date {
-  font-size: 12px;
-  color: #888;
-  letter-spacing: 1px;
+  font-family: "Noto Serif SC", serif;
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  color: rgba(100, 106, 114, 0.7);
   order: 1;
 }
 
 .wg-profile4x4__clock-time {
-  font-size: 42px;
-  font-weight: 300;
-  color: #1a1a1a;
-  letter-spacing: 2px;
+  font-family: "Cormorant Garamond", serif;
+  font-size: 46px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: rgba(28, 30, 34, 0.85);
   line-height: 1;
   order: 2;
 }
