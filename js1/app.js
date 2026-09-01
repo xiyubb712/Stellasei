@@ -773,7 +773,10 @@
     if (url.indexOf('data:') === 0) { callback(url); return; }
     try {
       var img = new Image();
-      img.crossOrigin = 'anonymous';
+      // blob URL 是同源的，不需要设置 crossOrigin
+      if (url.indexOf('blob:') !== 0) {
+        img.crossOrigin = 'anonymous';
+      }
       img.onload = function () {
         try {
           var canvas = document.createElement('canvas');
@@ -795,10 +798,19 @@
   }
 
   // 从缓存立即显示所有名片小组件头像（页面加载时调用，不需要等 miyaChatStore）
+  // 带重试机制，确保名片小组件渲染出来后能应用缓存的头像
+  var cacheApplyRetryCount = 0;
   function applyAllAvatarsFromCache() {
     try {
       var base64 = localStorage.getItem('miya_home_avatar_base64');
-      if (!base64) return;
+      if (!base64) {
+        // 没有缓存，重试几次（等 miya-chat-me.js 里的 applyHomeAvatar 保存缓存）
+        if (cacheApplyRetryCount < 10) {
+          cacheApplyRetryCount++;
+          setTimeout(applyAllAvatarsFromCache, 500);
+        }
+        return;
+      }
       // 原作者的名片小组件头像
       var ava = document.getElementById('wg-profile-avatar');
       if (ava) {
@@ -816,8 +828,18 @@
           avas[i].style.backgroundPosition = 'center';
           avas[i].classList.add('has-custom-ava');
         }
+      } else if (cacheApplyRetryCount < 15) {
+        // 名片小组件还没渲染出来，重试
+        cacheApplyRetryCount++;
+        setTimeout(applyAllAvatarsFromCache, 300);
       }
-    } catch (e) {}
+    } catch (e) {
+      // 出错了，重试
+      if (cacheApplyRetryCount < 10) {
+        cacheApplyRetryCount++;
+        setTimeout(applyAllAvatarsFromCache, 500);
+      }
+    }
   }
   // 立即执行，不需要等
   applyAllAvatarsFromCache();
