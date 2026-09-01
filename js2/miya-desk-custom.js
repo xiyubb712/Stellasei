@@ -5938,9 +5938,17 @@
         drag.fromSlot = null;
         return;
       }
-      drag.wasWidgetTap = false;
-      drag.tapItemId = null;
-      enterEditMode();
+      // 长按后打开单个小组件的编辑面板，而不是进入整体编辑模式
+      var itemId = drag.tapItemId;
+      if (itemId) {
+        drag.wasWidgetTap = false;
+        drag.tapItemId = null;
+        openWidgetEditor(itemId);
+      } else {
+        drag.wasWidgetTap = false;
+        drag.tapItemId = null;
+        enterEditMode();
+      }
     }, LONG_PRESS_MS);
   }
 
@@ -6117,12 +6125,12 @@
       drag.sourceEl = widgetItem;
       drag.itemWrap = widgetItem;
       widgetItem.classList.add('is-press-pending');
-      /* 安卓顶部：不 preventDefault / 不 capture 时，首行点按常被过度滚动掐掉 */
-      if (e.cancelable) e.preventDefault();
-      var phoneBrowse = $('miya-phone-layer');
-      if (phoneBrowse && e.pointerId != null) {
-        try { phoneBrowse.setPointerCapture(e.pointerId); } catch (err) {}
-      }
+      /* 不调用 preventDefault，让页面可以正常滑动；长按才进入编辑模式 */
+      // if (e.cancelable) e.preventDefault();
+      // var phoneBrowse = $('miya-phone-layer');
+      // if (phoneBrowse && e.pointerId != null) {
+      //   try { phoneBrowse.setPointerCapture(e.pointerId); } catch (err) {}
+      // }
       armLongPressEdit(e.pointerId);
       return;
     }
@@ -6281,9 +6289,10 @@
       if (phone && e.pointerId != null) {
         try { phone.releasePointerCapture(e.pointerId); } catch (err) {}
       }
-      if (wasTap && itemId && pressAge < LONG_PRESS_MS - 40) {
-        if (tryOpenWidgetFromTap(itemId, e)) return;
-      }
+      // 短按小组件不打开编辑面板，只有长按才进入编辑模式，这样页面可以正常滑动
+      // if (wasTap && itemId && pressAge < LONG_PRESS_MS - 40) {
+      //   if (tryOpenWidgetFromTap(itemId, e)) return;
+      // }
       if (wasTap && appKey && !editMode && pressAge < LONG_PRESS_MS - 40) {
         dragConsumedUntil = Date.now() + 380;
         e.preventDefault();
