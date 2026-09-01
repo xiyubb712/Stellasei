@@ -1893,6 +1893,9 @@ html.is-custom-wg-editing .desk-custom-viewport {
   background-size: cover;
   background-position: center;
   z-index: 2;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .wg-profile4x4__clock {

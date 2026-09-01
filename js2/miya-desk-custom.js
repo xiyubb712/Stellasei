@@ -3135,14 +3135,18 @@
       avaEl.setAttribute('aria-label', '点击更换头像');
       avaEl.addEventListener('pointerdown', function (e) {
         e.stopImmediatePropagation();
-        e.preventDefault();
+        // 不要调用 e.preventDefault()，否则可能阻止 fileInput.click() 的触发
         var fileInput = document.createElement('input');
         fileInput.type = 'file';
         fileInput.accept = 'image/*';
-        fileInput.style.display = 'none';
+        // 用 opacity: 0 而不是 display: none，手机端更容易触发
+        fileInput.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;opacity:0;pointer-events:none;z-index:-1;';
         fileInput.addEventListener('change', function (ev) {
           var file = ev.target.files && ev.target.files[0];
-          if (!file) return;
+          if (!file) {
+            if (fileInput.parentNode) document.body.removeChild(fileInput);
+            return;
+          }
           var reader = new FileReader();
           reader.onload = function (event) {
             var dataUrl = event.target.result;
@@ -3171,12 +3175,15 @@
               }
               if (found) saveLayout(layout);
             }
+            if (fileInput.parentNode) document.body.removeChild(fileInput);
           };
           reader.readAsDataURL(file);
-          document.body.removeChild(fileInput);
         });
         document.body.appendChild(fileInput);
-        fileInput.click();
+        // 用 setTimeout 延迟触发，确保事件处理完成后再触发
+        setTimeout(function () {
+          fileInput.click();
+        }, 50);
       }, true); // 用捕获模式，确保在冒泡阶段之前拦截
     }
     return el;
