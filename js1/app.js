@@ -766,25 +766,29 @@
   }
 
   // ===== 头像自动刷新机制（参考旧代码实现）=====
-  // 获取当前用户头像引用
-  function getCurrentAvatarRef() {
+  // 获取当前人设的头像 ID
+  function getCurrentAvatarId() {
     try {
-      if (window.miyaGetTheme && typeof window.miyaGetTheme === 'function') {
-        var theme = window.miyaGetTheme();
-        if (theme && theme.memoAvas && theme.memoAvas.profile_ava) {
-          return theme.memoAvas.profile_ava;
-        }
-      }
-    } catch (e) {}
-    return '';
+      var profileId = localStorage.getItem('miya_home_avatar_profile_id');
+      if (!profileId) return '';
+      var cs = window.miyaChatStore;
+      if (!cs || typeof cs.getProfiles !== 'function') return '';
+      var profiles = cs.getProfiles() || [];
+      var prof = profiles.find(function (p) { return p && p.id === profileId; });
+      if (!prof) return '';
+      return prof.avatarId || prof.avatarBlobId || '';
+    } catch (e) {
+      return '';
+    }
   }
 
   // 应用头像到所有名片小组件
-  function applyAvatarToAllWidgets(ref) {
-    if (!ref) return;
+  function applyAvatarToAllWidgets(avatarId) {
+    if (!avatarId) return;
     try {
-      if (!window.miyaResolveMediaUrl || typeof window.miyaResolveMediaUrl !== 'function') return;
-      window.miyaResolveMediaUrl(ref).then(function (url) {
+      var cs = window.miyaChatStore;
+      if (!cs) return;
+      var applyAvatar = function (url) {
         if (!url) return;
         // 原作者的名片小组件头像
         var ava = document.getElementById('wg-profile-avatar');
@@ -804,7 +808,16 @@
             avas[i].classList.add('has-custom-ava');
           }
         }
-      }).catch(function () {});
+      };
+      // 优先从缓存读取
+      if (typeof cs.getCachedBlobUrl === 'function') {
+        var cached = cs.getCachedBlobUrl(avatarId);
+        if (cached) { applyAvatar(cached); return; }
+      }
+      // 缓存没有，异步获取
+      if (typeof cs.getAvatarUrl === 'function') {
+        cs.getAvatarUrl(avatarId).then(applyAvatar).catch(function () {});
+      }
     } catch (e) {}
   }
 
@@ -818,20 +831,20 @@
   }
 
   // 检查并更新头像
-  var lastAvatarRef = '';
+  var lastAvatarId = '';
   function checkAndUpdateAvatar() {
     if (!isHomePageVisible()) return;
-    var currentRef = getCurrentAvatarRef();
-    if (currentRef && currentRef !== lastAvatarRef) {
-      lastAvatarRef = currentRef;
-      applyAvatarToAllWidgets(currentRef);
+    var currentAvatarId = getCurrentAvatarId();
+    if (currentAvatarId && currentAvatarId !== lastAvatarId) {
+      lastAvatarId = currentAvatarId;
+      applyAvatarToAllWidgets(currentAvatarId);
     }
   }
 
   // 页面加载时立即同步头像
-  lastAvatarRef = getCurrentAvatarRef();
-  if (lastAvatarRef) {
-    applyAvatarToAllWidgets(lastAvatarRef);
+  lastAvatarId = getCurrentAvatarId();
+  if (lastAvatarId) {
+    setTimeout(function () { applyAvatarToAllWidgets(lastAvatarId); }, 300);
   }
 
   // 每隔 2 秒检查一次（只在主页可见时才会真正更新）

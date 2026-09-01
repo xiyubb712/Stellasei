@@ -1218,14 +1218,18 @@
       var bgPos = cfg.profileBgPosition || 'center center';
       var cornerPos = cfg.cornerPhotoPosition || 'center center';
       // 优先使用用户在"我的"里设定的头像，如果没有则用小组件配置的头像
-      var userAvatar = null;
+      var userAvatarId = '';
       try {
-        var themeForAva = global.miyaGetTheme();
-        if (themeForAva && themeForAva.memoAvas && themeForAva.memoAvas.profile_ava) {
-          userAvatar = themeForAva.memoAvas.profile_ava;
+        var profileIdForAva = localStorage.getItem('miya_home_avatar_profile_id');
+        if (profileIdForAva && global.miyaChatStore && typeof global.miyaChatStore.getProfiles === 'function') {
+          var profilesForAva = global.miyaChatStore.getProfiles() || [];
+          var profForAva = profilesForAva.find(function (p) { return p && p.id === profileIdForAva; });
+          if (profForAva) {
+            userAvatarId = profForAva.avatarId || profForAva.avatarBlobId || '';
+          }
         }
       } catch (e) {}
-      var avatarRef = userAvatar || cfg.avatar;
+      var avatarRef = userAvatarId || cfg.avatar;
       promises.push(applyMediaToEl(bgPhoto, cfg.profileBg, { bgMode: true, doneClass: 'has-custom-bg' }).then(function () {
         wgEl.classList.toggle('has-custom-bg', !!cfg.profileBg);
         if (bgPhoto) bgPhoto.style.backgroundPosition = bgPos;
