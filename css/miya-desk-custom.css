@@ -1537,8 +1537,8 @@ html.is-custom-wg-editing .desk-custom-viewport {
   bottom: 0;
   background-size: cover;
   background-position: center;
-  opacity: 0.55;
-  filter: contrast(1.2) saturate(0.8) brightness(1.05);
+  opacity: 0.75;
+  filter: contrast(1.15) saturate(0.85) brightness(1.02);
 }
 
 .wg-profile4x4__bg::after {
@@ -1587,7 +1587,7 @@ html.is-custom-wg-editing .desk-custom-viewport {
 .wg-profile4x4__info {
   flex: 1;
   min-width: 0;
-  margin-top: 10px;
+  margin-top: 24px;
 }
 
 .wg-profile4x4__name {
@@ -1651,6 +1651,7 @@ html.is-custom-wg-editing .desk-custom-viewport {
   letter-spacing: 0.02em;
   color: rgba(100, 106, 114, 0.7);
   order: 1;
+  margin-bottom: -2px;
 }
 
 .wg-profile4x4__clock-time {
