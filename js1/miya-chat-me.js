@@ -8,7 +8,6 @@
   var stackEl = null;
   var navStack = [];
   var avatarUrls = {};
-  var openedFromHome = false; // 标记是否从主页进入，用于关闭时直接回到主页
 
   function $(id) { return document.getElementById(id); }
 
@@ -649,22 +648,6 @@
 
   function pop() {
     if (navStack.length <= 1) {
-      // 如果是从主页进入的，返回键回到"我的"界面，而不是直接关闭
-      if (openedFromHome) {
-        // 关闭个人资料页面，露出下面的聊天应用"我的"界面
-        if (stackEl) {
-          stackEl.classList.remove('is-open');
-          stackEl.hidden = true;
-          stackEl.setAttribute('aria-hidden', 'true');
-        }
-        // 重置 openedFromHome，因为现在已经在"我的"界面了，再点叉叉就正常关闭
-        openedFromHome = false;
-        // 确保聊天应用切换到"我的"标签页
-        if (global.miyaChatApp && typeof global.miyaChatApp.switchTab === 'function') {
-          global.miyaChatApp.switchTab('mine');
-        }
-        return;
-      }
       close();
       return;
     }
@@ -672,12 +655,11 @@
     renderTop();
   }
 
-  function open(initialScreen, data, options) {
+  function open(initialScreen, data) {
     store = global.miyaChatStore;
     if (!store) return Promise.resolve();
     ensureStack();
     navStack = [];
-    openedFromHome = !!(options && options.fromHome);
     push(initialScreen || 'profiles', data || {});
     stackEl.hidden = false;
     stackEl.classList.add('is-open');
@@ -691,27 +673,10 @@
     if (global.MiyaChatBeautify && global.MiyaChatBeautify.clearPreviewCss) {
       global.MiyaChatBeautify.clearPreviewCss();
     }
-    // 如果是从主页进入的，先隐藏聊天界面，避免闪画面
-    if (openedFromHome) {
-      var chatAppEl = document.getElementById('miya-chat-app');
-      if (chatAppEl) {
-        chatAppEl.hidden = true;
-        chatAppEl.setAttribute('aria-hidden', 'true');
-        chatAppEl.classList.remove('is-open');
-      }
-    }
     if (stackEl) {
       stackEl.classList.remove('is-open');
       stackEl.hidden = true;
       stackEl.setAttribute('aria-hidden', 'true');
-    }
-    // 如果是从主页进入的，关闭后同时关闭聊天应用，回到主页
-    if (openedFromHome) {
-      openedFromHome = false;
-      // 立即关闭聊天应用，不要等，避免闪画面
-      if (global.miyaChatApp && typeof global.miyaChatApp.close === 'function') {
-        global.miyaChatApp.close();
-      }
     }
   }
 
@@ -1627,7 +1592,7 @@
   global.miyaChatMe = {
     open: open,
     close: close,
-    openProfiles: function (options) { return open('profiles', {}, options); },
+    openProfiles: function () { return open('profiles'); },
     openWallet: function () { return open('wallet'); },
     openFavorites: function () { return open('favorites'); },
     openWallpapers: function () { return open('wallpapers'); },

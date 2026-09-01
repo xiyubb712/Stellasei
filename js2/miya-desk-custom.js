@@ -1217,51 +1217,15 @@
       if (dateEl4x4) dateEl4x4.style.color = hexToRgba(cfg.dateColor || '#646a72', cfg.dateColorOpacity != null ? cfg.dateColorOpacity : 0.7);
       var bgPos = cfg.profileBgPosition || 'center center';
       var cornerPos = cfg.cornerPhotoPosition || 'center center';
-      // 优先使用用户在"我的"里设定的头像，如果没有则用小组件配置的头像
-      var userAvatarId = '';
-      try {
-        var profileIdForAva = localStorage.getItem('miya_home_avatar_profile_id');
-        if (profileIdForAva && global.miyaChatStore && typeof global.miyaChatStore.getProfiles === 'function') {
-          var profilesForAva = global.miyaChatStore.getProfiles() || [];
-          var profForAva = profilesForAva.find(function (p) { return p && p.id === profileIdForAva; });
-          if (profForAva) {
-            userAvatarId = profForAva.avatarId || profForAva.avatarBlobId || '';
-          }
-        }
-      } catch (e) {}
-      var avatarRef = userAvatarId || cfg.avatar;
-      // 如果 miyaChatStore 还没加载完成，从 localStorage 读取 base64 缓存直接显示
-      var hasCachedAvatar = false;
-      if (!userAvatarId && ava4x4) {
-        try {
-          var cachedBase64 = localStorage.getItem('miya_home_avatar_base64');
-          if (cachedBase64) {
-            ava4x4.style.backgroundImage = 'url("' + cachedBase64 + '")';
-            ava4x4.style.backgroundSize = 'cover';
-            ava4x4.style.backgroundPosition = 'center';
-            ava4x4.classList.add('has-custom-ava');
-            wgEl.classList.add('has-custom-ava');
-            hasCachedAvatar = true;
-          }
-        } catch (e) {}
-      }
+      // 直接用小组件配置的头像
+      var avatarRef = cfg.avatar;
       promises.push(applyMediaToEl(bgPhoto, cfg.profileBg, { bgMode: true, doneClass: 'has-custom-bg' }).then(function () {
         wgEl.classList.toggle('has-custom-bg', !!cfg.profileBg);
         if (bgPhoto) bgPhoto.style.backgroundPosition = bgPos;
       }));
-      // 只有当有头像引用时才调用 applyMediaToEl，否则会清除掉 base64 缓存设置的头像
-      if (avatarRef) {
-        promises.push(applyMediaToEl(ava4x4, avatarRef, { doneClass: 'has-custom-ava' }).then(function () {
-          wgEl.classList.toggle('has-custom-ava', !!avatarRef);
-        }));
-      } else if (!hasCachedAvatar) {
-        // 没有头像引用也没有缓存，清除头像
-        if (ava4x4) {
-          ava4x4.style.backgroundImage = '';
-          ava4x4.classList.remove('has-custom-ava');
-        }
-        wgEl.classList.remove('has-custom-ava');
-      }
+      promises.push(applyMediaToEl(ava4x4, avatarRef, { doneClass: 'has-custom-ava' }).then(function () {
+        wgEl.classList.toggle('has-custom-ava', !!avatarRef);
+      }));
       promises.push(applyMediaToEl(cornerPhoto, cfg.cornerPhoto, { bgMode: true, doneClass: 'has-custom-photo' }).then(function () {
         wgEl.classList.toggle('has-custom-photo', !!cfg.cornerPhoto);
         if (cornerPhoto) cornerPhoto.style.backgroundPosition = cornerPos;
@@ -3164,106 +3128,48 @@
         '</div>' +
       '</div>' +
       '<button type="button" class="desk-custom__wg-remove" aria-label="移除小组件">×</button>';
-    // 点击头像跳转到"我的"页面的个人资料（头像设置）
+    // 点击头像上传图片（用 pointerdown 事件拦截，避免进入编辑面板）
     var avaEl = el.querySelector('.wg-profile4x4__avatar');
     if (avaEl) {
-      // 用 pointerdown 事件，在小组件的 pointer 事件处理之前拦截
+      avaEl.style.cursor = 'pointer';
+      avaEl.setAttribute('aria-label', '点击更换头像');
       avaEl.addEventListener('pointerdown', function (e) {
         e.stopImmediatePropagation();
         e.preventDefault();
-        // 打开聊天应用，然后打开个人资料（传 fromHome: true，点击叉叉键时直接关闭回到桌面）
-        var openProfiles = function () {
-          if (global.miyaChatMe && typeof global.miyaChatMe.openProfiles === 'function') {
-            global.miyaChatMe.openProfiles({ fromHome: true });
-          }
-        };
-        if (global.miyaChatApp && typeof global.miyaChatApp.open === 'function') {
-          // 聊天应用已经加载，直接打开
-          global.miyaChatApp.open().then(function () {
-            setTimeout(openProfiles, 100);
-          }).catch(function () {
-            // 如果失败，直接尝试打开个人资料
-            openProfiles();
-          });
-        } else {
-          // 聊天应用还没加载，先点击聊天应用图标打开
-          var chatBtn = document.querySelector('[data-app="chat"]');
-          if (chatBtn) chatBtn.click();
-          // 等待聊天应用加载完成后打开个人资料
-          var retry = function (count) {
-            if (global.miyaChatApp && typeof global.miyaChatApp.open === 'function') {
-              global.miyaChatApp.open().then(function () {
-                setTimeout(openProfiles, 100);
-              });
-            } else if (count > 0) {
-              setTimeout(function () { retry(count - 1); }, 200);
+        var fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = 'image/*';
+        fileInput.style.display = 'none';
+        fileInput.addEventListener('change', function (ev) {
+          var file = ev.target.files && ev.target.files[0];
+          if (!file) return;
+          var reader = new FileReader();
+          reader.onload = function (event) {
+            var dataUrl = event.target.result;
+            if (avaEl) {
+              avaEl.style.backgroundImage = 'url("' + dataUrl + '")';
+              avaEl.style.backgroundSize = 'cover';
+              avaEl.style.backgroundPosition = 'center';
+              avaEl.classList.add('has-custom-ava');
+            }
+            // 保存到小组件配置
+            var wgId = el.getAttribute('data-wg-id');
+            if (wgId && customThemeState && customThemeState.layout) {
+              var wgItem = customThemeState.layout.items && customThemeState.layout.items[wgId];
+              if (wgItem) {
+                if (!wgItem.cfg) wgItem.cfg = {};
+                wgItem.cfg.avatar = dataUrl;
+                saveLayout();
+              }
             }
           };
-          retry(10);
-        }
+          reader.readAsDataURL(file);
+          document.body.removeChild(fileInput);
+        });
+        document.body.appendChild(fileInput);
+        fileInput.click();
       }, true); // 用捕获模式，确保在冒泡阶段之前拦截
     }
-    // 带重试机制的头像同步：不依赖 base64 缓存，直接从 miyaChatStore 读取
-    var syncAvatarRetry = 0;
-    function syncProfile4x4Avatar() {
-      try {
-        var profileId = localStorage.getItem('miya_home_avatar_profile_id');
-        if (!profileId) {
-          if (syncAvatarRetry < 20) {
-            syncAvatarRetry++;
-            setTimeout(syncProfile4x4Avatar, 300);
-          }
-          return;
-        }
-        var cs = window.miyaChatStore;
-        if (!cs || typeof cs.getProfiles !== 'function') {
-          if (syncAvatarRetry < 20) {
-            syncAvatarRetry++;
-            setTimeout(syncProfile4x4Avatar, 300);
-          }
-          return;
-        }
-        var profiles = cs.getProfiles() || [];
-        var prof = profiles.find(function (p) { return p && p.id === profileId; });
-        if (!prof) {
-          if (syncAvatarRetry < 20) {
-            syncAvatarRetry++;
-            setTimeout(syncProfile4x4Avatar, 300);
-          }
-          return;
-        }
-        var avatarId = prof.avatarId || prof.avatarBlobId || '';
-        if (!avatarId) {
-          if (syncAvatarRetry < 20) {
-            syncAvatarRetry++;
-            setTimeout(syncProfile4x4Avatar, 300);
-          }
-          return;
-        }
-        // 成功读取到头像 ID，应用头像
-        var applyAvatar = function (url) {
-          if (!url || !avaEl) return;
-          avaEl.style.backgroundImage = 'url("' + url.replace(/"/g, '%22') + '")';
-          avaEl.style.backgroundSize = 'cover';
-          avaEl.style.backgroundPosition = 'center';
-          avaEl.classList.add('has-custom-ava');
-        };
-        if (typeof cs.getCachedBlobUrl === 'function') {
-          var cached = cs.getCachedBlobUrl(avatarId);
-          if (cached) { applyAvatar(cached); return; }
-        }
-        if (typeof cs.getAvatarUrl === 'function') {
-          cs.getAvatarUrl(avatarId).then(applyAvatar).catch(function () {});
-        }
-      } catch (e) {
-        if (syncAvatarRetry < 20) {
-          syncAvatarRetry++;
-          setTimeout(syncProfile4x4Avatar, 300);
-        }
-      }
-    }
-    // 立即开始同步头像
-    syncProfile4x4Avatar();
     return el;
   }
 
@@ -6670,10 +6576,6 @@
         ensureStellaseiDefaultLayout();
         applyActiveLayout();
         showToast('已恢复默认布局');
-        // 恢复默认布局后，名片小组件被重新创建，需要刷新头像
-        setTimeout(function () {
-          if (global.miyaRefreshHomeAvatars) global.miyaRefreshHomeAvatars();
-        }, 300);
       });
     }
 
@@ -6689,10 +6591,6 @@
         ensureStellaseiDefaultLayout();
         applyActiveLayout();
         showToast('已恢复默认布局');
-        // 恢复默认布局后，名片小组件被重新创建，需要刷新头像
-        setTimeout(function () {
-          if (global.miyaRefreshHomeAvatars) global.miyaRefreshHomeAvatars();
-        }, 300);
       });
     }
 
