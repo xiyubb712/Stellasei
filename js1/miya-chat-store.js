@@ -3939,6 +3939,12 @@
             metaCache.chats = metaCache.chats.filter(function (ch) { return ch.contactId !== key; });
             chatIds.forEach(function (cid) { delete metaCache.messagesByChat[cid]; });
             invalidateLookupCache();
+            // 同时删除对应的情侣空间数据
+            try {
+                if (global.miyaCoupleStore && typeof global.miyaCoupleStore.removeSpace === 'function') {
+                    global.miyaCoupleStore.removeSpace(key);
+                }
+            } catch (e) { /* ignore */ }
             return saveMeta();
         },
 

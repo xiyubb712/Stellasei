@@ -1121,6 +1121,26 @@
     saveRaw();
   }
 
+  function removeSpace(contactId) {
+    var id = String(contactId || '').trim();
+    if (!id) return;
+    var data = loadRaw();
+    if (data.spaces && data.spaces[id]) {
+      delete data.spaces[id];
+    }
+    if (data.invites && data.invites[id]) {
+      delete data.invites[id];
+    }
+    // 如果删除的 space 正好是当前显示在主页的，清除主页显示设置
+    try {
+      var currentHome = localStorage.getItem(HOME_DISPLAY_KEY);
+      if (currentHome && String(currentHome).trim() === id) {
+        localStorage.removeItem(HOME_DISPLAY_KEY);
+      }
+    } catch (e) { /* ignore */ }
+    saveRaw();
+  }
+
   global.miyaCoupleStore = {
     STORAGE_KEY: STORAGE_KEY,
     invalidateCache: function () { cache = null; },
@@ -1188,7 +1208,8 @@
     getHomeDisplayContactId: getHomeDisplayContactId,
     setHomeDisplayContactId: setHomeDisplayContactId,
     getHomeDisplaySpace: getHomeDisplaySpace,
-    setAnnivDate: setAnnivDate
+    setAnnivDate: setAnnivDate,
+    removeSpace: removeSpace
   };
 
   if (global.miyaRegisterKvStore) {
