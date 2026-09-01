@@ -4388,8 +4388,16 @@
     applyCustomIconFrameless(theme);
     applyCustomAltIconStyle(theme);
     if (isCustomLikeMode()) renderCustomLayout();
+    // 优先使用自定义布局存储里的壁纸，如果没有则从原作者主题存储里读取
+    var wallpaperRef = theme.wallpaper;
+    if (!wallpaperRef && global.miyaGetTheme) {
+      try {
+        var globalTheme = global.miyaGetTheme();
+        if (globalTheme && globalTheme.wallpaper) wallpaperRef = globalTheme.wallpaper;
+      } catch (e) {}
+    }
     var promises = [
-      global.miyaResolveMediaUrl(theme.wallpaper).then(function (url) { applyWallToPhone(url); })
+      global.miyaResolveMediaUrl(wallpaperRef).then(function (url) { applyWallToPhone(url); })
     ];
     if (global.miyaApplyFont) {
       promises.push(global.miyaApplyFont(global.miyaGetTheme ? global.miyaGetTheme() : {}));

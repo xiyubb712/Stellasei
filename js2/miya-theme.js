@@ -1619,11 +1619,13 @@
     applyHomeCopy(theme);
     var promises = [];
     promises.push(applyFont(theme));
-    promises.push(
-      global.miyaResolveMediaUrl(theme.wallpaper).then(function (url) {
-        applyWallToPhone(url);
-      })
-    );
+    if (!isCustomLike) {
+      promises.push(
+        global.miyaResolveMediaUrl(theme.wallpaper).then(function (url) {
+          applyWallToPhone(url);
+        })
+      );
+    }
     APP_KEYS.forEach(function (key) {
       var btn = document.querySelector('.desk-viewport [data-app="' + key + '"], .desk--p1 [data-app="' + key + '"]');
       promises.push(applyIconBg(btn, theme.icons && theme.icons[key]));
