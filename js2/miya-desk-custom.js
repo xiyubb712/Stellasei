@@ -1231,6 +1231,7 @@
       } catch (e) {}
       var avatarRef = userAvatarId || cfg.avatar;
       // 如果 miyaChatStore 还没加载完成，从 localStorage 读取 base64 缓存直接显示
+      var hasCachedAvatar = false;
       if (!userAvatarId && ava4x4) {
         try {
           var cachedBase64 = localStorage.getItem('miya_home_avatar_base64');
@@ -1240,6 +1241,7 @@
             ava4x4.style.backgroundPosition = 'center';
             ava4x4.classList.add('has-custom-ava');
             wgEl.classList.add('has-custom-ava');
+            hasCachedAvatar = true;
           }
         } catch (e) {}
       }
@@ -1247,9 +1249,19 @@
         wgEl.classList.toggle('has-custom-bg', !!cfg.profileBg);
         if (bgPhoto) bgPhoto.style.backgroundPosition = bgPos;
       }));
-      promises.push(applyMediaToEl(ava4x4, avatarRef, { doneClass: 'has-custom-ava' }).then(function () {
-        wgEl.classList.toggle('has-custom-ava', !!avatarRef);
-      }));
+      // 只有当有头像引用时才调用 applyMediaToEl，否则会清除掉 base64 缓存设置的头像
+      if (avatarRef) {
+        promises.push(applyMediaToEl(ava4x4, avatarRef, { doneClass: 'has-custom-ava' }).then(function () {
+          wgEl.classList.toggle('has-custom-ava', !!avatarRef);
+        }));
+      } else if (!hasCachedAvatar) {
+        // 没有头像引用也没有缓存，清除头像
+        if (ava4x4) {
+          ava4x4.style.backgroundImage = '';
+          ava4x4.classList.remove('has-custom-ava');
+        }
+        wgEl.classList.remove('has-custom-ava');
+      }
       promises.push(applyMediaToEl(cornerPhoto, cfg.cornerPhoto, { bgMode: true, doneClass: 'has-custom-photo' }).then(function () {
         wgEl.classList.toggle('has-custom-photo', !!cfg.cornerPhoto);
         if (cornerPhoto) cornerPhoto.style.backgroundPosition = cornerPos;
