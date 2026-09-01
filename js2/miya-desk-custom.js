@@ -4497,7 +4497,7 @@
       var flag = localStorage.getItem(STELLASEI_INIT_FLAG);
       if (flag === '1') return;
       var layout = getStellaseiDefaultLayout();
-      setLayout(layout);
+      saveLayout(layout);
       localStorage.setItem(STELLASEI_INIT_FLAG, '1');
     } catch (e) {
       console.warn('[stellasei] default layout init failed', e);
@@ -6039,6 +6039,20 @@
       });
       switchDeskLayout(mode);
     });
+
+    var resetBtn = document.getElementById('miya-stellasei-reset-layout');
+    if (resetBtn && !resetBtn.dataset.bound) {
+      resetBtn.dataset.bound = '1';
+      resetBtn.addEventListener('click', function () {
+        if (!confirm('确定要恢复星绥布局的默认预设吗？你当前的布局修改会被覆盖。')) return;
+        try {
+          localStorage.removeItem(STELLASEI_INIT_FLAG);
+        } catch (e) {}
+        ensureStellaseiDefaultLayout();
+        applyActiveLayout();
+        alert('已恢复星绥布局的默认预设！');
+      });
+    }
   }
 
   global.miyaGetDeskLayoutMode = getLayoutMode;
