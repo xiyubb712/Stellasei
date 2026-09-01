@@ -6085,6 +6085,30 @@
     });
   }
 
+  // 显示 Toast 提示
+  function showToast(message, duration) {
+    duration = duration || 2000;
+    var container = document.getElementById('miya-toast-container');
+    if (!container) return;
+    var toast = document.createElement('div');
+    toast.className = 'miya-toast';
+    toast.innerHTML = '<span class="miya-toast__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span><span>' + message + '</span>';
+    container.appendChild(toast);
+    // 显示动画
+    requestAnimationFrame(function () {
+      toast.classList.add('is-show');
+    });
+    // 自动消失
+    setTimeout(function () {
+      toast.classList.remove('is-show');
+      setTimeout(function () {
+        if (toast.parentNode) {
+          toast.parentNode.removeChild(toast);
+        }
+      }, 300);
+    }, duration);
+  }
+
   function bindLayoutSwitchButtons() {
     var picker = document.getElementById('miya-bf-layout-pick');
     if (!picker || picker.dataset.bound) return;
@@ -6110,7 +6134,22 @@
         } catch (e) {}
         ensureStellaseiDefaultLayout();
         applyActiveLayout();
-        alert('已恢复星绥布局的默认预设！');
+        showToast('已恢复默认布局');
+      });
+    }
+
+    // 美化页面里的"恢复默认布局"按钮
+    var beautyResetBtn = document.getElementById('miya-stellasei-reset-layout');
+    if (beautyResetBtn && !beautyResetBtn.dataset.bound) {
+      beautyResetBtn.dataset.bound = '1';
+      beautyResetBtn.addEventListener('click', function () {
+        if (!confirm('确定要恢复星绥布局的默认预设吗？你当前的布局修改会被覆盖。')) return;
+        try {
+          localStorage.removeItem(STELLASEI_INIT_FLAG);
+        } catch (e) {}
+        ensureStellaseiDefaultLayout();
+        applyActiveLayout();
+        showToast('已恢复默认布局');
       });
     }
 
