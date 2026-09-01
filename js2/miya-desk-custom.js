@@ -1273,14 +1273,23 @@
             var profiles = cs.getProfiles() || [];
             profile = profiles.find(function (p) { return p && p.id === homeSpace.profileId; }) || null;
           }
-          if (profile && typeof global.miyaResolveProfileAvatarUrl === 'function') {
-            global.miyaResolveProfileAvatarUrl(profile).then(function (url) {
-              if (url && avatarImgs[0]) {
-                avatarImgs[0].style.backgroundImage = 'url(' + url + ')';
-              }
-            }).catch(function () {});
-          } else if (profile && profile.avatar) {
-            avatarImgs[0].style.backgroundImage = 'url(' + profile.avatar + ')';
+          if (profile) {
+            // 优先用解析后的头像URL
+            if (typeof global.miyaResolveProfileAvatarUrl === 'function') {
+              global.miyaResolveProfileAvatarUrl(profile).then(function (url) {
+                if (url && avatarImgs[0]) {
+                  avatarImgs[0].style.backgroundImage = 'url(' + url + ')';
+                }
+              }).catch(function () {
+                // 解析失败，用备用方案
+                if (profile && profile.avatar && avatarImgs[0]) {
+                  avatarImgs[0].style.backgroundImage = 'url(' + profile.avatar + ')';
+                }
+              });
+            } else if (profile.avatar) {
+              // 解析函数还没加载，直接用avatar
+              avatarImgs[0].style.backgroundImage = 'url(' + profile.avatar + ')';
+            }
           }
         } catch (e) {
           console.error('更新用户头像失败:', e);
@@ -1294,14 +1303,23 @@
             var contacts = cs2.getContacts() || [];
             contact = contacts.find(function (c) { return c && c.id === homeContactId; }) || null;
           }
-          if (contact && typeof global.miyaResolveAvatarUrl === 'function') {
-            global.miyaResolveAvatarUrl(contact).then(function (url) {
-              if (url && avatarImgs[1]) {
-                avatarImgs[1].style.backgroundImage = 'url(' + url + ')';
-              }
-            }).catch(function () {});
-          } else if (contact && contact.avatar) {
-            avatarImgs[1].style.backgroundImage = 'url(' + contact.avatar + ')';
+          if (contact) {
+            // 优先用解析后的头像URL
+            if (typeof global.miyaResolveAvatarUrl === 'function') {
+              global.miyaResolveAvatarUrl(contact).then(function (url) {
+                if (url && avatarImgs[1]) {
+                  avatarImgs[1].style.backgroundImage = 'url(' + url + ')';
+                }
+              }).catch(function () {
+                // 解析失败，用备用方案
+                if (contact && contact.avatar && avatarImgs[1]) {
+                  avatarImgs[1].style.backgroundImage = 'url(' + contact.avatar + ')';
+                }
+              });
+            } else if (contact.avatar) {
+              // 解析函数还没加载，直接用avatar
+              avatarImgs[1].style.backgroundImage = 'url(' + contact.avatar + ')';
+            }
           }
         } catch (e) {
           console.error('更新角色头像失败:', e);
@@ -6868,6 +6886,19 @@
     } catch (eSync) {}
   }, 0);
   whenCustomDeskReady();
+
+  // 页面加载完成后，延迟一段时间主动刷新一次自定义布局，确保情侣空间入口小组件的头像正确加载
+  if (document.readyState === 'complete') {
+    setTimeout(function () {
+      try { renderCustomLayout(); } catch (e) {}
+    }, 1000);
+  } else {
+    window.addEventListener('load', function () {
+      setTimeout(function () {
+        try { renderCustomLayout(); } catch (e) {}
+      }, 1000);
+    });
+  }
   global.miyaCustomSetWallpaper = function (ref) {
     global.miyaSetCustomDeskTheme({ wallpaper: ref });
     return isCustomLikeMode() ? applyCustomDeskTheme() : Promise.resolve();
