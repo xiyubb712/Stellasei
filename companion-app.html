@@ -37,7 +37,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 28px 24px 12px;
+      padding: 36px 24px 12px;
     }
 
     .nav-exit {
@@ -325,37 +325,154 @@
     .scene-card {
       background: none;
       border: 1px solid var(--line);
-      border-radius: 2px;
-      padding: 20px 12px;
+      border-radius: 4px;
+      padding: 18px 10px 14px;
       text-align: center;
       cursor: pointer;
-      transition: all 0.3s;
+      transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .scene-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: transparent;
+      transition: background 0.35s;
     }
 
     .scene-card:hover {
-      border-color: var(--accent-soft);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
     }
 
     .scene-card.active {
-      border-color: var(--accent);
-      background: rgba(158,139,125,0.05);
+      border-color: transparent;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+    }
+
+    /* 每个场景的配色 */
+    .scene-card[data-scene="study"].active {
+      background: linear-gradient(135deg, #F5F0E8 0%, #EDE4D3 100%);
+    }
+    .scene-card[data-scene="study"].active::before {
+      background: linear-gradient(90deg, #C4A77D, #A68B5B);
+    }
+    .scene-card[data-scene="study"].active .scene-name {
+      color: #6B5330;
+    }
+    .scene-card[data-scene="study"].active .scene-en {
+      color: #A68B5B;
+    }
+
+    .scene-card[data-scene="work"].active {
+      background: linear-gradient(135deg, #EBF0F5 0%, #DCE5EE 100%);
+    }
+    .scene-card[data-scene="work"].active::before {
+      background: linear-gradient(90deg, #7B95B5, #5C7A9E);
+    }
+    .scene-card[data-scene="work"].active .scene-name {
+      color: #3D5570;
+    }
+    .scene-card[data-scene="work"].active .scene-en {
+      color: #5C7A9E;
+    }
+
+    .scene-card[data-scene="rest"].active {
+      background: linear-gradient(135deg, #EAF2EC 0%, #D8E8DC 100%);
+    }
+    .scene-card[data-scene="rest"].active::before {
+      background: linear-gradient(90deg, #7BA88A, #5C8E70);
+    }
+    .scene-card[data-scene="rest"].active .scene-name {
+      color: #3D6B4F;
+    }
+    .scene-card[data-scene="rest"].active .scene-en {
+      color: #5C8E70;
+    }
+
+    .scene-card[data-scene="meal"].active {
+      background: linear-gradient(135deg, #F7EEE5 0%, #F0E0CC 100%);
+    }
+    .scene-card[data-scene="meal"].active::before {
+      background: linear-gradient(90deg, #D4A574, #B8895A);
+    }
+    .scene-card[data-scene="meal"].active .scene-name {
+      color: #7A5A35;
+    }
+    .scene-card[data-scene="meal"].active .scene-en {
+      color: #B8895A;
+    }
+
+    .scene-card[data-scene="sleep"].active {
+      background: linear-gradient(135deg, #E8EAF2 0%, #D5D9E8 100%);
+    }
+    .scene-card[data-scene="sleep"].active::before {
+      background: linear-gradient(90deg, #7B7FA8, #5C608E);
+    }
+    .scene-card[data-scene="sleep"].active .scene-name {
+      color: #3D4070;
+    }
+    .scene-card[data-scene="sleep"].active .scene-en {
+      color: #5C608E;
+    }
+
+    .scene-card[data-scene="chill"].active {
+      background: linear-gradient(135deg, #F2EAF0 0%, #E8D8E2 100%);
+    }
+    .scene-card[data-scene="chill"].active::before {
+      background: linear-gradient(90deg, #A87B95, #8E5C7A);
+    }
+    .scene-card[data-scene="chill"].active .scene-name {
+      color: #703D55;
+    }
+    .scene-card[data-scene="chill"].active .scene-en {
+      color: #8E5C7A;
     }
 
     .scene-icon {
-      font-size: 22px;
-      margin-bottom: 10px;
-      opacity: 0.8;
+      font-size: 24px;
+      margin-bottom: 8px;
+      opacity: 0.85;
+      transition: transform 0.35s;
+    }
+
+    .scene-card.active .scene-icon {
+      transform: scale(1.1);
+      opacity: 1;
     }
 
     .scene-name {
-      font-size: 12px;
+      font-size: 13px;
       color: var(--text-secondary);
       letter-spacing: 0.1em;
       transition: color 0.3s;
+      font-weight: 500;
     }
 
     .scene-card.active .scene-name {
       color: var(--text-main);
+    }
+
+    .scene-en {
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      color: var(--text-light);
+      margin-top: 3px;
+      text-transform: uppercase;
+      transition: color 0.3s;
+    }
+
+    .scene-desc {
+      font-size: 10px;
+      color: var(--text-light);
+      margin-top: 2px;
+      opacity: 0.8;
     }
 
     /* 时间选择 */
@@ -482,7 +599,7 @@
     .companion-page {
       display: none;
       min-height: 100vh;
-      background: var(--bg);
+      background: transparent;
     }
 
     .companion-page.show {
@@ -497,8 +614,29 @@
       bottom: 0;
       background-size: cover;
       background-position: center;
-      opacity: 0.15;
+      opacity: 0.75;
       z-index: 0;
+      transition: background 0.8s ease;
+    }
+
+    /* 每个场景的背景氛围色 */
+    .companion-bg.scene-study {
+      background: radial-gradient(ellipse at top, #F5F0E8 0%, #EDE4D3 50%, #E5D9C5 100%);
+    }
+    .companion-bg.scene-work {
+      background: radial-gradient(ellipse at top, #EBF0F5 0%, #DCE5EE 50%, #CDD9E5 100%);
+    }
+    .companion-bg.scene-rest {
+      background: radial-gradient(ellipse at top, #EAF2EC 0%, #D8E8DC 50%, #C5DCCB 100%);
+    }
+    .companion-bg.scene-meal {
+      background: radial-gradient(ellipse at top, #F7EEE5 0%, #F0E0CC 50%, #E8D2B8 100%);
+    }
+    .companion-bg.scene-sleep {
+      background: radial-gradient(ellipse at top, #E8EAF2 0%, #D5D9E8 50%, #C2C8DE 100%);
+    }
+    .companion-bg.scene-chill {
+      background: radial-gradient(ellipse at top, #F2EAF0 0%, #E8D8E2 50%, #DEC5D4 100%);
     }
 
     .companion-content {
@@ -507,7 +645,7 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
-      padding: 24px;
+      padding: 40px 24px 24px;
     }
 
     .companion-top {
@@ -635,8 +773,8 @@
 
     /* 底部装饰 */
     .page-footer {
-      position: fixed;
-      bottom: 24px;
+      position: fixed !important;
+      bottom: 16px;
       left: 0;
       right: 0;
       text-align: center;
@@ -645,6 +783,8 @@
       letter-spacing: 0.2em;
       color: var(--text-light);
       text-transform: uppercase;
+      z-index: 100;
+      pointer-events: none;
     }
 
     /* 完成弹窗 */
@@ -777,26 +917,38 @@
             <div class="scene-card active" data-scene="study" onclick="selectScene('study')">
               <div class="scene-icon">📖</div>
               <div class="scene-name">学习</div>
+              <div class="scene-en">STUDY</div>
+              <div class="scene-desc">安静专注</div>
             </div>
             <div class="scene-card" data-scene="work" onclick="selectScene('work')">
               <div class="scene-icon">✎</div>
               <div class="scene-name">工作</div>
+              <div class="scene-en">WORK</div>
+              <div class="scene-desc">高效认真</div>
             </div>
             <div class="scene-card" data-scene="rest" onclick="selectScene('rest')">
               <div class="scene-icon">☁</div>
               <div class="scene-name">休息</div>
+              <div class="scene-en">REST</div>
+              <div class="scene-desc">放松身心</div>
             </div>
             <div class="scene-card" data-scene="meal" onclick="selectScene('meal')">
               <div class="scene-icon">◡</div>
               <div class="scene-name">吃饭</div>
+              <div class="scene-en">MEAL</div>
+              <div class="scene-desc">温馨治愈</div>
             </div>
             <div class="scene-card" data-scene="sleep" onclick="selectScene('sleep')">
               <div class="scene-icon">☾</div>
               <div class="scene-name">睡前</div>
+              <div class="scene-en">SLEEP</div>
+              <div class="scene-desc">安静助眠</div>
             </div>
             <div class="scene-card" data-scene="chill" onclick="selectScene('chill')">
               <div class="scene-icon">♪</div>
               <div class="scene-name">放空</div>
+              <div class="scene-en">CHILL</div>
+              <div class="scene-desc">轻松愉悦</div>
             </div>
           </div>
         </div>
@@ -1608,13 +1760,12 @@
       document.getElementById('companionNameLarge').textContent = currentCharacter.name;
       document.getElementById('companionSceneLabel').textContent = sceneLabels[currentScene] || '陪伴中';
       
-      // 设置背景（先用头像，之后可以加生图功能）
+      // 设置场景背景氛围色
       const bgEl = document.getElementById('companionBg');
-      if (currentCharacter.avatar) {
-        bgEl.style.backgroundImage = `url(${currentCharacter.avatar})`;
-      } else {
-        bgEl.style.backgroundImage = 'none';
-      }
+      // 移除所有场景 class
+      bgEl.className = 'companion-bg';
+      // 添加当前场景 class
+      bgEl.classList.add('scene-' + currentScene);
 
       // 重置计时器
       elapsedSeconds = 0;
