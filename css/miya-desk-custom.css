@@ -2277,3 +2277,32 @@ html.is-custom-wg-editing .desk-custom-viewport {
 .desk-custom__item--editing .wg-companion {
   opacity: 0.8;
 }
+
+/* ========== 陪伴系统全屏容器 ========== */
+.companion-app-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #F7F5F2;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.companion-app-container.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.companion-app-frame {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}

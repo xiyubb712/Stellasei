@@ -3563,8 +3563,17 @@
         return;
       }
       e.stopImmediatePropagation();
-      // 进入陪伴系统（目前先提示开发中）
-      showToast('陪伴系统开发中，敬请期待～');
+      // 进入陪伴系统（在应用内打开，不是全屏新页面）
+      try {
+        if (typeof global.miyaOpenCompanionApp === 'function') {
+          global.miyaOpenCompanionApp();
+        } else {
+          openCompanionApp();
+        }
+      } catch (err) {
+        showToast('陪伴系统启动中...');
+        window.open('companion-app.html', '_blank');
+      }
     }, true);
 
     return el;
@@ -7224,6 +7233,57 @@
       });
     }
   }
+
+  // 打开陪伴系统
+  function openCompanionApp() {
+    try {
+      var container = document.getElementById('companionAppContainer');
+      var frame = document.getElementById('companionAppFrame');
+      if (container && frame) {
+        // 如果还没有加载过，加载页面
+        if (!frame.src || frame.src === 'about:blank' || frame.src.indexOf('companion-app.html') === -1) {
+          frame.src = 'companion-app.html';
+        }
+        container.classList.add('show');
+        container.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+      }
+    } catch (e) {
+      console.error('打开陪伴系统失败:', e);
+      // 备用方案：打开新页面
+      window.open('companion-app.html', '_blank');
+    }
+  }
+
+  // 关闭陪伴系统
+  function closeCompanionApp() {
+    try {
+      var container = document.getElementById('companionAppContainer');
+      if (container) {
+        container.classList.remove('show');
+        container.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+      }
+    } catch (e) {
+      console.error('关闭陪伴系统失败:', e);
+    }
+  }
+
+  // 暴露到全局，方便 HTML 内联调用
+  global.miyaOpenCompanionApp = openCompanionApp;
+  global.miyaCloseCompanionApp = closeCompanionApp;
+
+  // 监听来自 iframe 的 postMessage（解决跨域问题）
+  window.addEventListener('message', function (e) {
+    try {
+      var data = e.data;
+      if (data && data.type === 'miya-close-companion-app') {
+        closeCompanionApp();
+      }
+    } catch (err) {
+      console.error('处理陪伴系统消息失败:', err);
+    }
+  });
 
   global.miyaGetDeskLayoutMode = getLayoutMode;
   global.miyaSetDeskLayoutMode = setLayoutMode;

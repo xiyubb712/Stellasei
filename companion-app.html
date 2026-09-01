@@ -1,0 +1,1139 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>陪伴时光</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    :root {
+      --bg: #F7F5F2;
+      --bg-soft: #EFEBE6;
+      --text-main: #2C2A28;
+      --text-secondary: #8B8680;
+      --text-light: #B5B0A9;
+      --accent: #9E8B7D;
+      --accent-soft: #C9BFB5;
+      --line: #E0DBD4;
+    }
+
+    body {
+      font-family: "Noto Serif SC", "Songti SC", "STSong", "SimSun", serif;
+      background: var(--bg);
+      min-height: 100vh;
+      color: var(--text-main);
+      overflow-x: hidden;
+      letter-spacing: 0.02em;
+    }
+
+    /* 顶部导航 */
+    .nav-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 24px;
+    }
+
+    .nav-exit {
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      color: var(--text-secondary);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 6px 10px;
+      transition: color 0.2s;
+    }
+
+    .nav-exit:hover {
+      color: var(--text-main);
+    }
+
+    .nav-label {
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      color: var(--text-light);
+      text-transform: uppercase;
+    }
+
+    /* 主内容区 */
+    .main-content {
+      padding: 20px 32px 60px;
+    }
+
+    /* 页面标题区 */
+    .page-header {
+      margin-bottom: 48px;
+    }
+
+    .page-eyebrow {
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 10px;
+      letter-spacing: 0.25em;
+      color: var(--text-light);
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    .page-title {
+      font-size: 36px;
+      font-weight: 400;
+      color: var(--text-main);
+      line-height: 1.3;
+      letter-spacing: 0.05em;
+      margin-bottom: 16px;
+    }
+
+    .page-desc {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.8;
+      max-width: 280px;
+    }
+
+    /* 分区标题 */
+    .section-title {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+
+    .section-number {
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      color: var(--text-light);
+    }
+
+    .section-name {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text-main);
+      letter-spacing: 0.1em;
+    }
+
+    .section-line {
+      flex: 1;
+      height: 1px;
+      background: var(--line);
+    }
+
+    /* 角色选择 */
+    .character-section {
+      margin-bottom: 48px;
+    }
+
+    .character-list {
+      display: flex;
+      gap: 20px;
+      overflow-x: auto;
+      padding-bottom: 12px;
+      scrollbar-width: none;
+    }
+
+    .character-list::-webkit-scrollbar {
+      display: none;
+    }
+
+    .character-card {
+      flex-shrink: 0;
+      width: 80px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .character-avatar-wrap {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 12px;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 1.5px solid transparent;
+      transition: all 0.3s;
+      background: var(--bg-soft);
+    }
+
+    .character-card.active .character-avatar-wrap {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px rgba(158,139,125,0.1);
+    }
+
+    .character-avatar {
+      width: 100%;
+      height: 100%;
+      background-size: cover;
+      background-position: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+
+    .character-name {
+      font-size: 12px;
+      color: var(--text-secondary);
+      letter-spacing: 0.05em;
+      transition: color 0.3s;
+    }
+
+    .character-card.active .character-name {
+      color: var(--text-main);
+    }
+
+    /* 场景选择 */
+    .scene-section {
+      margin-bottom: 48px;
+    }
+
+    .scene-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .scene-card {
+      background: none;
+      border: 1px solid var(--line);
+      border-radius: 2px;
+      padding: 20px 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .scene-card:hover {
+      border-color: var(--accent-soft);
+    }
+
+    .scene-card.active {
+      border-color: var(--accent);
+      background: rgba(158,139,125,0.05);
+    }
+
+    .scene-icon {
+      font-size: 22px;
+      margin-bottom: 10px;
+      opacity: 0.8;
+    }
+
+    .scene-name {
+      font-size: 12px;
+      color: var(--text-secondary);
+      letter-spacing: 0.1em;
+      transition: color 0.3s;
+    }
+
+    .scene-card.active .scene-name {
+      color: var(--text-main);
+    }
+
+    /* 时间选择 */
+    .time-section {
+      margin-bottom: 48px;
+    }
+
+    .time-options {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .time-option {
+      padding: 10px 20px;
+      border: 1px solid var(--line);
+      border-radius: 2px;
+      background: none;
+      font-family: inherit;
+      font-size: 13px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.3s;
+      letter-spacing: 0.05em;
+    }
+
+    .time-option:hover {
+      border-color: var(--accent-soft);
+    }
+
+    .time-option.active {
+      border-color: var(--accent);
+      background: rgba(158,139,125,0.05);
+      color: var(--text-main);
+    }
+
+    .time-custom {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .time-custom input {
+      width: 80px;
+      padding: 8px 12px;
+      border: 1px solid var(--line);
+      border-radius: 2px;
+      background: none;
+      font-family: inherit;
+      font-size: 13px;
+      color: var(--text-main);
+      outline: none;
+      transition: border-color 0.3s;
+    }
+
+    .time-custom input:focus {
+      border-color: var(--accent);
+    }
+
+    .time-custom span {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    /* 开始按钮 */
+    .start-section {
+      margin-top: 60px;
+      text-align: center;
+    }
+
+    .start-btn {
+      display: inline-block;
+      padding: 16px 48px;
+      background: var(--text-main);
+      color: var(--bg);
+      border: none;
+      border-radius: 2px;
+      font-family: inherit;
+      font-size: 14px;
+      letter-spacing: 0.2em;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .start-btn:hover {
+      background: var(--accent);
+      transform: translateY(-1px);
+    }
+
+    .start-btn:disabled {
+      background: var(--text-light);
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .start-hint {
+      margin-top: 16px;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      color: var(--text-light);
+    }
+
+    /* 空状态 */
+    .empty-state {
+      text-align: center;
+      padding: 80px 20px;
+    }
+
+    .empty-state .icon {
+      font-size: 32px;
+      margin-bottom: 20px;
+      opacity: 0.5;
+    }
+
+    .empty-state .text {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 2;
+    }
+
+    /* 陪伴进行中页面 */
+    .companion-page {
+      display: none;
+      min-height: 100vh;
+      background: var(--bg);
+    }
+
+    .companion-page.show {
+      display: block;
+    }
+
+    .companion-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-size: cover;
+      background-position: center;
+      opacity: 0.15;
+      z-index: 0;
+    }
+
+    .companion-content {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: 24px;
+    }
+
+    .companion-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 40px;
+    }
+
+    .companion-exit {
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      color: var(--text-secondary);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 6px 10px;
+    }
+
+    .companion-scene-label {
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      color: var(--text-light);
+      text-transform: uppercase;
+    }
+
+    .companion-center {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .companion-avatar-large {
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      background-size: cover;
+      background-position: center;
+      margin-bottom: 24px;
+      border: 1px solid var(--line);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+    }
+
+    .companion-name-large {
+      font-size: 20px;
+      font-weight: 400;
+      color: var(--text-main);
+      letter-spacing: 0.1em;
+      margin-bottom: 8px;
+    }
+
+    .companion-timer {
+      font-family: "Noto Serif SC", serif;
+      font-size: 56px;
+      font-weight: 300;
+      color: var(--text-main);
+      letter-spacing: 0.05em;
+      margin: 32px 0;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .companion-quote {
+      max-width: 280px;
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 2;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      padding: 16px;
+      transition: color 0.3s;
+    }
+
+    .companion-quote:hover {
+      color: var(--text-main);
+    }
+
+    .companion-quote-hint {
+      margin-top: 8px;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 9px;
+      letter-spacing: 0.15em;
+      color: var(--text-light);
+    }
+
+    .companion-bottom {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      padding-top: 32px;
+    }
+
+    .companion-btn {
+      padding: 12px 32px;
+      background: none;
+      border: 1px solid var(--line);
+      border-radius: 2px;
+      font-family: inherit;
+      font-size: 12px;
+      letter-spacing: 0.15em;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .companion-btn:hover {
+      border-color: var(--accent);
+      color: var(--text-main);
+    }
+
+    .companion-btn.primary {
+      background: var(--text-main);
+      color: var(--bg);
+      border-color: var(--text-main);
+    }
+
+    .companion-btn.primary:hover {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+
+    /* 底部装饰 */
+    .page-footer {
+      position: fixed;
+      bottom: 24px;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      color: var(--text-light);
+      text-transform: uppercase;
+    }
+
+    /* 完成弹窗 */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(247,245,242,0.95);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s;
+    }
+
+    .modal-overlay.show {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal-content {
+      text-align: center;
+      padding: 40px;
+      max-width: 320px;
+    }
+
+    .modal-icon {
+      font-size: 32px;
+      margin-bottom: 24px;
+      opacity: 0.8;
+    }
+
+    .modal-title {
+      font-size: 24px;
+      font-weight: 400;
+      color: var(--text-main);
+      letter-spacing: 0.1em;
+      margin-bottom: 16px;
+    }
+
+    .modal-text {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 2;
+      margin-bottom: 32px;
+    }
+
+    .modal-btn {
+      padding: 12px 40px;
+      background: var(--text-main);
+      color: var(--bg);
+      border: none;
+      border-radius: 2px;
+      font-family: inherit;
+      font-size: 12px;
+      letter-spacing: 0.2em;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .modal-btn:hover {
+      background: var(--accent);
+    }
+  </style>
+</head>
+<body>
+  <!-- 选择页面 -->
+  <div class="setup-page" id="setupPage">
+    <!-- 顶部导航 -->
+    <div class="nav-bar">
+      <button class="nav-exit" onclick="exitCompanion()">EXIT</button>
+      <span class="nav-label">COMPANION · EDITORIAL</span>
+    </div>
+
+    <!-- 主内容 -->
+    <div class="main-content">
+      <!-- 页面标题 -->
+      <div class="page-header">
+        <div class="page-eyebrow">MIYA · MOMENT</div>
+        <h1 class="page-title">今天<br>想和谁一起</h1>
+        <p class="page-desc">选择一个角色，设定一个场景，让陪伴成为日常里最温柔的时刻。</p>
+      </div>
+
+      <!-- 空状态 -->
+      <div class="empty-state" id="emptyState" style="display: none;">
+        <div class="icon">🤍</div>
+        <div class="text">
+          还没有开启情侣空间哦<br>
+          先去情侣空间开启一个<br>
+          然后就可以开始陪伴时光啦
+        </div>
+      </div>
+
+      <div id="setupContent">
+        <!-- 角色选择 -->
+        <div class="character-section">
+          <div class="section-title">
+            <span class="section-number">01</span>
+            <span class="section-name">选择角色</span>
+            <div class="section-line"></div>
+          </div>
+          <div class="character-list" id="characterList"></div>
+        </div>
+
+        <!-- 场景选择 -->
+        <div class="scene-section">
+          <div class="section-title">
+            <span class="section-number">02</span>
+            <span class="section-name">选择场景</span>
+            <div class="section-line"></div>
+          </div>
+          <div class="scene-grid" id="sceneGrid">
+            <div class="scene-card active" data-scene="study" onclick="selectScene('study')">
+              <div class="scene-icon">📖</div>
+              <div class="scene-name">学习</div>
+            </div>
+            <div class="scene-card" data-scene="work" onclick="selectScene('work')">
+              <div class="scene-icon">✎</div>
+              <div class="scene-name">工作</div>
+            </div>
+            <div class="scene-card" data-scene="rest" onclick="selectScene('rest')">
+              <div class="scene-icon">☁</div>
+              <div class="scene-name">休息</div>
+            </div>
+            <div class="scene-card" data-scene="meal" onclick="selectScene('meal')">
+              <div class="scene-icon">◡</div>
+              <div class="scene-name">吃饭</div>
+            </div>
+            <div class="scene-card" data-scene="sleep" onclick="selectScene('sleep')">
+              <div class="scene-icon">☾</div>
+              <div class="scene-name">睡前</div>
+            </div>
+            <div class="scene-card" data-scene="chill" onclick="selectScene('chill')">
+              <div class="scene-icon">♪</div>
+              <div class="scene-name">放空</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 时间选择 -->
+        <div class="time-section">
+          <div class="section-title">
+            <span class="section-number">03</span>
+            <span class="section-name">陪伴时长</span>
+            <div class="section-line"></div>
+          </div>
+          <div class="time-options" id="timeOptions">
+            <button class="time-option" data-minutes="15" onclick="selectTime(15)">15 分钟</button>
+            <button class="time-option active" data-minutes="30" onclick="selectTime(30)">30 分钟</button>
+            <button class="time-option" data-minutes="60" onclick="selectTime(60)">1 小时</button>
+          </div>
+          <div class="time-custom">
+            <input type="number" id="customMinutes" placeholder="自定义" min="1" max="480" oninput="onCustomTime()">
+            <span>分钟</span>
+          </div>
+        </div>
+
+        <!-- 开始按钮 -->
+        <div class="start-section">
+          <button class="start-btn" id="startBtn" onclick="startCompanion()">开 始 陪 伴</button>
+          <p class="start-hint">选择后点击开始 · 陪伴时光即刻开启</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 底部装饰 -->
+    <div class="page-footer">COMPANION IS THE LONGEST CONFESSION OF LOVE</div>
+  </div>
+
+  <!-- 陪伴进行中页面 -->
+  <div class="companion-page" id="companionPage">
+    <div class="companion-bg" id="companionBg"></div>
+    <div class="companion-content">
+      <div class="companion-top">
+        <button class="companion-exit" onclick="exitCompanion()">EXIT</button>
+        <span class="companion-scene-label" id="companionSceneLabel">STUDY · 学习中</span>
+      </div>
+
+      <div class="companion-center">
+        <div class="companion-avatar-large" id="companionAvatarLarge"></div>
+        <div class="companion-name-large" id="companionNameLarge">角色名</div>
+        <div class="companion-timer" id="companionTimer">00:00:00</div>
+        <div class="companion-quote" id="companionQuote" onclick="refreshQuote()">
+          今天也要好好加油哦，我会一直陪着你的。
+        </div>
+        <div class="companion-quote-hint">点击文字换一句 · TAP TO REFRESH</div>
+      </div>
+
+      <div class="companion-bottom">
+        <button class="companion-btn" id="pauseBtn" onclick="pauseCompanion()">暂 停</button>
+        <button class="companion-btn primary" id="stopBtn" onclick="stopCompanion()">结 束</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 完成弹窗 -->
+  <div class="modal-overlay" id="completeModal">
+    <div class="modal-content">
+      <div class="modal-icon">🤍</div>
+      <div class="modal-title">陪伴结束</div>
+      <div class="modal-text" id="completeText">
+        本次陪伴了 0 分钟<br>
+        有我陪着你，做什么都不孤单
+      </div>
+      <button class="modal-btn" onclick="closeModal()">好 的</button>
+    </div>
+  </div>
+
+  <script>
+    // 场景语录库
+    const sceneQuotes = {
+      study: [
+        "今天也要好好学习哦，我会在旁边陪着你的。",
+        "专注一点，遇到不懂的可以问问我呀。",
+        "累了就休息一下，别太拼了。",
+        "你认真学习的样子真好看。",
+        "再坚持一下，马上就完成了。",
+        "学习辛苦了，要不要喝点水？",
+        "我相信你一定可以的，加油。",
+        "今天学了什么呀？可以讲给我听吗？"
+      ],
+      work: [
+        "工作再忙也要记得休息哦。",
+        "遇到难题了吗？我相信你能解决的。",
+        "你工作的样子真好看。",
+        "别忘了喝水，照顾好自己。",
+        "再忙也要记得吃饭呀。",
+        "辛苦了，我给你捶捶背吧。",
+        "工作顺利吗？要不要跟我说说？",
+        "你已经很棒了，不要给自己太大压力。"
+      ],
+      rest: [
+        "好好休息吧，我会安安静静陪着你的。",
+        "累了就睡一会儿，我在旁边守着你。",
+        "休息的时候就不要想工作的事情啦。",
+        "要不要我给你讲个故事？",
+        "好好放松一下，什么都不用想。",
+        "你休息的样子真可爱。",
+        "睡醒了就会有精神啦。",
+        "有我陪着你，安心休息吧。"
+      ],
+      meal: [
+        "吃饭了吗？要好好吃饭哦。",
+        "今天想吃什么呀？",
+        "多吃一点，你太瘦了。",
+        "吃饭的时候不要看手机啦。",
+        "要不要我陪你一起吃？",
+        "今天的饭菜好吃吗？",
+        "吃完了记得休息一下。",
+        "要营养均衡，不要挑食哦。"
+      ],
+      sleep: [
+        "晚安，做个好梦。",
+        "睡不着的话，我陪你聊聊天。",
+        "盖好被子，别着凉了。",
+        "闭上眼睛，想象我在你身边。",
+        "今天也辛苦了，好好睡一觉吧。",
+        "睡吧，我会一直守护你的。",
+        "梦里也要记得想我哦。",
+        "明天醒来我还在的，安心睡吧。"
+      ],
+      chill: [
+        "发发呆也挺好的，什么都不用想。",
+        "要不要一起听首歌？",
+        "放空一下，让大脑休息休息。",
+        "有我陪着你，发呆也不孤单。",
+        "今天天气真好，适合放空。",
+        "要不要一起看看窗外？",
+        "什么都不做也没关系，我陪着你。",
+        "放松一下，享受这安静的时光。"
+      ]
+    };
+
+    // 场景结束语
+    const sceneEndings = {
+      study: [
+        "今天也有在认真学习呢，辛苦啦。",
+        "学了这么久，好好休息一下吧。",
+        "你认真的样子真好看，下次继续哦。",
+        "又进步了一点点呢，我都看在眼里。",
+        "学习辛苦了，要不要喝点水？"
+      ],
+      work: [
+        "这么快就忙完啦，效率真高。",
+        "工作辛苦了，好好放松一下吧。",
+        "今天也有在努力工作呢，真棒。",
+        "忙完了就休息一下，别太累了。",
+        "你工作的样子真好看，我都看入迷了。"
+      ],
+      rest: [
+        "休息好了吗？下次再一起哦。",
+        "有我陪着你，休息也变得温柔了呢。",
+        "好好休息，下次见。",
+        "充好电了吗？我一直都在哦。",
+        "什么都不做也没关系，有我陪着你。"
+      ],
+      meal: [
+        "吃饱了吗？下次再一起吃饭哦。",
+        "要好好吃饭，照顾好自己哦。",
+        "有你陪着，吃饭都变香了呢。",
+        "慢慢吃，不急，我一直都在。",
+        "今天的饭菜好吃吗？下次还一起哦。"
+      ],
+      sleep: [
+        "晚安，做个好梦，下次再陪你。",
+        "睡吧，我会一直守护你的。",
+        "今天也辛苦了，好好睡一觉吧。",
+        "梦里也要记得想我哦。",
+        "闭上眼睛，想象我在你身边。"
+      ],
+      chill: [
+        "放空够了吗？下次再一起发呆哦。",
+        "什么都不做也没关系，有我陪着你。",
+        "放松好了吗？下次见。",
+        "发发呆也挺好的，大脑需要休息呢。",
+        "有我陪着你，连发呆都变得有意义了。"
+      ]
+    };
+
+    // 场景标签
+    const sceneLabels = {
+      study: 'STUDY · 学习中',
+      work: 'WORK · 工作中',
+      rest: 'REST · 休息中',
+      meal: 'MEAL · 吃饭中',
+      sleep: 'SLEEP · 睡前时光',
+      chill: 'CHILL · 放空中'
+    };
+
+    // 状态
+    let currentCharacter = null;
+    let currentScene = 'study';
+    let currentMinutes = 30;
+    let timerInterval = null;
+    let elapsedSeconds = 0;
+    let isRunning = false;
+    let characters = [];
+
+    // 初始化
+    function init() {
+      loadCharacters();
+    }
+
+    // 加载角色列表
+    function loadCharacters() {
+      try {
+        const coupleData = localStorage.getItem('miya-couple-spaces');
+        if (coupleData) {
+          const spaces = JSON.parse(coupleData);
+          characters = spaces.map(space => ({
+            id: space.contactId,
+            name: space.contactName || '角色',
+            avatar: space.contactAvatar || null
+          }));
+        }
+      } catch (e) {
+        console.log('读取情侣空间数据失败');
+      }
+
+      if (characters.length === 0) {
+        characters = [
+          { id: 'default1', name: '角色一', avatar: null },
+          { id: 'default2', name: '角色二', avatar: null }
+        ];
+      }
+
+      renderCharacterList();
+      
+      if (characters.length > 0) {
+        selectCharacter(characters[0].id);
+      } else {
+        document.getElementById('emptyState').style.display = 'block';
+        document.getElementById('setupContent').style.display = 'none';
+      }
+    }
+
+    // 渲染角色列表
+    function renderCharacterList() {
+      const list = document.getElementById('characterList');
+      list.innerHTML = characters.map(char => `
+        <div class="character-card ${currentCharacter && currentCharacter.id === char.id ? 'active' : ''}" 
+             data-id="${char.id}" onclick="selectCharacter('${char.id}')">
+          <div class="character-avatar-wrap">
+            <div class="character-avatar" style="${char.avatar ? `background-image: url(${char.avatar})` : ''}">
+              ${char.avatar ? '' : '🤍'}
+            </div>
+          </div>
+          <div class="character-name">${char.name}</div>
+        </div>
+      `).join('');
+    }
+
+    // 选择角色
+    function selectCharacter(id) {
+      currentCharacter = characters.find(c => c.id === id);
+      renderCharacterList();
+    }
+
+    // 选择场景
+    function selectScene(scene) {
+      currentScene = scene;
+      document.querySelectorAll('.scene-card').forEach(card => {
+        card.classList.toggle('active', card.dataset.scene === scene);
+      });
+    }
+
+    // 选择时间
+    function selectTime(minutes) {
+      currentMinutes = minutes;
+      document.querySelectorAll('.time-option').forEach(btn => {
+        btn.classList.toggle('active', parseInt(btn.dataset.minutes) === minutes);
+      });
+      document.getElementById('customMinutes').value = '';
+    }
+
+    // 自定义时间
+    function onCustomTime() {
+      const input = document.getElementById('customMinutes');
+      const val = parseInt(input.value);
+      if (val && val > 0 && val <= 480) {
+        currentMinutes = val;
+        document.querySelectorAll('.time-option').forEach(btn => {
+          btn.classList.remove('active');
+        });
+      }
+    }
+
+    // 开始陪伴
+    function startCompanion() {
+      if (!currentCharacter) {
+        alert('请先选择一个角色');
+        return;
+      }
+
+      // 切换到陪伴页面
+      document.getElementById('setupPage').style.display = 'none';
+      document.getElementById('companionPage').classList.add('show');
+
+      // 设置陪伴页面内容
+      const avatarEl = document.getElementById('companionAvatarLarge');
+      if (currentCharacter.avatar) {
+        avatarEl.style.backgroundImage = `url(${currentCharacter.avatar})`;
+      } else {
+        avatarEl.style.backgroundImage = 'none';
+        avatarEl.textContent = '🤍';
+      }
+
+      document.getElementById('companionNameLarge').textContent = currentCharacter.name;
+      document.getElementById('companionSceneLabel').textContent = sceneLabels[currentScene] || '陪伴中';
+      
+      // 设置背景（先用头像，之后可以加生图功能）
+      const bgEl = document.getElementById('companionBg');
+      if (currentCharacter.avatar) {
+        bgEl.style.backgroundImage = `url(${currentCharacter.avatar})`;
+      } else {
+        bgEl.style.backgroundImage = 'none';
+      }
+
+      // 重置计时器
+      elapsedSeconds = 0;
+      updateTimerDisplay();
+      refreshQuote();
+
+      // 开始计时
+      isRunning = true;
+      timerInterval = setInterval(() => {
+        elapsedSeconds++;
+        updateTimerDisplay();
+        
+        // 到达设定时间，自动结束
+        if (elapsedSeconds >= currentMinutes * 60) {
+          stopCompanion();
+        }
+      }, 1000);
+    }
+
+    // 暂停陪伴
+    function pauseCompanion() {
+      if (!isRunning) {
+        // 继续
+        isRunning = true;
+        document.getElementById('pauseBtn').textContent = '暂 停';
+        timerInterval = setInterval(() => {
+          elapsedSeconds++;
+          updateTimerDisplay();
+          if (elapsedSeconds >= currentMinutes * 60) {
+            stopCompanion();
+          }
+        }, 1000);
+      } else {
+        // 暂停
+        isRunning = false;
+        clearInterval(timerInterval);
+        document.getElementById('pauseBtn').textContent = '继 续';
+      }
+    }
+
+    // 结束陪伴
+    function stopCompanion() {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+      isRunning = false;
+
+      const minutes = Math.floor(elapsedSeconds / 60);
+      
+      // 保存统计
+      saveStats(minutes);
+
+      // 根据场景随机选择一句结束语
+      const endings = sceneEndings[currentScene] || sceneEndings.chill;
+      const randomEnding = endings[Math.floor(Math.random() * endings.length)];
+
+      // 显示完成弹窗
+      document.getElementById('completeText').innerHTML = `
+        本次陪伴了 <strong>${minutes}</strong> 分钟<br><br>
+        ${randomEnding}
+      `;
+      document.getElementById('completeModal').classList.add('show');
+    }
+
+    // 更新计时器显示
+    function updateTimerDisplay() {
+      const hours = Math.floor(elapsedSeconds / 3600).toString().padStart(2, '0');
+      const minutes = Math.floor((elapsedSeconds % 3600) / 60).toString().padStart(2, '0');
+      const seconds = (elapsedSeconds % 60).toString().padStart(2, '0');
+      document.getElementById('companionTimer').textContent = `${hours}:${minutes}:${seconds}`;
+    }
+
+    // 刷新语录
+    function refreshQuote() {
+      const quotes = sceneQuotes[currentScene] || sceneQuotes.chill;
+      const randomIndex = Math.floor(Math.random() * quotes.length);
+      document.getElementById('companionQuote').textContent = quotes[randomIndex];
+    }
+
+    // 保存统计
+    function saveStats(minutes) {
+      try {
+        const today = new Date().toDateString();
+        let stats = JSON.parse(localStorage.getItem('companion-stats') || '{}');
+        
+        if (!stats[today]) {
+          stats[today] = 0;
+        }
+        stats[today] += minutes;
+        
+        localStorage.setItem('companion-stats', JSON.stringify(stats));
+      } catch (e) {
+        console.log('保存统计失败');
+      }
+    }
+
+    // 关闭弹窗
+    function closeModal() {
+      document.getElementById('completeModal').classList.remove('show');
+      // 回到选择页面
+      document.getElementById('companionPage').classList.remove('show');
+      document.getElementById('setupPage').style.display = 'block';
+      document.getElementById('pauseBtn').textContent = '暂 停';
+    }
+
+    // 退出陪伴系统
+    function exitCompanion() {
+      if (isRunning) {
+        if (confirm('陪伴还在进行中，确定要离开吗？')) {
+          doExit();
+        }
+      } else {
+        doExit();
+      }
+    }
+
+    // 执行退出（用 postMessage 通信，解决 iframe 跨域问题）
+    function doExit() {
+      try {
+        // 优先用 postMessage 通知父页面关闭
+        if (window.parent && window.parent.postMessage) {
+          window.parent.postMessage({ type: 'miya-close-companion-app' }, '*');
+          return;
+        }
+      } catch (e) {
+        console.log('postMessage 失败，尝试其他方式');
+      }
+      
+      // 备用方案
+      try {
+        if (window.parent && window.parent.miyaCloseCompanionApp) {
+          window.parent.miyaCloseCompanionApp();
+          return;
+        }
+      } catch (e) {}
+      
+      try {
+        if (window.miyaCloseCompanionApp) {
+          window.miyaCloseCompanionApp();
+          return;
+        }
+      } catch (e) {}
+      
+      window.history.back();
+    }
+
+    // 初始化
+    init();
+  </script>
+</body>
+</html>
