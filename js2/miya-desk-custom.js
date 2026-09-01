@@ -3636,7 +3636,7 @@
 
       // 更新语录（截断太长的）
       var textEl = wgEl.querySelector('.wg-companion__bubble-text');
-      if (textEl) textEl.textContent = truncateQuote(quote, 28);
+      if (textEl) textEl.textContent = truncateQuote(quote, 20);
 
       // 更新头像（跟情侣空间入口小组件用同样的方式）
       var avatarEl = wgEl.querySelector('.wg-companion__avatar');
@@ -8136,6 +8136,7 @@
         return;
       }
 
+      // 方法1：MutationObserver监听modal元素的hidden属性变化
       var deskObserver = new MutationObserver(function(mutations) {
         mutations.forEach(function(mutation) {
           if (mutation.type === 'attributes' && mutation.attributeName === 'hidden') {
@@ -8153,6 +8154,25 @@
 
       // 监听modal元素的hidden属性变化（应用打开/关闭）
       deskObserver.observe(modalEl, { attributes: true, attributeFilter: ['hidden'] });
+
+      // 方法2：监听modal-close按钮的点击事件（更可靠）
+      var closeBtn = document.getElementById('modal-close');
+      if (closeBtn) {
+        closeBtn.addEventListener('click', function() {
+          setTimeout(function() {
+            refreshAllWidgetsQuotes();
+          }, 300);
+        });
+      }
+
+      // 方法3：监听modal背景的点击事件（点击背景关闭应用）
+      modalEl.addEventListener('click', function(e) {
+        if (e.target.id === 'modal') {
+          setTimeout(function() {
+            refreshAllWidgetsQuotes();
+          }, 300);
+        }
+      });
     } catch (e) {
       console.log('监听桌面显示状态失败:', e);
     }

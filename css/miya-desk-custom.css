@@ -2264,14 +2264,14 @@ html.is-custom-wg-editing .desk-custom-viewport {
   color: #5a4a52;
   font-family: "Noto Serif SC", "Cormorant Garamond", serif;
   box-shadow: 0 2px 8px rgba(255, 150, 170, 0.15);
-  word-break: break-word;
+  word-break: break-all;
   overflow-wrap: break-word;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
   text-overflow: ellipsis;
-  max-height: 52px;
+  max-height: 48px !important;
   box-sizing: border-box;
 }
 
