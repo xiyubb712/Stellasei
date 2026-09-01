@@ -1348,12 +1348,12 @@ html.is-custom-wg-editing .desk-custom-viewport {
 /* 编辑面板外的完整名片预览 - 固定在屏幕顶部 */
 .desk-custom-wg-editor__preview {
   position: fixed;
-  top: 16px;
+  top: 32px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 1000;
-  width: 160px;
-  height: 200px;
+  width: 150px;
+  height: 188px;
   border-radius: 12px;
   overflow: hidden;
   background: linear-gradient(135deg, #f5f3ef 0%, #e8e4de 100%);
@@ -1515,7 +1515,12 @@ html.is-custom-wg-editing .desk-custom-viewport {
 
 /* 编辑面板往下移，给顶部预览留出空间 */
 .desk-custom-wg-editor__sheet {
-  margin-top: 200px !important;
+  margin-top: 175px !important;
+}
+
+/* 打开编辑面板时隐藏底部 Dock，避免被挡住 */
+.is-custom-wg-editing .foot__dock {
+  display: none !important;
 }
 
 .desk-custom-wg-editor__opacity-wrap {
