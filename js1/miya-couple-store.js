@@ -579,7 +579,7 @@
   function openSpace(contactId, meta) {
     meta = meta && typeof meta === 'object' ? meta : {};
     var now = Date.now();
-    return ensureSpace(contactId, {
+    var result = ensureSpace(contactId, {
       status: 'open',
       profileId: meta.profileId || '',
       profileName: meta.profileName || '',
@@ -589,6 +589,23 @@
       lastInviteId: meta.inviteId || '',
       lastInviteAt: meta.sentAt || now
     });
+    // 如果这是第一个开启的情侣空间，自动设置为显示到主页，并刷新主页
+    try {
+      var openIds = getOpenContactIds();
+      var currentHome = getHomeDisplayContactId();
+      if (!currentHome && openIds.length >= 1) {
+        setHomeDisplayContactId(contactId);
+        // 延迟刷新主页，确保数据保存完成
+        setTimeout(function () {
+          try {
+            if (typeof global.miyaRefreshCustomLayout === 'function') {
+              global.miyaRefreshCustomLayout();
+            }
+          } catch (e) { /* ignore */ }
+        }, 100);
+      }
+    } catch (e) { /* ignore */ }
+    return result;
   }
 
   function markDeclined(contactId, meta) {
@@ -1131,11 +1148,22 @@
     if (data.invites && data.invites[id]) {
       delete data.invites[id];
     }
-    // 如果删除的 space 正好是当前显示在主页的，清除主页显示设置
+    // 如果删除的 space 正好是当前显示在主页的，处理主页显示设置
     try {
       var currentHome = localStorage.getItem(HOME_DISPLAY_KEY);
       if (currentHome && String(currentHome).trim() === id) {
-        localStorage.removeItem(HOME_DISPLAY_KEY);
+        // 看看还有没有其他开启的情侣空间
+        var remainingOpenIds = Object.keys(data.spaces || {}).filter(function (sid) {
+          var sp = normalizeSpace(data.spaces[sid], sid);
+          return sp && sp.status === 'open';
+        });
+        if (remainingOpenIds.length > 0) {
+          // 自动切换到第一个其他的情侣空间
+          localStorage.setItem(HOME_DISPLAY_KEY, remainingOpenIds[0]);
+        } else {
+          // 没有其他情侣空间了，清除主页显示设置
+          localStorage.removeItem(HOME_DISPLAY_KEY);
+        }
       }
     } catch (e) { /* ignore */ }
     saveRaw();
