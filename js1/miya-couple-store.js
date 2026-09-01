@@ -640,9 +640,54 @@
   }
 
   function getAllSpaceRows() {
-    return Object.keys(loadRaw().spaces).map(function (id) {
+    var data = loadRaw();
+    var all = Object.keys(data.spaces).map(function (id) {
       return getSpace(id);
     }).filter(Boolean);
+    // 过滤并清理掉联系人已经不存在的情侣空间
+    try {
+      if (global.miyaChatStore && typeof global.miyaChatStore.findContact === 'function') {
+        var invalidIds = [];
+        all = all.filter(function (sp) {
+          if (!sp || !sp.contactId) {
+            invalidIds.push(sp && sp.contactId ? sp.contactId : '');
+            return false;
+          }
+          var contact = global.miyaChatStore.findContact(sp.contactId);
+          if (!contact) {
+            invalidIds.push(sp.contactId);
+            return false;
+          }
+          return true;
+        });
+        // 清理无效的情侣空间数据
+        if (invalidIds.length > 0) {
+          invalidIds.forEach(function (id) {
+            if (id && data.spaces[id]) delete data.spaces[id];
+            if (id && data.invites && data.invites[id]) delete data.invites[id];
+          });
+          // 如果当前显示在主页的情侣空间被清理了，清除主页显示设置
+          try {
+            var currentHome = localStorage.getItem(HOME_DISPLAY_KEY);
+            if (currentHome && invalidIds.indexOf(String(currentHome).trim()) >= 0) {
+              // 看看还有没有其他有效的情侣空间
+              if (all.length > 0) {
+                var firstOpen = all.find(function (sp) { return sp && sp.status === 'open'; });
+                if (firstOpen && firstOpen.contactId) {
+                  localStorage.setItem(HOME_DISPLAY_KEY, firstOpen.contactId);
+                } else {
+                  localStorage.removeItem(HOME_DISPLAY_KEY);
+                }
+              } else {
+                localStorage.removeItem(HOME_DISPLAY_KEY);
+              }
+            }
+          } catch (e) { /* ignore */ }
+          saveRaw();
+        }
+      }
+    } catch (e) { /* ignore */ }
+    return all;
   }
 
   function daysTogether(annivDate) {
