@@ -1348,8 +1348,8 @@
         if (quotesLib && typeof quotesLib.getRandom === 'function' && msgEls.length >= 2 && homeContactId) {
           var coupleQuote = quotesLib.getRandom('couple', homeContactId, 'general');
           if (coupleQuote && coupleQuote.left && coupleQuote.right) {
-            msgEls[0].textContent = truncateQuote(coupleQuote.left, 20);
-            msgEls[1].textContent = truncateQuote(coupleQuote.right, 20);
+            msgEls[0].textContent = truncateQuote(coupleQuote.left, 15);
+            msgEls[1].textContent = truncateQuote(coupleQuote.right, 15);
           }
         }
       } catch (e) {
