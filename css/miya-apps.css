@@ -572,6 +572,93 @@ body.miya-app-open .phone {
   margin-bottom: 12px;
 }
 
+/* ===== 恢复默认布局按钮 ===== */
+.ins-reset-layout-pill {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: var(--ins-surface);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: var(--ins-shadow);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: all 0.3s ease;
+}
+
+.ins-reset-layout-pill:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.ins-reset-layout-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.ins-reset-layout-icon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: rgba(120, 115, 105, 0.1);
+  color: rgba(120, 115, 105, 0.7);
+  flex-shrink: 0;
+}
+
+.ins-reset-layout-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.ins-reset-layout-info strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ins-ink, #1a1a1a);
+  margin-bottom: 2px;
+}
+
+.ins-reset-layout-info span {
+  font-size: 11px;
+  color: var(--ins-ink-dim, #888);
+}
+
+.ins-reset-layout-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 18px;
+  background: rgba(120, 115, 105, 0.08);
+  color: rgba(120, 115, 105, 0.75);
+  border: 1px solid rgba(120, 115, 105, 0.15);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.ins-reset-layout-btn:hover {
+  background: rgba(120, 115, 105, 0.12);
+  color: rgba(120, 115, 105, 0.9);
+}
+
+.ins-reset-layout-btn:active {
+  transform: scale(0.98);
+}
+
+.ins-reset-layout-btn svg {
+  width: 13px;
+  height: 13px;
+}
+
 .ins-atelier-splash-actions {
   display: flex;
   gap: 8px;

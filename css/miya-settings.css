@@ -2042,3 +2042,60 @@
   line-height: 1.2;
 }
 
+/* ===== 刷新加载遮罩层 ===== */
+.st-refresh-loading {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(250, 248, 244, 0.92);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.st-refresh-loading.is-active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.st-refresh-loading__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.st-refresh-loading__icon {
+  width: 48px;
+  height: 48px;
+  color: rgba(120, 115, 105, 0.8);
+  animation: st-refresh-spin 1.2s linear infinite;
+}
+
+.st-refresh-loading__text {
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  font-family: "Jost", "Noto Sans SC", sans-serif;
+  color: rgba(120, 115, 105, 0.8);
+  margin: 0;
+  padding: 0;
+}
+
+@keyframes st-refresh-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+

@@ -6119,7 +6119,17 @@
       softRefreshBtn.dataset.bound = '1';
       softRefreshBtn.addEventListener('click', function () {
         if (!confirm('确定要刷新应用吗？将重新加载页面，数据安全保留。')) return;
-        window.location.reload();
+        // 显示加载遮罩层
+        var loadingOverlay = document.getElementById('miya-page-loading');
+        if (loadingOverlay) {
+          loadingOverlay.classList.add('is-active');
+          loadingOverlay.setAttribute('aria-hidden', 'false');
+        }
+        // 延迟 1.5 秒后刷新页面，让用户看到加载动画
+        setTimeout(function () {
+          try { sessionStorage.setItem('miya_is_refreshing', 'true'); } catch (e) {}
+          window.location.reload();
+        }, 1500);
       });
     }
   }

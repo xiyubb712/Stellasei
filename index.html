@@ -261,10 +261,56 @@
       }
       if (splashOn) document.documentElement.classList.add('miya-splash-pending');
     } catch (e) {}
+
+    // 检测是否是点击刷新按钮后的刷新，如果是则显示加载遮罩层
+    try {
+      var isRefreshing = sessionStorage.getItem('miya_is_refreshing');
+      if (isRefreshing === 'true') {
+        var showLoading = function () {
+          var loading = document.getElementById('miya-page-loading');
+          if (loading) {
+            loading.classList.add('is-active');
+            loading.setAttribute('aria-hidden', 'false');
+          }
+        };
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', showLoading);
+        } else {
+          showLoading();
+        }
+        // 页面加载完成后隐藏遮罩层并清除标记
+        var hideLoading = function () {
+          setTimeout(function () {
+            var loading = document.getElementById('miya-page-loading');
+            if (loading) {
+              loading.classList.remove('is-active');
+              loading.setAttribute('aria-hidden', 'true');
+            }
+            try { sessionStorage.removeItem('miya_is_refreshing'); } catch (e) {}
+          }, 800);
+        };
+        if (document.readyState === 'complete') {
+          hideLoading();
+        } else {
+          window.addEventListener('load', hideLoading);
+        }
+      }
+    } catch (e) {}
   })();
   </script>
 </head>
 <body class="miya-mode-phone">
+  <!-- 页面加载遮罩层（默认隐藏，只在点击刷新按钮时显示） -->
+  <div class="st-refresh-loading" id="miya-page-loading" aria-hidden="true">
+    <div class="st-refresh-loading__content">
+      <svg class="st-refresh-loading__icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M20 12a8 8 0 1 1-2.34-5.66" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+        <path d="M20 4v4h-4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M12 9.0l1.1 2.2 2.4.35-1.75 1.7.41 2.4L12 14.4l-2.16 1.1.41-2.4-1.75-1.7 2.4-.35L12 9.0z" fill="currentColor"/>
+      </svg>
+      <p class="st-refresh-loading__text">正在加载...</p>
+    </div>
+  </div>
   <!-- 开屏 · 圆环层叠 × 弹跳装饰 -->
   <div class="miya-splash" id="miya-splash" hidden aria-hidden="true">
     <div class="miya-splash__bg" aria-hidden="true"></div>
@@ -1110,19 +1156,20 @@
               <button type="button" class="ins-layout-pick__btn is-active" data-bf-layout="stellasei">星绥布局</button>
             </div>
             <p class="ins-atelier-panel-desc ins-atelier-panel-desc--tight" id="miya-bf-layout-hint">星绥布局支持自由拖拽与编辑</p>
-            <div class="ins-atelier-splash-pill ins-atelier-splash-pill--card" style="margin-top: 12px;">
-              <div>
-                <strong>恢复默认布局</strong>
-                <span>一键恢复星绥布局的默认预设</span>
+            <div class="ins-atelier-splash-pill ins-atelier-splash-pill--card ins-reset-layout-pill" style="margin-top: 12px;">
+              <div class="ins-reset-layout-info">
+                <div class="ins-reset-layout-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                </div>
+                <div>
+                  <strong>恢复默认布局</strong>
+                  <span>一键恢复星绥布局的默认预设</span>
+                </div>
               </div>
-              <button type="button" class="ins-btn ins-btn--ghost" id="miya-stellasei-reset-layout">恢复</button>
-            </div>
-            <div class="ins-atelier-splash-pill ins-atelier-splash-pill--card" style="margin-top: 8px;">
-              <div>
-                <strong>刷新应用</strong>
-                <span>重新加载页面，获取最新代码</span>
-              </div>
-              <button type="button" class="ins-btn ins-btn--ghost" id="miya-app-refresh">刷新</button>
+              <button type="button" class="ins-reset-layout-btn" id="miya-stellasei-reset-layout">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                <span>恢复</span>
+              </button>
             </div>
           </article>
 
