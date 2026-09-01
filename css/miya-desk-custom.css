@@ -1348,7 +1348,7 @@ html.is-custom-wg-editing .desk-custom-viewport {
 /* 编辑面板外的完整名片预览 - 固定在屏幕顶部 */
 .desk-custom-wg-editor__preview {
   position: fixed;
-  top: 32px;
+  top: 52px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 1000;
