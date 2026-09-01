@@ -3171,18 +3171,15 @@
       avaEl.addEventListener('pointerdown', function (e) {
         e.stopImmediatePropagation();
         e.preventDefault();
-        // 打开聊天应用并切换到"我的"标签页，然后打开个人资料
+        // 打开聊天应用，然后打开个人资料（传 fromHome: true，点击叉叉键时直接关闭回到桌面）
         var openProfiles = function () {
           if (global.miyaChatMe && typeof global.miyaChatMe.openProfiles === 'function') {
-            global.miyaChatMe.openProfiles();
+            global.miyaChatMe.openProfiles({ fromHome: true });
           }
         };
         if (global.miyaChatApp && typeof global.miyaChatApp.open === 'function') {
-          // 聊天应用已经加载，直接打开并切换到"我的"标签页
+          // 聊天应用已经加载，直接打开
           global.miyaChatApp.open().then(function () {
-            if (global.miyaChatApp && typeof global.miyaChatApp.switchTab === 'function') {
-              global.miyaChatApp.switchTab('mine');
-            }
             setTimeout(openProfiles, 100);
           }).catch(function () {
             // 如果失败，直接尝试打开个人资料
@@ -3192,13 +3189,10 @@
           // 聊天应用还没加载，先点击聊天应用图标打开
           var chatBtn = document.querySelector('[data-app="chat"]');
           if (chatBtn) chatBtn.click();
-          // 等待聊天应用加载完成后切换到"我的"标签页并打开个人资料
+          // 等待聊天应用加载完成后打开个人资料
           var retry = function (count) {
             if (global.miyaChatApp && typeof global.miyaChatApp.open === 'function') {
               global.miyaChatApp.open().then(function () {
-                if (global.miyaChatApp && typeof global.miyaChatApp.switchTab === 'function') {
-                  global.miyaChatApp.switchTab('mine');
-                }
                 setTimeout(openProfiles, 100);
               });
             } else if (count > 0) {
