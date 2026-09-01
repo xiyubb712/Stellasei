@@ -1280,37 +1280,7 @@
       // 更新头像（左边：用户头像，右边：角色头像）
       var avatarImgs = wgEl.querySelectorAll('.wg-couple-entry__avatar-img');
       if (avatarImgs.length >= 2 && homeSpace && homeContactId) {
-        // 左边：用户头像
-        try {
-          var cs = global.miyaChatStore || null;
-          var profile = null;
-          if (cs && homeSpace.profileId && typeof cs.getProfiles === 'function') {
-            var profiles = cs.getProfiles() || [];
-            profile = profiles.find(function (p) { return p && p.id === homeSpace.profileId; }) || null;
-          }
-          if (profile) {
-            // 优先用解析后的头像URL
-            if (typeof global.miyaResolveProfileAvatarUrl === 'function') {
-              global.miyaResolveProfileAvatarUrl(profile).then(function (url) {
-                if (url && avatarImgs[0]) {
-                  avatarImgs[0].style.backgroundImage = 'url(' + url + ')';
-                }
-              }).catch(function () {
-                // 解析失败，用备用方案
-                if (profile && profile.avatar && avatarImgs[0]) {
-                  avatarImgs[0].style.backgroundImage = 'url(' + profile.avatar + ')';
-                }
-              });
-            } else if (profile.avatar) {
-              // 解析函数还没加载，直接用avatar
-              avatarImgs[0].style.backgroundImage = 'url(' + profile.avatar + ')';
-            }
-          }
-        } catch (e) {
-          console.error('更新用户头像失败:', e);
-        }
-
-        // 右边：角色头像
+        // 左边：角色头像
         try {
           var contact = null;
           var cs2 = global.miyaChatStore || null;
@@ -1322,18 +1292,18 @@
             // 优先用解析后的头像URL
             if (typeof global.miyaResolveAvatarUrl === 'function') {
               global.miyaResolveAvatarUrl(contact).then(function (url) {
-                if (url && avatarImgs[1]) {
-                  avatarImgs[1].style.backgroundImage = 'url(' + url + ')';
+                if (url && avatarImgs[0]) {
+                  avatarImgs[0].style.backgroundImage = 'url(' + url + ')';
                 }
               }).catch(function () {
                 // 解析失败，用备用方案
-                if (contact && contact.avatar && avatarImgs[1]) {
-                  avatarImgs[1].style.backgroundImage = 'url(' + contact.avatar + ')';
+                if (contact && contact.avatar && avatarImgs[0]) {
+                  avatarImgs[0].style.backgroundImage = 'url(' + contact.avatar + ')';
                 }
               });
             } else if (contact.avatar) {
               // 解析函数还没加载，直接用avatar
-              avatarImgs[1].style.backgroundImage = 'url(' + contact.avatar + ')';
+              avatarImgs[0].style.backgroundImage = 'url(' + contact.avatar + ')';
             }
           }
         } catch (e) {
@@ -1341,7 +1311,37 @@
         }
       }
 
-      // 更新对话语录（从语录库读取）
+      // 右边：用户头像
+        try {
+          var cs = global.miyaChatStore || null;
+          var profile = null;
+          if (cs && homeSpace.profileId && typeof cs.getProfiles === 'function') {
+            var profiles = cs.getProfiles() || [];
+            profile = profiles.find(function (p) { return p && p.id === homeSpace.profileId; }) || null;
+          }
+          if (profile) {
+            // 优先用解析后的头像URL
+            if (typeof global.miyaResolveProfileAvatarUrl === 'function') {
+              global.miyaResolveProfileAvatarUrl(profile).then(function (url) {
+                if (url && avatarImgs[1]) {
+                  avatarImgs[1].style.backgroundImage = 'url(' + url + ')';
+                }
+              }).catch(function () {
+                // 解析失败，用备用方案
+                if (profile && profile.avatar && avatarImgs[1]) {
+                  avatarImgs[1].style.backgroundImage = 'url(' + profile.avatar + ')';
+                }
+              });
+            } else if (profile.avatar) {
+              // 解析函数还没加载，直接用avatar
+              avatarImgs[1].style.backgroundImage = 'url(' + profile.avatar + ')';
+            }
+          }
+        } catch (e) {
+          console.error('更新用户头像失败:', e);
+        }
+
+        // 更新对话语录（从语录库读取）
       try {
         var quotesLib = global.miyaQuotesLibrary || null;
         var msgEls = wgEl.querySelectorAll('.wg-couple-entry__msg');
