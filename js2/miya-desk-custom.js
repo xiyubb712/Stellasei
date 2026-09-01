@@ -3153,14 +3153,23 @@
               avaEl.classList.add('has-custom-ava');
             }
             // 保存到小组件配置
-            var wgId = el.getAttribute('data-wg-id');
-            if (wgId && customThemeState && customThemeState.layout) {
-              var wgItem = customThemeState.layout.items && customThemeState.layout.items[wgId];
-              if (wgItem) {
-                if (!wgItem.cfg) wgItem.cfg = {};
-                wgItem.cfg.avatar = dataUrl;
-                saveLayout();
+            var itemEl = el.closest('[data-item-id]');
+            var itemId = itemEl ? itemEl.getAttribute('data-item-id') : '';
+            if (itemId) {
+              var layout = getLayout();
+              var found = false;
+              for (var pi = 0; pi < layout.pages.length && !found; pi++) {
+                var page = layout.pages[pi];
+                for (var ii = 0; ii < page.items.length && !found; ii++) {
+                  var it = page.items[ii];
+                  if (it.id === itemId) {
+                    if (!it.config) it.config = {};
+                    it.config.avatar = dataUrl;
+                    found = true;
+                  }
+                }
               }
+              if (found) saveLayout(layout);
             }
           };
           reader.readAsDataURL(file);
