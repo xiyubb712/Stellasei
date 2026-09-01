@@ -23,13 +23,19 @@
       --line: #E0DBD4;
     }
 
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+    }
+
     body {
       font-family: "Noto Serif SC", "Songti SC", "STSong", "SimSun", serif;
       background: var(--bg);
       min-height: 100vh;
       color: var(--text-main);
-      overflow-x: hidden;
       letter-spacing: 0.02em;
+      position: relative;
     }
 
     /* 顶部导航 */
@@ -773,18 +779,15 @@
 
     /* 底部装饰 */
     .page-footer {
-      position: fixed !important;
-      bottom: 16px;
-      left: 0;
-      right: 0;
       text-align: center;
       font-family: -apple-system, BlinkMacSystemFont, sans-serif;
       font-size: 9px;
       letter-spacing: 0.2em;
       color: var(--text-light);
       text-transform: uppercase;
-      z-index: 100;
-      pointer-events: none;
+      margin-top: 60px;
+      margin-bottom: 40px;
+      opacity: 0.7;
     }
 
     /* 完成弹窗 */
@@ -976,6 +979,9 @@
           <button class="start-btn" id="startBtn" onclick="startCompanion()">开 始 陪 伴</button>
           <p class="start-hint">选择后点击开始 · 陪伴时光即刻开启</p>
         </div>
+
+        <!-- 底部装饰 -->
+        <div class="page-footer">COMPANION IS THE LONGEST CONFESSION OF LOVE</div>
       </div>
     </div>
   </div>
@@ -1913,8 +1919,5 @@
     // 初始化
     init();
   </script>
-
-  <!-- 底部装饰（放在body最后，确保fixed定位生效） -->
-  <div class="page-footer">COMPANION IS THE LONGEST CONFESSION OF LOVE</div>
 </body>
 </html>
