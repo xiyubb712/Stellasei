@@ -4458,31 +4458,25 @@
   function updateLayoutVisibility(mode) {
     var isCustom = mode === 'custom';
     var isStellasei = mode === 'stellasei';
-    if (!isCustom && editMode) exitEditMode();
+    var isCustomLike = isCustom || isStellasei;
+    if (!isCustomLike && editMode) exitEditMode();
     var fixedVp = $('desk-viewport');
     var customVp = $('desk-custom-viewport');
     var stellaseiVp = $('desk-stellasei-viewport');
-    if (fixedVp) fixedVp.hidden = isCustom || isStellasei;
-    if (customVp) customVp.hidden = !isCustom;
-    if (stellaseiVp) stellaseiVp.hidden = !isStellasei;
-    if (isCustom) paintCustomPager();
+    if (fixedVp) fixedVp.hidden = isCustomLike;
+    if (customVp) customVp.hidden = !isCustomLike;
+    if (stellaseiVp) stellaseiVp.hidden = true;
+    if (isCustomLike) paintCustomPager();
     else restoreFixedPager();
     document.documentElement.dataset.miyaDeskLayout = mode;
-    if (isCustom) { captureFixedDock(); renderCustomLayout(); }
+    if (isCustomLike) { captureFixedDock(); renderCustomLayout(); }
     else restoreFixedDock();
-    if (isStellasei) { updateStellaseiClock(); }
   }
 
   function applyActiveLayout() {
     var mode = getLayoutMode();
     updateLayoutVisibility(mode);
-    if (mode === 'custom') return applyCustomDeskTheme();
-    if (mode === 'stellasei') {
-      document.documentElement.classList.remove('miya-custom-desk-icon-frameless');
-      updateStellaseiClock();
-      if (global.miyaApplyTheme) return global.miyaApplyTheme(global.miyaGetTheme && global.miyaGetTheme());
-      return Promise.resolve();
-    }
+    if (mode === 'custom' || mode === 'stellasei') return applyCustomDeskTheme();
     document.documentElement.classList.remove('miya-custom-desk-icon-frameless');
     if (global.miyaApplyTheme) return global.miyaApplyTheme(global.miyaGetTheme && global.miyaGetTheme());
     return Promise.resolve();
@@ -4490,7 +4484,53 @@
 
   function switchDeskLayout(mode) {
     setLayoutMode(mode);
+    if (mode === 'stellasei') {
+      ensureStellaseiDefaultLayout();
+    }
     return applyActiveLayout();
+  }
+
+  var STELLASEI_INIT_FLAG = 'miya-desk-stellasei-initialized';
+
+  function ensureStellaseiDefaultLayout() {
+    try {
+      var flag = localStorage.getItem(STELLASEI_INIT_FLAG);
+      if (flag === '1') return;
+      var layout = getStellaseiDefaultLayout();
+      setLayout(layout);
+      localStorage.setItem(STELLASEI_INIT_FLAG, '1');
+    } catch (e) {
+      console.warn('[stellasei] default layout init failed', e);
+    }
+  }
+
+  function getStellaseiDefaultLayout() {
+    var items = [];
+    // 名片小组件 - 占 4x2，位置在顶部
+    items.push({
+      id: genItemId(),
+      kind: 'widget',
+      widgetId: 'blank_4x2_7',
+      x: 0, y: 0, w: 4, h: 2,
+      config: {}
+    });
+    // 应用图标 - 从第3行开始
+    var apps = ['couple', 'itinerary', 'cstore', 'rift', 'music', 'memo', 'set', 'book', 'memory', 'chat', 'beauty', 'store', 'deep', 'notes', 'match', 'fun', 'echo', 'log', 'weather', 'map'];
+    apps.forEach(function (appKey, i) {
+      var y = 2 + Math.floor(i / 4);
+      var x = i % 4;
+      if (y < GRID_ROWS) {
+        items.push({
+          id: genItemId(),
+          kind: 'app',
+          key: appKey,
+          x: x, y: y, w: 1, h: 1
+        });
+      }
+    });
+    var dockSlots = emptyDockSlots();
+    DEFAULT_DOCK.forEach(function (k, i) { dockSlots[i] = k; });
+    return { pages: [{ items: items }], dockSlots: dockSlots };
   }
 
   /* ── 编辑模式 ── */
@@ -5966,6 +6006,9 @@
       return ready.then(function () {
         syncCustomWidgetCatalog();
         ensureLayoutCustomWidgetsInCatalog(customThemeState && customThemeState.layout);
+        if (getLayoutMode() === 'stellasei') {
+          ensureStellaseiDefaultLayout();
+        }
         captureFixedDock();
         bindCustomDrag();
         bindCustomPager();
