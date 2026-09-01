@@ -6754,11 +6754,11 @@
         } catch (e) {
           console.error('刷新前保存数据失败:', e);
         }
-        // 延迟 1.5 秒后刷新页面，让用户看到加载动画，并且确保数据保存完成
+        // 延迟 600 毫秒后刷新页面，让用户看到加载动画，并且确保数据保存完成
         setTimeout(function () {
           try { sessionStorage.setItem('miya_is_refreshing', 'true'); } catch (e) {}
           window.location.reload();
-        }, 1500);
+        }, 600);
       });
     }
   }
