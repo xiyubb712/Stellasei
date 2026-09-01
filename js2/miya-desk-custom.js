@@ -14,7 +14,7 @@
     'music', 'memo', 'set', 'book', 'memory', 'chat', 'beauty', 'store',
     'couple', 'itinerary', 'cstore', 'rift',
     'deep', 'notes', 'match', 'fun', 'echo', 'log',
-    'weather', 'map', 'apps', 'theater'
+    'weather', 'map', 'apps', 'theater', 'quotes'
   ];
 
   var DEFAULT_DOCK = ['chat', 'contacts', 'book', 'set'];
@@ -45,7 +45,7 @@
     couple: '情侣空间', itinerary: '行程轨迹', cstore: '74号便利店', rift: '错位时空',
     deep: '深入', notes: '日记', match: '赛事', fun: '娱乐', echo: '共鸣', log: '记录',
     weather: '天气', map: '地图', apps: '应用', theater: '剧场',
-    contacts: '联系人', pet: '打字机', pen: '模拟器'
+    contacts: '联系人', pet: '打字机', pen: '模拟器', quotes: '语录库'
   };
 
   var WIDGET_CATALOG = buildWidgetCatalog();
@@ -5420,7 +5420,7 @@
     markOccupied(2, 7, 2, 1);
 
     // 应用图标 - 第一页
-    var firstPageApps = ['music', 'memo', 'couple', 'itinerary', 'photos', 'whisper'];
+    var firstPageApps = ['music', 'memo', 'quotes', 'itinerary', 'photos', 'whisper'];
     var appIndex = 0;
     // 第6行右边（2个位置）
     for (var xx = 2; xx < GRID_COLS && appIndex < firstPageApps.length; xx++) {
@@ -7495,6 +7495,83 @@
   global.miyaOpenCompanionApp = openCompanionApp;
   global.miyaCloseCompanionApp = closeCompanionApp;
 
+  // ========== 语录库应用 ==========
+  // 打开语录库
+  function openQuotesApp() {
+    try {
+      var container = document.getElementById('quotesAppContainer');
+      var frame = document.getElementById('quotesAppFrame');
+      if (container && frame) {
+        // 如果还没有加载过，加载页面
+        if (!frame.src || frame.src === 'about:blank' || frame.src.indexOf('quotes-app.html') === -1) {
+          frame.src = 'quotes-app.html';
+        }
+        container.classList.add('show');
+        container.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+      }
+    } catch (e) {
+      console.error('打开语录库失败:', e);
+      window.open('quotes-app.html', '_blank');
+    }
+  }
+
+  // 关闭语录库
+  function closeQuotesApp() {
+    try {
+      var container = document.getElementById('quotesAppContainer');
+      if (container) {
+        container.classList.remove('show');
+        container.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+      }
+    } catch (e) {
+      console.error('关闭语录库失败:', e);
+    }
+  }
+
+  // 暴露到全局
+  global.miyaOpenQuotesApp = openQuotesApp;
+  global.miyaCloseQuotesApp = closeQuotesApp;
+
+  // 给 phoneLayer 添加捕获模式的点击事件监听器，拦截语录库应用的点击
+  try {
+    var phoneLayer = document.getElementById('miya-phone-layer');
+    if (phoneLayer) {
+      phoneLayer.addEventListener('click', function (e) {
+        var appBtn = e.target.closest('[data-app="quotes"]');
+        if (appBtn) {
+          e.preventDefault();
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+          openQuotesApp();
+        }
+      }, true);
+    }
+  } catch (e) {
+    console.log('添加语录库点击拦截失败:', e);
+  }
+
+  // 页面加载完成后，更新语录库应用的图标
+  try {
+    function updateQuotesIcons() {
+      var quotesBtns = document.querySelectorAll('[data-app="quotes"] [data-i="quotes"], [data-app="quotes"] .ic__box');
+      var quotesSvg = '<svg viewBox="0 0 24 24" fill="none"><path d="M9.5 7H6.5C5.12 7 4 8.12 4 9.5v2C4 12.88 5.12 14 6.5 14h1v2.5l3-2.5V9.5C10.5 8.12 9.38 7 8 7h1.5z" fill="rgba(70,74,80,0.75)" stroke="rgba(70,74,80,0.82)" stroke-width="0.8" stroke-linejoin="round"/><path d="M19.5 7h-3C15.12 7 14 8.12 14 9.5v2c0 1.38 1.12 2.5 2.5 2.5h1v2.5l3-2.5V9.5C20.5 8.12 19.38 7 18 7h1.5z" fill="rgba(70,74,80,0.75)" stroke="rgba(70,74,80,0.82)" stroke-width="0.8" stroke-linejoin="round"/><path d="M5 19h14" stroke="rgba(130,136,145,0.65)" stroke-width="1.1" stroke-linecap="round"/></svg>';
+      quotesBtns.forEach(function (btn) {
+        btn.innerHTML = quotesSvg;
+      });
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function () {
+        setTimeout(updateQuotesIcons, 500);
+      });
+    } else {
+      setTimeout(updateQuotesIcons, 500);
+    }
+  } catch (e) {
+    console.log('更新语录库图标失败:', e);
+  }
+
   // 监听来自 iframe 的 postMessage（解决跨域问题）
   window.addEventListener('message', function (e) {
     try {
@@ -7504,6 +7581,12 @@
       // 关闭陪伴系统
       if (data.type === 'miya-close-companion-app') {
         closeCompanionApp();
+        return;
+      }
+      
+      // 关闭语录库
+      if (data.type === 'miya-close-quotes-app') {
+        closeQuotesApp();
         return;
       }
       

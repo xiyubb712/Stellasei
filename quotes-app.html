@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>语录库</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    :root {
+      --bg: #F7F5F2;
+      --bg-soft: #EFEBE6;
+      --text-main: #2C2A28;
+      --text-secondary: #8B8680;
+      --text-light: #B5B0A9;
+      --accent: #9E8B7D;
+      --accent-soft: #C9BFB5;
+      --line: #E0DBD4;
+    }
+
+    body {
+      font-family: "Noto Serif SC", "Songti SC", "STSong", "SimSun", serif;
+      background: var(--bg);
+      min-height: 100vh;
+      color: var(--text-main);
+      letter-spacing: 0.02em;
+    }
+
+    /* 顶部导航 */
+    .nav-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 50px 24px 16px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .nav-back {
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      color: var(--text-secondary);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 6px 10px;
+    }
+
+    .nav-title {
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+    }
+
+    .nav-add {
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      color: var(--accent);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 6px 10px;
+    }
+
+    /* 分类标签 */
+    .category-tabs {
+      display: flex;
+      gap: 8px;
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .category-tab {
+      padding: 8px 16px;
+      border: 1px solid var(--line);
+      border-radius: 2px;
+      background: none;
+      font-family: inherit;
+      font-size: 12px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.3s;
+      letter-spacing: 0.05em;
+    }
+
+    .category-tab.active {
+      border-color: var(--accent);
+      background: rgba(158,139,125,0.08);
+      color: var(--text-main);
+    }
+
+    /* 选择栏 */
+    .select-bar {
+      display: flex;
+      gap: 12px;
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .select-group {
+      flex: 1;
+    }
+
+    .select-label {
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      color: var(--text-light);
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .select-box {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid var(--line);
+      border-radius: 2px;
+      background: none;
+      font-family: inherit;
+      font-size: 12px;
+      color: var(--text-main);
+      cursor: pointer;
+    }
+
+    /* 语录列表 */
+    .quotes-list {
+      padding: 16px 24px 80px;
+    }
+
+    .quote-item {
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      margin-bottom: 12px;
+      background: rgba(255,255,255,0.5);
+      position: relative;
+    }
+
+    .quote-text {
+      font-size: 13px;
+      line-height: 1.8;
+      color: var(--text-main);
+      padding-right: 30px;
+    }
+
+    .quote-item.couple .quote-text {
+      margin-bottom: 8px;
+    }
+
+    .quote-item.couple .quote-text:last-child {
+      margin-bottom: 0;
+    }
+
+    .quote-left {
+      color: var(--text-main);
+    }
+
+    .quote-right {
+      color: var(--text-secondary);
+      text-align: right;
+    }
+
+    .quote-delete {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: 24px;
+      height: 24px;
+      border: none;
+      background: none;
+      color: var(--text-light);
+      font-size: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 24px;
+      color: var(--text-light);
+      font-size: 13px;
+    }
+
+    /* 添加弹窗 */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.4);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 24px;
+    }
+
+    .modal-overlay.show {
+      display: flex;
+    }
+
+    .modal-content {
+      background: var(--bg);
+      border-radius: 8px;
+      padding: 24px;
+      width: 100%;
+      max-width: 320px;
+    }
+
+    .modal-title {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    .modal-input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      background: none;
+      font-family: inherit;
+      font-size: 13px;
+      color: var(--text-main);
+      margin-bottom: 12px;
+      resize: vertical;
+      min-height: 60px;
+    }
+
+    .modal-buttons {
+      display: flex;
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    .modal-btn {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      background: none;
+      font-family: inherit;
+      font-size: 13px;
+      color: var(--text-secondary);
+      cursor: pointer;
+    }
+
+    .modal-btn.primary {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: white;
+    }
+
+    /* 底部装饰 */
+    .page-footer {
+      text-align: center;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      color: var(--text-light);
+      text-transform: uppercase;
+      margin-top: 40px;
+      margin-bottom: 40px;
+      opacity: 0.7;
+    }
+  </style>
+</head>
+<body>
+  <!-- 顶部导航 -->
+  <div class="nav-bar">
+    <button class="nav-back" onclick="closeApp()">EXIT</button>
+    <span class="nav-title">语录库</span>
+    <button class="nav-add" onclick="showAddModal()">+ 添加</button>
+  </div>
+
+  <!-- 分类标签 -->
+  <div class="category-tabs">
+    <button class="category-tab active" data-category="companion" onclick="switchCategory('companion')">陪伴语录</button>
+    <button class="category-tab" data-category="couple" onclick="switchCategory('couple')">情侣对话</button>
+  </div>
+
+  <!-- 选择栏 -->
+  <div class="select-bar">
+    <div class="select-group">
+      <div class="select-label">角色</div>
+      <select class="select-box" id="characterSelect" onchange="renderQuotes()">
+        <option value="default">通用</option>
+      </select>
+    </div>
+    <div class="select-group" id="sceneGroup">
+      <div class="select-label">场景</div>
+      <select class="select-box" id="sceneSelect" onchange="renderQuotes()">
+        <option value="study">学习</option>
+        <option value="work">工作</option>
+        <option value="rest">休息</option>
+        <option value="meal">吃饭</option>
+        <option value="sleep">睡前</option>
+        <option value="chill">放空</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- 语录列表 -->
+  <div class="quotes-list" id="quotesList"></div>
+
+  <!-- 添加弹窗 -->
+  <div class="modal-overlay" id="addModal">
+    <div class="modal-content">
+      <div class="modal-title" id="modalTitle">添加语录</div>
+      <div id="modalInputs">
+        <textarea class="modal-input" id="quoteInput" placeholder="输入语录内容..."></textarea>
+      </div>
+      <div class="modal-buttons">
+        <button class="modal-btn" onclick="hideAddModal()">取消</button>
+        <button class="modal-btn primary" onclick="addQuote()">添加</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    var currentCategory = 'companion';
+    var quotesLib = null;
+
+    // 初始化
+    function init() {
+      // 等待父页面的语录库加载
+      var checkCount = 0;
+      function checkLib() {
+        if (window.parent && window.parent.miyaQuotesLibrary) {
+          quotesLib = window.parent.miyaQuotesLibrary;
+          renderQuotes();
+          return;
+        }
+        checkCount++;
+        if (checkCount < 20) {
+          setTimeout(checkLib, 250);
+        } else {
+          document.getElementById('quotesList').innerHTML = '<div class="empty-state">语录库加载中...</div>';
+        }
+      }
+      checkLib();
+    }
+
+    // 切换分类
+    function switchCategory(category) {
+      currentCategory = category;
+      document.querySelectorAll('.category-tab').forEach(function(tab) {
+        tab.classList.toggle('active', tab.dataset.category === category);
+      });
+      // 情侣对话隐藏场景选择
+      document.getElementById('sceneGroup').style.display = category === 'couple' ? 'none' : 'block';
+      renderQuotes();
+    }
+
+    // 渲染语录列表
+    function renderQuotes() {
+      if (!quotesLib) return;
+      var characterId = document.getElementById('characterSelect').value;
+      var scene = currentCategory === 'couple' ? 'general' : document.getElementById('sceneSelect').value;
+      var data = quotesLib.getAll();
+      var catData = data[currentCategory] || {};
+      var charData = catData[characterId] || catData['default'] || {};
+      var quotes = charData[scene] || [];
+
+      var listEl = document.getElementById('quotesList');
+      if (quotes.length === 0) {
+        listEl.innerHTML = '<div class="empty-state">暂无语录，点击右上角添加</div>';
+        return;
+      }
+
+      var html = '';
+      quotes.forEach(function(quote, index) {
+        if (currentCategory === 'couple') {
+          html += '<div class="quote-item couple">' +
+            '<div class="quote-text quote-left">' + escapeHtml(quote.left) + '</div>' +
+            '<div class="quote-text quote-right">' + escapeHtml(quote.right) + '</div>' +
+            '<button class="quote-delete" onclick="deleteQuote(' + index + ')">×</button>' +
+            '</div>';
+        } else {
+          html += '<div class="quote-item">' +
+            '<div class="quote-text">' + escapeHtml(quote) + '</div>' +
+            '<button class="quote-delete" onclick="deleteQuote(' + index + ')">×</button>' +
+            '</div>';
+        }
+      });
+      listEl.innerHTML = html;
+    }
+
+    // 显示添加弹窗
+    function showAddModal() {
+      document.getElementById('modalTitle').textContent = currentCategory === 'couple' ? '添加情侣对话' : '添加语录';
+      var inputsEl = document.getElementById('modalInputs');
+      if (currentCategory === 'couple') {
+        inputsEl.innerHTML = '<textarea class="modal-input" id="leftInput" placeholder="角色说的话..."></textarea>' +
+          '<textarea class="modal-input" id="rightInput" placeholder="你说的话..."></textarea>';
+      } else {
+        inputsEl.innerHTML = '<textarea class="modal-input" id="quoteInput" placeholder="输入语录内容..."></textarea>';
+      }
+      document.getElementById('addModal').classList.add('show');
+    }
+
+    // 隐藏添加弹窗
+    function hideAddModal() {
+      document.getElementById('addModal').classList.remove('show');
+    }
+
+    // 添加语录
+    function addQuote() {
+      if (!quotesLib) return;
+      var characterId = document.getElementById('characterSelect').value;
+      var scene = currentCategory === 'couple' ? 'general' : document.getElementById('sceneSelect').value;
+
+      if (currentCategory === 'couple') {
+        var left = document.getElementById('leftInput').value.trim();
+        var right = document.getElementById('rightInput').value.trim();
+        if (!left || !right) {
+          alert('请输入完整的对话');
+          return;
+        }
+        quotesLib.addQuote(currentCategory, characterId, scene, { left: left, right: right });
+      } else {
+        var quote = document.getElementById('quoteInput').value.trim();
+        if (!quote) {
+          alert('请输入语录内容');
+          return;
+        }
+        quotesLib.addQuote(currentCategory, characterId, scene, quote);
+      }
+
+      hideAddModal();
+      renderQuotes();
+    }
+
+    // 删除语录
+    function deleteQuote(index) {
+      if (!quotesLib) return;
+      if (!confirm('确定要删除这条语录吗？')) return;
+
+      var characterId = document.getElementById('characterSelect').value;
+      var scene = currentCategory === 'couple' ? 'general' : document.getElementById('sceneSelect').value;
+      var data = quotesLib.getAll();
+      if (data[currentCategory] && data[currentCategory][characterId] && data[currentCategory][characterId][scene]) {
+        data[currentCategory][characterId][scene].splice(index, 1);
+        quotesLib.saveAll(data);
+        renderQuotes();
+      }
+    }
+
+    // 关闭应用
+    function closeApp() {
+      if (window.parent && window.parent.postMessage) {
+        window.parent.postMessage({ type: 'miya-close-quotes-app' }, '*');
+      }
+    }
+
+    // HTML 转义
+    function escapeHtml(text) {
+      var div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // 监听父页面消息
+    window.addEventListener('message', function(e) {
+      if (e.data && e.data.type === 'miya-quotes-app-init') {
+        init();
+      }
+    });
+
+    // 自动初始化
+    init();
+  </script>
+</body>
+</html>

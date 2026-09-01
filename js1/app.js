@@ -45,7 +45,8 @@
     weather: '<svg viewBox="0 0 24 24" fill="none"><circle cx="16.5" cy="8" r="2.6" stroke="rgba(70,74,80,0.82)" stroke-width="1.2"/><path d="M16.5 4.2v1M16.5 10.8v1M12.7 8h1M19.3 8h1" stroke="rgba(130,136,145,0.65)" stroke-width="1.1" stroke-linecap="round"/><path d="M7 17.5c-2 0-3.5-1.4-3.5-3.1S5 11.3 7 11.3c.4-1.9 2.1-3.3 4.2-3.3 2.3 0 4.2 1.7 4.4 3.9 1.6.1 2.9 1.4 2.9 2.9 0 1.6-1.4 3-3.1 3H7z" stroke="rgba(70,74,80,0.82)" stroke-width="1.2" stroke-linejoin="round"/></svg>',
     map: '<svg viewBox="0 0 24 24" fill="none"><path d="M4.5 7.2l5-2.4 5 2.4 5-2.4v12.2l-5 2.4-5-2.4-5 2.4V7.2z" stroke="rgba(70,74,80,0.82)" stroke-width="1.15" stroke-linejoin="round"/><path d="M9.5 4.8v12.2M14.5 7.2v12.2" stroke="rgba(130,136,145,0.65)" stroke-width="1.05" stroke-linecap="round"/><path d="M5.2 10.2l3.6-1.1M10.2 11.5l3.5 1.2M15.1 9.8l3.4-1" stroke="rgba(130,136,145,0.55)" stroke-width="0.95" stroke-linecap="round"/><circle cx="12" cy="11.2" r="2.15" stroke="rgba(70,74,80,0.82)" stroke-width="1.1"/><path d="M12 9.05v2.15l1.35.8" stroke="rgba(130,136,145,0.7)" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 13.35v2.1" stroke="rgba(130,136,145,0.65)" stroke-width="1.05" stroke-linecap="round"/></svg>',
     apps: '<svg viewBox="0 0 24 24" fill="none"><rect x="3.8" y="3.8" width="7" height="7" rx="2.1" stroke="rgba(70,74,80,0.82)" stroke-width="1.15"/><rect x="13.2" y="3.8" width="7" height="7" rx="2.1" stroke="rgba(70,74,80,0.82)" stroke-width="1.15"/><rect x="3.8" y="13.2" width="7" height="7" rx="2.1" stroke="rgba(70,74,80,0.82)" stroke-width="1.15"/><rect x="13.2" y="13.2" width="7" height="7" rx="2.1" stroke="rgba(70,74,80,0.82)" stroke-width="1.15"/><circle cx="7.3" cy="7.3" r="1.05" stroke="rgba(130,136,145,0.65)" stroke-width="1"/><path d="M15.4 6.2h2.6M16.7 5v2.5" stroke="rgba(130,136,145,0.65)" stroke-width="1" stroke-linecap="round"/><path d="M5.6 15.8h3.4M5.6 17.4h2.2" stroke="rgba(130,136,145,0.65)" stroke-width="1" stroke-linecap="round"/><circle cx="15.5" cy="15.5" r="0.7" fill="rgba(130,136,145,0.65)"/><circle cx="17.7" cy="15.5" r="0.7" fill="rgba(130,136,145,0.55)"/><circle cx="15.5" cy="17.7" r="0.7" fill="rgba(130,136,145,0.55)"/><circle cx="17.7" cy="17.7" r="0.7" fill="rgba(130,136,145,0.45)"/></svg>',
-    theater: '<svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="6" width="17" height="12" rx="2" stroke="rgba(70,74,80,0.82)" stroke-width="1.2"/><path d="M3.5 9.5h17" stroke="rgba(130,136,145,0.65)" stroke-width="1.1" stroke-linecap="round"/><path d="M10.2 12.2l4.2 2.4-4.2 2.4v-4.8z" fill="rgba(130,136,145,0.65)"/></svg>'
+    theater: '<svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="6" width="17" height="12" rx="2" stroke="rgba(70,74,80,0.82)" stroke-width="1.2"/><path d="M3.5 9.5h17" stroke="rgba(130,136,145,0.65)" stroke-width="1.1" stroke-linecap="round"/><path d="M10.2 12.2l4.2 2.4-4.2 2.4v-4.8z" fill="rgba(130,136,145,0.65)"/></svg>',
+    quotes: '<svg viewBox="0 0 24 24" fill="none"><path d="M12 20s-7-4.35-7-10a4 4 0 0 1 7-2.65A4 4 0 0 1 19 10c0 5.65-7 10-7 10z" stroke="rgba(70,74,80,0.82)" stroke-width="1.3" stroke-linejoin="round"/><circle cx="17.5" cy="16.5" r="3.5" fill="#F7F5F2" stroke="rgba(70,74,80,0.82)" stroke-width="1.2"/><path d="M17.5 15v3M16 16.5h3" stroke="rgba(70,74,80,0.82)" stroke-width="1.2" stroke-linecap="round"/></svg>',
   };
 
   var SVG_ENT = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M17 4H7C4.24 4 2 6.24 2 9v7.88a3.124 3.124 0 0 0 5.33 2.21l1.96-1.96c.71-.71 1.7-1.12 2.71-1.12s1.99.41 2.71 1.12l1.96 1.96A3.124 3.124 0 0 0 22 16.88V9c0-2.76-2.24-5-5-5M7 12c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2m9.5-5c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1m-2 4c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1m2 2c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1m2-2c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1"></path></svg>';
@@ -86,6 +87,7 @@
   var SVG = SVG_CLASSIC;
 
   var NAMES = {
+    quotes: '语录库',
     music: '音乐', memo: '论坛', set: '设置', book: '世界书',
     memory: '记忆', chat: '聊天', board: '论坛', play: '游戏',
     beauty: '美化', store: '线下', photo: '多相', world: '世界',
@@ -454,6 +456,7 @@
 
   function launchApp(id) {
     if (!id) return false;
+    if (id === 'quotes' && window.miyaOpenQuotesApp) { window.miyaOpenQuotesApp(); return true; }
     if (APP_HANDLERS[id]) {
       var run = function () {
         APP_HANDLERS[id]();
