@@ -1230,6 +1230,19 @@
         }
       } catch (e) {}
       var avatarRef = userAvatarId || cfg.avatar;
+      // 如果 miyaChatStore 还没加载完成，从 localStorage 读取 base64 缓存直接显示
+      if (!userAvatarId && ava4x4) {
+        try {
+          var cachedBase64 = localStorage.getItem('miya_home_avatar_base64');
+          if (cachedBase64) {
+            ava4x4.style.backgroundImage = 'url("' + cachedBase64 + '")';
+            ava4x4.style.backgroundSize = 'cover';
+            ava4x4.style.backgroundPosition = 'center';
+            ava4x4.classList.add('has-custom-ava');
+            wgEl.classList.add('has-custom-ava');
+          }
+        } catch (e) {}
+      }
       promises.push(applyMediaToEl(bgPhoto, cfg.profileBg, { bgMode: true, doneClass: 'has-custom-bg' }).then(function () {
         wgEl.classList.toggle('has-custom-bg', !!cfg.profileBg);
         if (bgPhoto) bgPhoto.style.backgroundPosition = bgPos;
