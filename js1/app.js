@@ -841,11 +841,28 @@
     }
   }
 
-  // 页面加载时立即同步头像
-  lastAvatarId = getCurrentAvatarId();
-  if (lastAvatarId) {
-    setTimeout(function () { applyAvatarToAllWidgets(lastAvatarId); }, 300);
+  // 强制刷新头像（不检查是否变化）
+  function forceRefreshAvatar() {
+    var currentAvatarId = getCurrentAvatarId();
+    if (currentAvatarId) {
+      lastAvatarId = currentAvatarId;
+      applyAvatarToAllWidgets(currentAvatarId);
+    }
   }
+
+  // 页面加载时立即同步头像（带重试机制，确保 miyaChatStore 加载完成）
+  var initRetryCount = 0;
+  function initAvatarSync() {
+    var currentAvatarId = getCurrentAvatarId();
+    if (currentAvatarId) {
+      lastAvatarId = currentAvatarId;
+      applyAvatarToAllWidgets(currentAvatarId);
+    } else if (initRetryCount < 10) {
+      initRetryCount++;
+      setTimeout(initAvatarSync, 500);
+    }
+  }
+  initAvatarSync();
 
   // 每隔 2 秒检查一次（只在主页可见时才会真正更新）
   setInterval(checkAndUpdateAvatar, 2000);
@@ -853,8 +870,45 @@
   // 页面重新可见时立即检查一次
   document.addEventListener('visibilitychange', function () {
     if (!document.hidden) {
-      setTimeout(checkAndUpdateAvatar, 100);
+      setTimeout(forceRefreshAvatar, 100);
     }
   });
+
+  // 页面获得焦点时立即检查一次
+  window.addEventListener('focus', function () {
+    setTimeout(forceRefreshAvatar, 100);
+  });
+
+  // 页面显示时立即检查一次（PWA 从后台恢复时）
+  window.addEventListener('pageshow', function () {
+    setTimeout(forceRefreshAvatar, 100);
+  });
+
+  // 监听聊天应用关闭，立即刷新头像
+  var chatAppObserverStarted = false;
+  function startChatAppObserver() {
+    if (chatAppObserverStarted) return;
+    chatAppObserverStarted = true;
+    var chatApp = document.getElementById('miya-chat-app');
+    if (!chatApp) {
+      setTimeout(startChatAppObserver, 1000);
+      return;
+    }
+    var wasOpen = chatApp.classList.contains('is-open');
+    var observer = new MutationObserver(function () {
+      var isOpen = chatApp.classList.contains('is-open');
+      if (wasOpen && !isOpen) {
+        // 聊天应用关闭了，立即刷新头像
+        setTimeout(forceRefreshAvatar, 200);
+      }
+      wasOpen = isOpen;
+    });
+    observer.observe(chatApp, { attributes: true, attributeFilter: ['class'] });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', startChatAppObserver);
+  } else {
+    startChatAppObserver();
+  }
   // ===== 头像自动刷新机制结束 =====
 })();
