@@ -347,7 +347,8 @@
       { key: 'profileBg', type: 'image', label: '背景照片' },
       { key: 'name', type: 'text', label: '名字', maxLength: 24 },
       { key: 'bio', type: 'text', label: '简介', maxLength: 48, multiline: true },
-      { key: 'cornerPhoto', type: 'image', label: '右下角照片' }
+      { key: 'cornerPhoto', type: 'image', label: '右下角照片' },
+      { key: 'textColor', type: 'color', label: '文字颜色' }
     ],
     memo: [
       { key: 'ava1', type: 'image', label: '左头像' },
@@ -1120,9 +1121,16 @@
       var nameEl4x4 = wgEl.querySelector('.wg-profile4x4__name');
       var bioEl4x4 = wgEl.querySelector('.wg-profile4x4__bio');
       var cornerPhoto = wgEl.querySelector('.wg-profile4x4__photo-inner');
+      var dateEl4x4 = wgEl.querySelector('.wg-profile4x4__clock-date');
+      var timeEl4x4 = wgEl.querySelector('.wg-profile4x4__clock-time');
       if (nameEl4x4) nameEl4x4.textContent = cfg.name || '星绥 Stellasei';
       if (bioEl4x4) bioEl4x4.textContent = cfg.bio || '白日太长，适合慢慢过';
       updateProfileClock(wgEl);
+      var textColor = cfg.textColor || '#3c4046';
+      if (nameEl4x4) nameEl4x4.style.color = textColor;
+      if (bioEl4x4) bioEl4x4.style.color = textColor;
+      if (timeEl4x4) timeEl4x4.style.color = textColor;
+      if (dateEl4x4) dateEl4x4.style.color = textColor;
       var bgPos = cfg.profileBgPosition || 'center center';
       var cornerPos = cfg.cornerPhotoPosition || 'center center';
       promises.push(applyMediaToEl(bgPhoto, cfg.profileBg, { bgMode: true, doneClass: 'has-custom-bg' }).then(function () {
@@ -1660,6 +1668,23 @@
           choiceWrap.appendChild(btn);
         });
         row.appendChild(choiceWrap);
+      } else if (field.type === 'color') {
+        var colorWrap = document.createElement('div');
+        colorWrap.className = 'desk-custom-wg-editor__color-wrap';
+        var colorInput = document.createElement('input');
+        colorInput.type = 'color';
+        colorInput.className = 'desk-custom-wg-editor__color-input';
+        colorInput.setAttribute('data-wg-ed-color', field.key);
+        colorInput.value = cfg[field.key] || '#3c4046';
+        var colorText = document.createElement('span');
+        colorText.className = 'desk-custom-wg-editor__color-text';
+        colorText.textContent = cfg[field.key] || '#3c4046';
+        colorInput.addEventListener('input', function () {
+          colorText.textContent = colorInput.value;
+        });
+        colorWrap.appendChild(colorInput);
+        colorWrap.appendChild(colorText);
+        row.appendChild(colorWrap);
       } else {
         var input;
         if (field.multiline) {
@@ -1769,6 +1794,9 @@
       if (btn.classList.contains('ins-chip--gold')) {
         draft[btn.getAttribute('data-wg-ed-choice')] = btn.getAttribute('data-wg-ed-choice-value');
       }
+    });
+    body.querySelectorAll('[data-wg-ed-color]').forEach(function (input) {
+      draft[input.getAttribute('data-wg-ed-color')] = input.value;
     });
     return draft;
   }

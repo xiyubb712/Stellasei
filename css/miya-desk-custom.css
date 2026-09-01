@@ -1311,6 +1311,38 @@ html.is-custom-wg-editing .desk-custom-viewport {
   gap: 6px;
 }
 
+.desk-custom-wg-editor__color-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.desk-custom-wg-editor__color-input {
+  width: 48px;
+  height: 36px;
+  border: 1.5px solid rgba(130, 136, 145, 0.32);
+  border-radius: 10px;
+  background: transparent;
+  cursor: pointer;
+  padding: 2px;
+}
+
+.desk-custom-wg-editor__color-input::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.desk-custom-wg-editor__color-input::-webkit-color-swatch {
+  border: none;
+  border-radius: 8px;
+}
+
+.desk-custom-wg-editor__color-text {
+  font-size: 13px;
+  color: var(--ink-faint);
+  font-family: monospace;
+  letter-spacing: 0.05em;
+}
+
 .desk-custom-wg-editor__foot {
   display: flex;
   justify-content: flex-end;
@@ -1652,9 +1684,9 @@ html.is-custom-wg-editing .desk-custom-viewport {
   font-size: 13px;
   font-weight: 400;
   letter-spacing: 0.02em;
-  color: rgba(100, 106, 114, 0.7);
+  color: rgba(60, 64, 70, 0.85);
   order: 1;
-  margin-bottom: -2px;
+  margin-bottom: 2px;
 }
 
 .wg-profile4x4__clock-time {
