@@ -314,7 +314,7 @@
     cat.blank_4x4_3 = { w: 4, h: 4, label: '灰白ins主页', widget: 'inshome', editable: true };
     cat.blank_4x4_4 = { w: 4, h: 4, label: '朋友圈', widget: 'wxmoments', editable: true };
     cat.blank_4x4_5 = { w: 4, h: 5, label: '星绥名片', widget: 'profile4x4', editable: true };
-    cat.blank_2x2_1 = { w: 2, h: 2, label: '双头像 MEMO', widget: 'memo', editable: true };
+    cat.blank_2x2_1 = { w: 2, h: 2, label: '情侣空间入口', widget: 'coupleentry', editable: false };
     cat.blank_2x2_2 = { w: 2, h: 2, label: '拍立得', widget: 'polaroid', editable: true };
     cat.blank_2x2_3 = { w: 2, h: 2, label: '吧唧相', widget: 'badgepin', editable: true };
     cat.blank_2x2_4 = { w: 2, h: 2, label: '黑胶碟', widget: 'vinyl', editable: true };
@@ -1230,6 +1230,54 @@
         wgEl.classList.toggle('has-custom-photo', !!cfg.cornerPhoto);
         if (cornerPhoto) cornerPhoto.style.backgroundPosition = cornerPos;
       }));
+    } else if (type === 'coupleentry') {
+      // 更新在一起的天数
+      var daysNumEl = wgEl.querySelector('.wg-couple-entry__days-num');
+      if (daysNumEl) {
+        try {
+          var coupleData = null;
+          if (global.miyaSyncReadJsonKey) {
+            coupleData = global.miyaSyncReadJsonKey('miya-couple-v1');
+          }
+          if (!coupleData) {
+            try {
+              var raw = localStorage.getItem('miya-couple-v1');
+              if (raw) coupleData = JSON.parse(raw);
+            } catch (e) {}
+          }
+          if (coupleData && coupleData.spaces) {
+            var spaceIds = Object.keys(coupleData.spaces);
+            if (spaceIds.length > 0) {
+              var space = coupleData.spaces[spaceIds[0]];
+              if (space && space.anniversary) {
+                var anniversary = new Date(space.anniversary);
+                var today = new Date();
+                var diffTime = Math.abs(today - anniversary);
+                var diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                daysNumEl.textContent = diffDays;
+              }
+            }
+          }
+        } catch (e) {
+          console.error('更新情侣空间天数失败:', e);
+        }
+      }
+      // 更新头像（左边：用户头像）
+      var avatarImgs = wgEl.querySelectorAll('.wg-couple-entry__avatar-img');
+      if (avatarImgs.length >= 1) {
+        try {
+          var userAvatar = null;
+          if (global.miyaGetUserProfile && typeof global.miyaGetUserProfile === 'function') {
+            var profile = global.miyaGetUserProfile();
+            if (profile && profile.avatar) userAvatar = profile.avatar;
+          }
+          if (userAvatar) {
+            avatarImgs[0].style.backgroundImage = 'url(' + userAvatar + ')';
+          }
+        } catch (e) {
+          console.error('更新情侣空间头像失败:', e);
+        }
+      }
     } else if (type === 'memo') {
       setMemoBubble(wgEl.querySelector('.wg-memo__person:nth-child(1) .wg-memo__bubble'), '01', cfg.line1);
       setMemoBubble(wgEl.querySelector('.wg-memo__person:nth-child(2) .wg-memo__bubble'), '02', cfg.line2);
@@ -3183,6 +3231,59 @@
     return el;
   }
 
+  function createCoupleEntryWidgetEl() {
+    var el = document.createElement('article');
+    el.className = 'wg wg-couple-entry desk-custom__wg desk-custom__wg--couple-entry';
+    el.setAttribute('aria-label', '情侣空间入口');
+    el.innerHTML =
+      '<div class="wg-couple-entry__bg" aria-hidden="true"></div>' +
+      '<div class="wg-couple-entry__content">' +
+        '<div class="wg-couple-entry__days">在一起 <span class="wg-couple-entry__days-num">--</span> 天</div>' +
+        '<div class="wg-couple-entry__avatars">' +
+          '<div class="wg-couple-entry__avatar wg-couple-entry__avatar--left">' +
+            '<div class="wg-couple-entry__avatar-img"></div>' +
+          '</div>' +
+          '<div class="wg-couple-entry__heart">' +
+            '<svg viewBox="0 0 100 100" fill="none" class="wg-couple-entry__heart-svg">' +
+              '<path d="M50 88 C30 70, 10 55, 10 35 C10 20, 22 10, 35 10 C42 10, 47 13, 50 18 C53 13, 58 10, 65 10 C78 10, 90 20, 90 35 C90 55, 70 70, 50 88 Z" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>' +
+            '</svg>' +
+          '</div>' +
+          '<div class="wg-couple-entry__avatar wg-couple-entry__avatar--right">' +
+            '<div class="wg-couple-entry__avatar-img"></div>' +
+          '</div>' +
+          '<span class="wg-couple-entry__mini-heart wg-couple-entry__mini-heart--1">♡</span>' +
+          '<span class="wg-couple-entry__mini-heart wg-couple-entry__mini-heart--2">♡</span>' +
+          '<span class="wg-couple-entry__mini-heart wg-couple-entry__mini-heart--3">♡</span>' +
+          '<span class="wg-couple-entry__mini-heart wg-couple-entry__mini-heart--4">♡</span>' +
+        '</div>' +
+        '<div class="wg-couple-entry__messages">' +
+          '<div class="wg-couple-entry__msg wg-couple-entry__msg--left">生日快樂，望仔。</div>' +
+          '<div class="wg-couple-entry__msg wg-couple-entry__msg--right">我抓到你了。</div>' +
+        '</div>' +
+      '</div>' +
+      '<button type="button" class="desk-custom__wg-remove" aria-label="移除小组件">×</button>';
+    // 点击进入情侣空间应用
+    el.addEventListener('pointerdown', function (e) {
+      // 判断点击的是不是删除按钮
+      var target = e.target;
+      if (target.closest && target.closest('.desk-custom__wg-remove')) {
+        return; // 点击的是删除按钮，不触发进入情侣空间
+      }
+      e.stopImmediatePropagation();
+      try {
+        if (global.miyaCoupleApp && typeof global.miyaCoupleApp.open === 'function') {
+          global.miyaCoupleApp.open();
+        } else {
+          showToast('情侣空间应用未加载');
+        }
+      } catch (err) {
+        console.error('打开情侣空间失败:', err);
+        showToast('打开情侣空间失败');
+      }
+    }, true); // 用捕获模式，确保在冒泡阶段之前拦截
+    return el;
+  }
+
   function updateProfileClock(wgEl) {
     if (!wgEl) return;
     var timeEl = wgEl.querySelector('.wg-profile__clock-time, .wg-profile4x4__clock-time');
@@ -4219,6 +4320,7 @@
     if (def.blank) return createBlankWidgetEl(widgetId, def);
     if (def.widget === 'profile') return createProfileWidgetEl();
     if (def.widget === 'profile4x4') return createProfile4x4WidgetEl();
+    if (def.widget === 'coupleentry') return createCoupleEntryWidgetEl();
     if (def.widget === 'memo') return createMemoWidgetEl();
     if (def.widget === 'polaroid') return createPolaroidWidgetEl();
     if (def.widget === 'filmstrip') return createFilmstripWidgetEl();
@@ -4964,7 +5066,7 @@
     });
     markOccupied(0, 0, 4, 5);
 
-    // 第6-7行：双头像 MEMO 小组件（占 2x2，左上角）
+    // 第6-7行：情侣空间入口小组件（占 2x2，左下角）
     items.push({
       id: genItemId(),
       kind: 'widget',

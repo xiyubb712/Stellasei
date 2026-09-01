@@ -1964,3 +1964,185 @@ html.is-custom-wg-editing .desk-custom-viewport {
   position: relative;
   z-index: 1;
 }
+
+/* ===== 情侣空间入口小组件（2x2） ===== */
+.wg-couple-entry {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 16px;
+  overflow: hidden;
+  background: transparent;
+  box-shadow: none;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.wg-couple-entry:hover {
+  transform: scale(1.02);
+  box-shadow: none;
+}
+
+.wg-couple-entry:active {
+  transform: scale(0.98);
+}
+
+.wg-couple-entry__bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 0;
+  background: transparent;
+}
+
+.wg-couple-entry__content {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  box-sizing: border-box;
+  gap: 10px;
+}
+
+.wg-couple-entry__days {
+  font-family: "Noto Serif SC", "Cormorant Garamond", serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.95);
+  text-align: center;
+  letter-spacing: 0.02em;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+.wg-couple-entry__days-num {
+  color: #ff8fa3;
+  font-size: 16px;
+  font-weight: 700;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+.wg-couple-entry__avatars {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  position: relative;
+}
+
+.wg-couple-entry__avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  background: transparent;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.wg-couple-entry__avatar-img {
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+}
+
+.wg-couple-entry__heart {
+  width: 32px;
+  height: 32px;
+  color: #ff8fa3;
+  flex-shrink: 0;
+  animation: wg-couple-heart-beat 1.5s ease-in-out infinite;
+}
+
+.wg-couple-entry__heart-svg {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
+}
+
+@keyframes wg-couple-heart-beat {
+  0%, 100% { transform: scale(1) rotate(-2deg); }
+  50% { transform: scale(1.15) rotate(2deg); }
+}
+
+/* 头像周围的小爱心 */
+.wg-couple-entry__mini-heart {
+  position: absolute;
+  color: #ffb6c1;
+  font-size: 14px;
+  opacity: 0.8;
+  pointer-events: none;
+  animation: wg-couple-mini-heart-float 2.5s ease-in-out infinite;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.wg-couple-entry__mini-heart--1 {
+  top: 5px;
+  left: 15px;
+  animation-delay: 0s;
+}
+
+.wg-couple-entry__mini-heart--2 {
+  top: 8px;
+  right: 18px;
+  animation-delay: 0.6s;
+}
+
+.wg-couple-entry__mini-heart--3 {
+  bottom: 25px;
+  left: 8px;
+  animation-delay: 1.2s;
+}
+
+.wg-couple-entry__mini-heart--4 {
+  bottom: 28px;
+  right: 10px;
+  animation-delay: 1.8s;
+}
+
+@keyframes wg-couple-mini-heart-float {
+  0%, 100% { transform: translateY(0) rotate(-5deg); opacity: 0.7; }
+  50% { transform: translateY(-4px) rotate(5deg); opacity: 1; }
+}
+
+/* 底下的两排字 */
+.wg-couple-entry__messages {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  margin-top: 4px;
+}
+
+.wg-couple-entry__msg {
+  max-width: 80%;
+  padding: 5px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  line-height: 1.3;
+  color: rgba(255, 255, 255, 0.95);
+  font-family: "Noto Serif SC", "Cormorant Garamond", serif;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(4px);
+}
+
+.wg-couple-entry__msg--left {
+  align-self: flex-start;
+  background: rgba(255, 255, 255, 0.2);
+  border-bottom-left-radius: 3px;
+}
+
+.wg-couple-entry__msg--right {
+  align-self: flex-end;
+  background: rgba(255, 143, 163, 0.35);
+  border-bottom-right-radius: 3px;
+}
