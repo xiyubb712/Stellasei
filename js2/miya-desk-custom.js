@@ -6574,20 +6574,6 @@
       switchDeskLayout(mode);
     });
 
-    var resetBtn = document.getElementById('miya-st-reset-layout');
-    if (resetBtn && !resetBtn.dataset.bound) {
-      resetBtn.dataset.bound = '1';
-      resetBtn.addEventListener('click', function () {
-        if (!confirm('确定要恢复星绥布局的默认预设吗？你当前的布局修改会被覆盖。')) return;
-        try {
-          localStorage.removeItem(STELLASEI_INIT_FLAG);
-        } catch (e) {}
-        ensureStellaseiDefaultLayout();
-        applyActiveLayout();
-        showToast('已恢复默认布局');
-      });
-    }
-
     // 美化页面里的"恢复默认布局"按钮
     var beautyResetBtn = document.getElementById('miya-stellasei-reset-layout');
     if (beautyResetBtn && !beautyResetBtn.dataset.bound) {
