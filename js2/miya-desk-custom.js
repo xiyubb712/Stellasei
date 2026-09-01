@@ -5629,7 +5629,8 @@
   }
 
   function onPointerDown(e) {
-    if (getLayoutMode() !== 'custom') return;
+    var mode = getLayoutMode();
+    if (mode !== 'custom' && mode !== 'stellasei') return;
     if (wgEditorState.open || isCustomOverlayTarget(e.target)) return;
     if (drag.active || drag.pending) return;
     var removeBtn = e.target.closest('.desk-custom__wg-remove');
@@ -5901,7 +5902,8 @@
           !document.documentElement.classList.contains('is-ios'))) {
       return;
     }
-    if (getLayoutMode() !== 'custom' || editMode || drag.active) return;
+    var mode = getLayoutMode();
+    if (mode !== 'custom' && mode !== 'stellasei' || editMode || drag.active) return;
     if (Date.now() < dragConsumedUntil || wgEditorState.open) return;
     if (isCustomOverlayTarget(e.target)) return;
     var touch = e.changedTouches && e.changedTouches[0];
@@ -5915,7 +5917,8 @@
   }
 
   function onWidgetClickFallback(e) {
-    if (getLayoutMode() !== 'custom' || editMode || drag.active || drag.pending) return;
+    var mode = getLayoutMode();
+    if (mode !== 'custom' && mode !== 'stellasei' || editMode || drag.active || drag.pending) return;
     if (Date.now() < dragConsumedUntil) return;
     if (wgEditorState.open || isCustomOverlayTarget(e.target)) return;
     var widgetItem = resolveWidgetAtPoint(e.clientX, e.clientY, e.target);
@@ -5927,7 +5930,8 @@
   function onEditModeTap(e) {
     if (!editMode || drag.active || drag.pending) return;
     if (Date.now() < dragConsumedUntil) return;
-    if (getLayoutMode() !== 'custom') return;
+    var mode = getLayoutMode();
+    if (mode !== 'custom' && mode !== 'stellasei') return;
     if (Date.now() < customPagerSwipedUntil) return;
     if (wgEditorState.open || isCustomOverlayTarget(e.target)) return;
     if (e.target.closest('.desk-custom__ic, .desk-custom__dock-ic')) return;
