@@ -3183,11 +3183,11 @@
     return el;
   }
 
-  // 刷新所有名片小组件的头像（同步用户在"我的"里设定的头像）
-  function refreshAllProfile4x4Avatars() {
+  // 监听聊天应用关闭，手动刷新名片头像
+  var profileAvatarRefreshBound = false;
+  function refreshProfile4x4Avatars() {
     var wgEls = document.querySelectorAll('.wg-profile4x4');
     if (!wgEls || !wgEls.length) return;
-    // 获取用户头像
     var userAvatar = null;
     try {
       var themeForAva = global.miyaGetTheme();
@@ -3214,36 +3214,29 @@
       }
     }
   }
-
-  // 监听聊天应用关闭，自动刷新名片头像
-  var profileAvatarWatcherStarted = false;
-  function startProfileAvatarWatcher() {
-    if (profileAvatarWatcherStarted) return;
-    profileAvatarWatcherStarted = true;
+  function bindProfileAvatarRefresh() {
+    if (profileAvatarRefreshBound) return;
+    profileAvatarRefreshBound = true;
     var chatApp = document.getElementById('miya-chat-app');
     if (!chatApp) {
-      // 聊天应用 DOM 还没创建，等一下再试
-      setTimeout(startProfileAvatarWatcher, 1000);
+      setTimeout(bindProfileAvatarRefresh, 1000);
       return;
     }
-    var observer = new MutationObserver(function (mutations) {
-      for (var i = 0; i < mutations.length; i++) {
-        if (mutations[i].attributeName === 'class') {
-          if (!chatApp.classList.contains('is-open')) {
-            // 聊天应用关闭了，刷新名片头像
-            setTimeout(refreshAllProfile4x4Avatars, 300);
-          }
-          break;
-        }
+    var wasOpen = chatApp.classList.contains('is-open');
+    var observer = new MutationObserver(function () {
+      var isOpen = chatApp.classList.contains('is-open');
+      if (wasOpen && !isOpen) {
+        // 聊天应用关闭了，手动刷新名片头像
+        setTimeout(refreshProfile4x4Avatars, 200);
       }
+      wasOpen = isOpen;
     });
     observer.observe(chatApp, { attributes: true, attributeFilter: ['class'] });
   }
-  // 页面加载完成后启动监听
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', startProfileAvatarWatcher);
+    document.addEventListener('DOMContentLoaded', bindProfileAvatarRefresh);
   } else {
-    startProfileAvatarWatcher();
+    bindProfileAvatarRefresh();
   }
 
   function updateProfileClock(wgEl) {

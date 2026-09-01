@@ -1422,19 +1422,41 @@
 
   function applyProfileAva(ref) {
     var ava = document.getElementById('wg-profile-avatar');
-    if (!ava) return Promise.resolve();
-    if (!ref) {
-      ava.style.backgroundImage = '';
-      ava.classList.remove('has-custom-ava');
-      return Promise.resolve();
+    if (ava) {
+      if (!ref) {
+        ava.style.backgroundImage = '';
+        ava.classList.remove('has-custom-ava');
+      } else {
+        global.miyaResolveMediaUrl(ref).then(function (url) {
+          if (!url) return;
+          ava.style.backgroundImage = 'url("' + url.replace(/"/g, '%22') + '")';
+          ava.style.backgroundSize = 'cover';
+          ava.style.backgroundPosition = 'center';
+          ava.classList.add('has-custom-ava');
+        });
+      }
     }
-    return global.miyaResolveMediaUrl(ref).then(function (url) {
-      if (!url) return;
-      ava.style.backgroundImage = 'url("' + url.replace(/"/g, '%22') + '")';
-      ava.style.backgroundSize = 'cover';
-      ava.style.backgroundPosition = 'center';
-      ava.classList.add('has-custom-ava');
-    });
+    // 同步更新 4×5 名片小组件的头像
+    var profile4x4Avas = document.querySelectorAll('.wg-profile4x4__avatar');
+    if (profile4x4Avas && profile4x4Avas.length) {
+      for (var i = 0; i < profile4x4Avas.length; i++) {
+        (function (el) {
+          if (!ref) {
+            el.style.backgroundImage = '';
+            el.classList.remove('has-custom-ava');
+          } else {
+            global.miyaResolveMediaUrl(ref).then(function (url) {
+              if (!url) return;
+              el.style.backgroundImage = 'url("' + url.replace(/"/g, '%22') + '")';
+              el.style.backgroundSize = 'cover';
+              el.style.backgroundPosition = 'center';
+              el.classList.add('has-custom-ava');
+            });
+          }
+        })(profile4x4Avas[i]);
+      }
+    }
+    return Promise.resolve();
   }
 
   function applyWeekcalBg(ref) {
