@@ -1662,6 +1662,15 @@
         closeToHome();
       });
     }
+    // 其他页面（动态、联系人、我的）的返回按钮
+    app.querySelectorAll('.qq-app-back-btn').forEach(function (btn) {
+      if (btn.dataset.backBound) return;
+      btn.dataset.backBound = '1';
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        closeToHome();
+      });
+    });
 
     app.querySelectorAll('.qq-tabbar__item[data-qq-tab]').forEach(function (btn) {
       btn.addEventListener('click', function (e) {
