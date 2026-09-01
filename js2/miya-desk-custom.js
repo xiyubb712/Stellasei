@@ -3138,15 +3138,112 @@
     // 点击头像跳转到"我的"页面的个人资料（头像设置）
     var avaEl = el.querySelector('.wg-profile4x4__avatar');
     if (avaEl) {
-      avaEl.addEventListener('click', function (e) {
-        e.stopPropagation();
+      // 用 pointerdown 事件，在小组件的 pointer 事件处理之前拦截
+      avaEl.addEventListener('pointerdown', function (e) {
+        e.stopImmediatePropagation();
         e.preventDefault();
-        if (global.miyaChatMe && typeof global.miyaChatMe.openProfiles === 'function') {
-          global.miyaChatMe.openProfiles();
+        // 打开聊天应用并切换到"我的"标签页，然后打开个人资料
+        var openProfiles = function () {
+          if (global.miyaChatMe && typeof global.miyaChatMe.openProfiles === 'function') {
+            global.miyaChatMe.openProfiles();
+          }
+        };
+        if (global.miyaChatApp && typeof global.miyaChatApp.open === 'function') {
+          // 聊天应用已经加载，直接打开并切换到"我的"标签页
+          global.miyaChatApp.open().then(function () {
+            if (global.miyaChatApp && typeof global.miyaChatApp.switchTab === 'function') {
+              global.miyaChatApp.switchTab('mine');
+            }
+            setTimeout(openProfiles, 100);
+          }).catch(function () {
+            // 如果失败，直接尝试打开个人资料
+            openProfiles();
+          });
+        } else {
+          // 聊天应用还没加载，先点击聊天应用图标打开
+          var chatBtn = document.querySelector('[data-app="chat"]');
+          if (chatBtn) chatBtn.click();
+          // 等待聊天应用加载完成后切换到"我的"标签页并打开个人资料
+          var retry = function (count) {
+            if (global.miyaChatApp && typeof global.miyaChatApp.open === 'function') {
+              global.miyaChatApp.open().then(function () {
+                if (global.miyaChatApp && typeof global.miyaChatApp.switchTab === 'function') {
+                  global.miyaChatApp.switchTab('mine');
+                }
+                setTimeout(openProfiles, 100);
+              });
+            } else if (count > 0) {
+              setTimeout(function () { retry(count - 1); }, 200);
+            }
+          };
+          retry(10);
         }
-      });
+      }, true); // 用捕获模式，确保在冒泡阶段之前拦截
     }
     return el;
+  }
+
+  // 刷新所有名片小组件的头像（同步用户在"我的"里设定的头像）
+  function refreshAllProfile4x4Avatars() {
+    var wgEls = document.querySelectorAll('.wg-profile4x4');
+    if (!wgEls || !wgEls.length) return;
+    // 获取用户头像
+    var userAvatar = null;
+    try {
+      var themeForAva = global.miyaGetTheme();
+      if (themeForAva && themeForAva.memoAvas && themeForAva.memoAvas.profile_ava) {
+        userAvatar = themeForAva.memoAvas.profile_ava;
+      }
+    } catch (e) {}
+    for (var i = 0; i < wgEls.length; i++) {
+      var avaEl = wgEls[i].querySelector('.wg-profile4x4__avatar');
+      if (!avaEl) continue;
+      if (userAvatar) {
+        (function (el, ref) {
+          global.miyaResolveMediaUrl(ref).then(function (url) {
+            if (!url) return;
+            el.style.backgroundImage = 'url("' + url.replace(/"/g, '%22') + '")';
+            el.style.backgroundSize = 'cover';
+            el.style.backgroundPosition = 'center';
+            el.classList.add('has-custom-ava');
+          });
+        })(avaEl, userAvatar);
+      } else {
+        avaEl.style.backgroundImage = '';
+        avaEl.classList.remove('has-custom-ava');
+      }
+    }
+  }
+
+  // 监听聊天应用关闭，自动刷新名片头像
+  var profileAvatarWatcherStarted = false;
+  function startProfileAvatarWatcher() {
+    if (profileAvatarWatcherStarted) return;
+    profileAvatarWatcherStarted = true;
+    var chatApp = document.getElementById('miya-chat-app');
+    if (!chatApp) {
+      // 聊天应用 DOM 还没创建，等一下再试
+      setTimeout(startProfileAvatarWatcher, 1000);
+      return;
+    }
+    var observer = new MutationObserver(function (mutations) {
+      for (var i = 0; i < mutations.length; i++) {
+        if (mutations[i].attributeName === 'class') {
+          if (!chatApp.classList.contains('is-open')) {
+            // 聊天应用关闭了，刷新名片头像
+            setTimeout(refreshAllProfile4x4Avatars, 300);
+          }
+          break;
+        }
+      }
+    });
+    observer.observe(chatApp, { attributes: true, attributeFilter: ['class'] });
+  }
+  // 页面加载完成后启动监听
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', startProfileAvatarWatcher);
+  } else {
+    startProfileAvatarWatcher();
   }
 
   function updateProfileClock(wgEl) {
@@ -6084,6 +6181,8 @@
 
     /* 安卓：重叠格子可能抢走 target，用坐标回找真正的小组件 */
     var widgetItem = resolveWidgetAtPoint(e.clientX, e.clientY, e.target);
+    // 记录是否点击了 profile4x4 小组件的头像
+    var isProfileAvatarTap = !!(e.target && e.target.closest && e.target.closest('.wg-profile4x4__avatar'));
     if (widgetItem && !e.target.closest('.desk-custom__wg-remove')) {
       if (editMode) {
         dismissCustomPagerGesture();
@@ -6095,6 +6194,7 @@
         drag.tapItemId = widgetItem.getAttribute('data-item-id');
         drag.itemWrap = widgetItem;
         drag.sourceEl = widgetItem.querySelector('.desk-custom__wg') || widgetItem;
+        drag.isProfileAvatar = isProfileAvatarTap;
         drag.fromSlot = parseSlotEl(widgetItem);
         if (drag.fromSlot) {
           drag.fromSlot.itemId = widgetItem.getAttribute('data-item-id');
@@ -6119,6 +6219,7 @@
       drag.tapItemId = widgetItem.getAttribute('data-item-id');
       drag.sourceEl = widgetItem;
       drag.itemWrap = widgetItem;
+      drag.isProfileAvatar = isProfileAvatarTap;
       widgetItem.classList.add('is-press-pending');
       /* 安卓顶部：不 preventDefault / 不 capture 时，首行点按常被过度滚动掐掉 */
       if (e.cancelable) e.preventDefault();
@@ -6192,6 +6293,18 @@
 
   function tryOpenWidgetFromTap(itemId, e) {
     if (!itemId || wgEditorState.open) return false;
+    // 检查是否点击了 profile4x4 小组件的头像，如果是则跳转到"我的"页面，不打开编辑面板
+    if (e && e.target) {
+      var targetEl = e.target;
+      if (targetEl.closest && targetEl.closest('.wg-profile4x4__avatar')) {
+        if (global.miyaChatMe && typeof global.miyaChatMe.openProfiles === 'function') {
+          global.miyaChatMe.openProfiles();
+        }
+        if (e.cancelable) e.preventDefault();
+        e.stopPropagation();
+        return true;
+      }
+    }
     var found = findLayoutItemById(itemId);
     if (!found || !isEditableWidgetItem(found.item)) return false;
     dragConsumedUntil = Date.now() + 380;
@@ -6276,6 +6389,7 @@
         ? sourceEl : null;
       var appKey = appBtn ? appBtn.getAttribute('data-app') : null;
       var pressAge = Date.now() - (drag.pressAt || 0);
+      var isProfileAvatarTap = !!drag.isProfileAvatar;
       cancelPending();
       drag.pointerId = null;
       drag.sourceEl = null;
@@ -6286,8 +6400,7 @@
       }
       if (wasTap && itemId && pressAge < LONG_PRESS_MS - 40) {
         // 检查是否点击了 profile4x4 小组件的头像，如果是则跳转到"我的"页面，不打开编辑面板
-        var isProfileAvatar = sourceEl && sourceEl.closest && sourceEl.closest('.wg-profile4x4__avatar');
-        if (isProfileAvatar) {
+        if (isProfileAvatarTap) {
           if (global.miyaChatMe && typeof global.miyaChatMe.openProfiles === 'function') {
             global.miyaChatMe.openProfiles();
           }
@@ -6321,8 +6434,7 @@
       var itemId = drag.tapItemId;
       if (pressAge < LONG_PRESS_MS - 40 && !hasPendingScrollMoved()) {
         // 检查是否点击了 profile4x4 小组件的头像，如果是则跳转到"我的"页面，不打开编辑面板
-        var cancelSourceEl = drag.sourceEl;
-        var isProfileAvatarCancel = cancelSourceEl && cancelSourceEl.closest && cancelSourceEl.closest('.wg-profile4x4__avatar');
+        var isProfileAvatarCancel = drag.isProfileAvatar;
         cancelPending();
         drag.pointerId = null;
         drag.sourceEl = null;
