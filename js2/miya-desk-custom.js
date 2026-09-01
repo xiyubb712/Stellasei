@@ -1217,12 +1217,21 @@
       if (dateEl4x4) dateEl4x4.style.color = hexToRgba(cfg.dateColor || '#646a72', cfg.dateColorOpacity != null ? cfg.dateColorOpacity : 0.7);
       var bgPos = cfg.profileBgPosition || 'center center';
       var cornerPos = cfg.cornerPhotoPosition || 'center center';
+      // 优先使用用户在"我的"里设定的头像，如果没有则用小组件配置的头像
+      var userAvatar = null;
+      try {
+        var themeForAva = global.miyaGetTheme();
+        if (themeForAva && themeForAva.memoAvas && themeForAva.memoAvas.profile_ava) {
+          userAvatar = themeForAva.memoAvas.profile_ava;
+        }
+      } catch (e) {}
+      var avatarRef = userAvatar || cfg.avatar;
       promises.push(applyMediaToEl(bgPhoto, cfg.profileBg, { bgMode: true, doneClass: 'has-custom-bg' }).then(function () {
         wgEl.classList.toggle('has-custom-bg', !!cfg.profileBg);
         if (bgPhoto) bgPhoto.style.backgroundPosition = bgPos;
       }));
-      promises.push(applyMediaToEl(ava4x4, cfg.avatar, { doneClass: 'has-custom-ava' }).then(function () {
-        wgEl.classList.toggle('has-custom-ava', !!cfg.avatar);
+      promises.push(applyMediaToEl(ava4x4, avatarRef, { doneClass: 'has-custom-ava' }).then(function () {
+        wgEl.classList.toggle('has-custom-ava', !!avatarRef);
       }));
       promises.push(applyMediaToEl(cornerPhoto, cfg.cornerPhoto, { bgMode: true, doneClass: 'has-custom-photo' }).then(function () {
         wgEl.classList.toggle('has-custom-photo', !!cfg.cornerPhoto);
@@ -3117,7 +3126,7 @@
             '<h2 class="wg-profile4x4__name" data-miya-copy="profileName">星绥 Stellasei</h2>' +
             '<p class="wg-profile4x4__bio" data-miya-copy="profileBio">白日太长，适合慢慢过</p>' +
           '</div>' +
-          '<div class="wg-profile4x4__avatar desk-custom__wg-avatar" aria-hidden="true" style="cursor: pointer;"></div>' +
+          '<div class="wg-profile4x4__avatar desk-custom__wg-avatar" role="button" tabindex="0" aria-label="点击修改头像" style="cursor: pointer;"></div>' +
         '</div>' +
         '<div class="wg-profile4x4__bottom">' +
           '<div class="wg-profile4x4__photo" aria-hidden="true">' +
@@ -3126,6 +3135,17 @@
         '</div>' +
       '</div>' +
       '<button type="button" class="desk-custom__wg-remove" aria-label="移除小组件">×</button>';
+    // 点击头像跳转到"我的"页面的个人资料（头像设置）
+    var avaEl = el.querySelector('.wg-profile4x4__avatar');
+    if (avaEl) {
+      avaEl.addEventListener('click', function (e) {
+        e.stopPropagation();
+        e.preventDefault();
+        if (global.miyaChatMe && typeof global.miyaChatMe.openProfiles === 'function') {
+          global.miyaChatMe.openProfiles();
+        }
+      });
+    }
     return el;
   }
 
@@ -6265,6 +6285,14 @@
         try { phone.releasePointerCapture(e.pointerId); } catch (err) {}
       }
       if (wasTap && itemId && pressAge < LONG_PRESS_MS - 40) {
+        // 检查是否点击了 profile4x4 小组件的头像，如果是则跳转到"我的"页面，不打开编辑面板
+        var isProfileAvatar = sourceEl && sourceEl.closest && sourceEl.closest('.wg-profile4x4__avatar');
+        if (isProfileAvatar) {
+          if (global.miyaChatMe && typeof global.miyaChatMe.openProfiles === 'function') {
+            global.miyaChatMe.openProfiles();
+          }
+          return;
+        }
         if (tryOpenWidgetFromTap(itemId, e)) return;
       }
       if (wasTap && appKey && !editMode && pressAge < LONG_PRESS_MS - 40) {
@@ -6292,6 +6320,9 @@
       var pressAge = Date.now() - (drag.pressAt || 0);
       var itemId = drag.tapItemId;
       if (pressAge < LONG_PRESS_MS - 40 && !hasPendingScrollMoved()) {
+        // 检查是否点击了 profile4x4 小组件的头像，如果是则跳转到"我的"页面，不打开编辑面板
+        var cancelSourceEl = drag.sourceEl;
+        var isProfileAvatarCancel = cancelSourceEl && cancelSourceEl.closest && cancelSourceEl.closest('.wg-profile4x4__avatar');
         cancelPending();
         drag.pointerId = null;
         drag.sourceEl = null;
@@ -6299,6 +6330,12 @@
         var phoneKeep = $('miya-phone-layer');
         if (phoneKeep && e.pointerId != null) {
           try { phoneKeep.releasePointerCapture(e.pointerId); } catch (err) {}
+        }
+        if (isProfileAvatarCancel) {
+          if (global.miyaChatMe && typeof global.miyaChatMe.openProfiles === 'function') {
+            global.miyaChatMe.openProfiles();
+          }
+          return;
         }
         tryOpenWidgetFromTap(itemId, e);
         return;
