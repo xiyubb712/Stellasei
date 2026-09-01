@@ -1295,6 +1295,12 @@ html.is-custom-wg-editing .desk-custom-viewport {
   margin: 0 auto;
 }
 
+.desk-custom-wg-editor__img--wide {
+  width: 100%;
+  min-height: 150px;
+  flex-shrink: 0;
+}
+
 .desk-custom-wg-editor__img-actions {
   display: flex;
   flex-wrap: wrap;

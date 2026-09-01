@@ -1631,7 +1631,8 @@
         var imgWrap = document.createElement('div');
         imgWrap.className = 'desk-custom-wg-editor__img-wrap';
         var isSquare = field.key === 'cornerPhoto' || field.ratio === 'square';
-        var imgClass = 'desk-custom-wg-editor__img' + (isSquare ? ' desk-custom-wg-editor__img--square' : '');
+        var isWide = field.key === 'profileBg' || field.ratio === 'wide';
+        var imgClass = 'desk-custom-wg-editor__img' + (isSquare ? ' desk-custom-wg-editor__img--square' : '') + (isWide ? ' desk-custom-wg-editor__img--wide' : '');
         imgWrap.innerHTML =
           '<button type="button" class="' + imgClass + '" data-wg-ed-img="' + field.key + '" aria-label="' + field.label + '">' +
             '<span class="desk-custom-wg-editor__img-ph">点击上传</span>' +
