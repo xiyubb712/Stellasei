@@ -2133,6 +2133,15 @@ html.is-custom-wg-editing .desk-custom-viewport {
   font-family: "Noto Serif SC", "Cormorant Garamond", serif;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
   backdrop-filter: blur(4px);
+  word-break: break-word;
+  overflow-wrap: break-word;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-height: 39px;
+  box-sizing: border-box;
 }
 
 .wg-couple-entry__msg--left {
@@ -2256,10 +2265,14 @@ html.is-custom-wg-editing .desk-custom-viewport {
   font-family: "Noto Serif SC", "Cormorant Garamond", serif;
   box-shadow: 0 2px 8px rgba(255, 150, 170, 0.15);
   word-break: break-word;
+  overflow-wrap: break-word;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  text-overflow: ellipsis;
+  max-height: 52px;
+  box-sizing: border-box;
 }
 
 .wg-companion__bubble-tail {

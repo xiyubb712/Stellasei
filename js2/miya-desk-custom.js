@@ -1348,8 +1348,8 @@
         if (quotesLib && typeof quotesLib.getRandom === 'function' && msgEls.length >= 2 && homeContactId) {
           var coupleQuote = quotesLib.getRandom('couple', homeContactId, 'general');
           if (coupleQuote && coupleQuote.left && coupleQuote.right) {
-            msgEls[0].textContent = coupleQuote.left;
-            msgEls[1].textContent = coupleQuote.right;
+            msgEls[0].textContent = truncateQuote(coupleQuote.left, 30);
+            msgEls[1].textContent = truncateQuote(coupleQuote.right, 30);
           }
         }
       } catch (e) {
@@ -3619,6 +3619,14 @@
     return el;
   }
 
+  // 截断太长的语录，避免超出聊天框
+  function truncateQuote(text, maxLen) {
+    if (!text) return '';
+    maxLen = maxLen || 30; // 默认最多30个字符
+    if (text.length <= maxLen) return text;
+    return text.substring(0, maxLen) + '...';
+  }
+
   // 刷新陪伴小组件的显示内容
   function refreshCompanionWidget(wgEl) {
     if (!wgEl) return;
@@ -3626,9 +3634,9 @@
       var contactId = getCurrentCompanionContactId();
       var quote = companionState.currentQuote || getRandomCompanionQuote();
 
-      // 更新语录
+      // 更新语录（截断太长的）
       var textEl = wgEl.querySelector('.wg-companion__bubble-text');
-      if (textEl) textEl.textContent = quote;
+      if (textEl) textEl.textContent = truncateQuote(quote, 40);
 
       // 更新头像（跟情侣空间入口小组件用同样的方式）
       var avatarEl = wgEl.querySelector('.wg-companion__avatar');
@@ -8066,8 +8074,8 @@
           if (quotesLib && typeof quotesLib.getRandom === 'function' && msgEls.length >= 2 && homeContactId) {
             var coupleQuote = quotesLib.getRandom('couple', homeContactId, 'general');
             if (coupleQuote && coupleQuote.left && coupleQuote.right) {
-              msgEls[0].textContent = coupleQuote.left;
-              msgEls[1].textContent = coupleQuote.right;
+              msgEls[0].textContent = truncateQuote(coupleQuote.left, 30);
+              msgEls[1].textContent = truncateQuote(coupleQuote.right, 30);
             }
           }
         } catch (e) {}
@@ -8089,7 +8097,7 @@
     }
   }
 
-  // 监听页面可见性（浏览器标签切换）
+  // 监听页面可见性（浏览器标签切换 / PWA后台前台切换）
   document.addEventListener('visibilitychange', function() {
     if (document.hidden) {
       // 页面不可见，停止刷新
@@ -8102,41 +8110,63 @@
     }
   });
 
-  // 监听桌面显示状态（应用内切换：从其他应用退回到桌面时刷新）
-  try {
-    var deskObserver = new MutationObserver(function(mutations) {
-      mutations.forEach(function(mutation) {
-        if (mutation.type === 'attributes' && mutation.attributeName === 'hidden') {
-          var target = mutation.target;
-          // 检查桌面元素是否从隐藏变为显示
-          if (!target.hidden) {
-            // 延迟一点刷新，等桌面完全显示
-            setTimeout(function() {
-              refreshAllWidgetsQuotes();
-            }, 300);
-          }
-        }
-      });
-    });
+  // 监听窗口获得焦点（PWA从后台切回来）
+  window.addEventListener('focus', function() {
+    startQuoteRefreshTimer();
+    setTimeout(function() {
+      refreshAllWidgetsQuotes();
+    }, 300);
+  });
 
-    // 监听所有桌面视口元素的hidden属性变化
-    var deskViewports = document.querySelectorAll('#desk-viewport, #desk-custom-viewport, #desk-stellasei-viewport');
-    deskViewports.forEach(function(viewport) {
-      if (viewport) {
-        deskObserver.observe(viewport, { attributes: true, attributeFilter: ['hidden'] });
+  // 监听pageshow事件（页面从缓存恢复）
+  window.addEventListener('pageshow', function() {
+    startQuoteRefreshTimer();
+    setTimeout(function() {
+      refreshAllWidgetsQuotes();
+    }, 300);
+  });
+
+  // 监听桌面显示状态（应用内切换：从其他应用退回到桌面时刷新）
+  function initDeskObserver() {
+    try {
+      var modalEl = document.getElementById('modal');
+      if (!modalEl) {
+        // modal元素还没加载出来，延迟再试
+        setTimeout(initDeskObserver, 500);
+        return;
       }
-    });
-  } catch (e) {
-    console.log('监听桌面显示状态失败:', e);
+
+      var deskObserver = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+          if (mutation.type === 'attributes' && mutation.attributeName === 'hidden') {
+            var target = mutation.target;
+            // 检查modal元素是否从显示变为隐藏（用户关闭应用退回到桌面）
+            if (target.id === 'modal' && target.hidden) {
+              // 延迟一点刷新，等桌面完全显示
+              setTimeout(function() {
+                refreshAllWidgetsQuotes();
+              }, 300);
+            }
+          }
+        });
+      });
+
+      // 监听modal元素的hidden属性变化（应用打开/关闭）
+      deskObserver.observe(modalEl, { attributes: true, attributeFilter: ['hidden'] });
+    } catch (e) {
+      console.log('监听桌面显示状态失败:', e);
+    }
   }
 
   // 页面加载完成后启动定时刷新
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function() {
       setTimeout(startQuoteRefreshTimer, 2000);
+      setTimeout(initDeskObserver, 1000);
     });
   } else {
     setTimeout(startQuoteRefreshTimer, 2000);
+    setTimeout(initDeskObserver, 1000);
   }
 
 })(window);
