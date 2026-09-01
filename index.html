@@ -894,6 +894,89 @@
         </div>
       </div>
 
+      <!-- 星绥布局 -->
+      <div class="desk-stellasei-viewport" id="desk-stellasei-viewport" hidden aria-label="星绥主屏幕">
+        <div class="desk-track" id="desk-stellasei-track">
+    <main class="desk desk--p1">
+      <!-- 个人名片 -->
+      <section class="p1-hero" aria-label="个人名片">
+        <article class="wg wg-profile wg-profile--stellasei" id="wg-profile-stellasei" aria-label="个人名片">
+          <div class="wg-profile__cover" aria-hidden="true">
+            <div class="wg-profile__cover-bg"></div>
+          </div>
+          <div class="wg-profile__body">
+            <div class="wg-profile__clock">
+              <span class="wg-profile__clock-time" id="stellasei-clock-time">--:--</span>
+              <span class="wg-profile__clock-date" id="stellasei-clock-date">--月--日</span>
+            </div>
+            <div class="wg-profile__bottom">
+              <div class="wg-profile__info">
+                <h2 class="wg-profile__name" data-miya-copy="profileName">半醒手记</h2>
+                <p class="wg-profile__bio" data-miya-copy="profileBio">白日太长，适合慢慢过</p>
+              </div>
+              <div class="wg-profile__avatar" id="wg-profile-avatar-stellasei" aria-hidden="true"></div>
+            </div>
+            <div class="itinerary-home-status" id="itinerary-home-status-stellasei" hidden aria-live="polite">
+              <span id="itinerary-home-status-text-stellasei"></span>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <!-- 双头像 MEMO + 四应用 -->
+      <div class="p1-dock">
+        <article class="wg wg-memo" aria-label="MEMO">
+          <div class="wg-memo__pair">
+            <div class="wg-memo__person">
+              <p class="wg-memo__bubble" data-miya-copy="memoLine1"><span class="wg-memo__label">01</span> 猫在键盘上踩字</p>
+              <div class="wg-memo__ava" aria-hidden="true"></div>
+            </div>
+            <div class="wg-memo__person">
+              <p class="wg-memo__bubble" data-miya-copy="memoLine2"><span class="wg-memo__label">02</span> 冰箱还有布丁</p>
+              <div class="wg-memo__ava" aria-hidden="true"></div>
+            </div>
+          </div>
+          <div class="wg-memo__days">
+            <span class="wg-memo__wing wg-memo__wing--l" aria-hidden="true"></span>
+            <p class="wg-memo__pill" data-miya-copy="memoLine3"><span class="wg-memo__label">03</span> 别忘记交电费</p>
+            <span class="wg-memo__wing wg-memo__wing--r" aria-hidden="true"></span>
+          </div>
+        </article>
+        <button class="ic ic--dock1" data-app="music"><span class="ic__box glass" data-i="music"></span><span class="ic__lbl">音乐</span></button>
+        <button class="ic ic--dock2" data-app="memo"><span class="ic__box glass" data-i="memo"></span><span class="ic__lbl">论坛</span></button>
+        <button class="ic ic--dock3" data-app="set"><span class="ic__box glass" data-i="set"></span><span class="ic__lbl">设置</span></button>
+        <button class="ic ic--dock4" data-app="book"><span class="ic__box glass" data-i="book"></span><span class="ic__lbl">世界书</span></button>
+      </div>
+
+      <!-- 下方应用 + 叠放拍立得 -->
+      <button class="ic" data-app="memory"><span class="ic__box glass" data-i="memory"></span><span class="ic__lbl">记忆</span></button>
+      <button class="ic" data-app="chat"><span class="ic__box glass" data-i="chat"></span><span class="ic__lbl">聊天</span></button>
+
+      <article class="wg wg-polaroid" aria-label="拍立得">
+        <div class="wg-polaroid__stack">
+          <div class="wg-polaroid__card wg-polaroid__card--3" aria-hidden="true">
+            <div class="wg-polaroid__photo"></div>
+            <p class="wg-polaroid__cap" data-miya-copy="polaroidCap3">archive · 02</p>
+          </div>
+          <div class="wg-polaroid__card wg-polaroid__card--2" aria-hidden="true">
+            <div class="wg-polaroid__photo wg-polaroid__photo--b"></div>
+            <p class="wg-polaroid__cap" data-miya-copy="polaroidCap2">window seat</p>
+          </div>
+          <div class="wg-polaroid__card wg-polaroid__card--1">
+            <span class="wg-polaroid__tape" aria-hidden="true"></span>
+            <div class="wg-polaroid__photo wg-polaroid__photo--c"></div>
+            <p class="wg-polaroid__cap" data-miya-copy="polaroidCap1">三楼拐角见</p>
+            <span class="wg-polaroid__date" data-miya-copy="polaroidDate">24.06.02</span>
+          </div>
+        </div>
+      </article>
+
+      <button class="ic" data-app="beauty"><span class="ic__box glass" data-i="beauty"></span><span class="ic__lbl">美化</span></button>
+      <button class="ic" data-app="store"><span class="ic__box glass" data-i="store"></span><span class="ic__lbl">线下</span></button>
+    </main>
+        </div>
+      </div>
+
       <div class="desk-custom-viewport" id="desk-custom-viewport" hidden aria-label="自定义主屏幕">
         <div class="desk-custom-track" id="desk-custom-track"></div>
         <button type="button" class="desk-custom-add-wg" id="desk-custom-add-wg" hidden aria-label="添加小组件">+</button>
@@ -1024,7 +1107,7 @@
               <p class="ins-atelier-panel-desc">固定布局为四页杂志风桌面；自定义布局为 4×7 图标网格，长按拖动至任意空格或与其他图标互换位置。</p>
             </div>
             <div class="ins-layout-pick" id="miya-bf-layout-pick" role="group" aria-label="主屏幕布局模式">
-              <button type="button" class="ins-layout-pick__btn is-active" data-bf-layout="fixed">固定布局</button>
+              <button type="button" class="ins-layout-pick__btn is-active" data-bf-layout="stellasei">星绥布局</button>
               <button type="button" class="ins-layout-pick__btn" data-bf-layout="custom">自定义布局</button>
             </div>
             <p class="ins-atelier-panel-desc ins-atelier-panel-desc--tight" id="miya-bf-layout-hint">外观方案预设仅作用于固定布局</p>

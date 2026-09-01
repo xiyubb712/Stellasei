@@ -2414,7 +2414,7 @@
   }
 
   function persistLayoutMode(mode) {
-    var next = mode === 'custom' ? 'custom' : 'fixed';
+    var next = mode === 'custom' ? 'custom' : (mode === 'stellasei' ? 'stellasei' : 'fixed');
     layoutModeCache = next;
     if (typeof global.miyaWriteLsJsonKey === 'function') {
       return global.miyaWriteLsJsonKey(LAYOUT_MODE_KEY, next);
@@ -2424,7 +2424,7 @@
   }
 
   function setLayoutMode(mode) {
-    var next = mode === 'custom' ? 'custom' : 'fixed';
+    var next = mode === 'custom' ? 'custom' : (mode === 'stellasei' ? 'stellasei' : 'fixed');
     layoutModeCache = next;
     persistLayoutMode(next);
     document.documentElement.dataset.miyaDeskLayout = next;
@@ -2482,7 +2482,7 @@
       if (customThemeState) mergeThemeFromRaw(rows[0]);
       else applyThemeFromRaw(rows[0]);
       hydratePresetsFromRaw(rows[1]);
-      var mode = parseLayoutModeValue(rows[2]) || readLayoutModeFromLsPlain() || 'fixed';
+      var mode = parseLayoutModeValue(rows[2]) || readLayoutModeFromLsPlain() || 'stellasei';
       layoutModeCache = mode;
       if (parseLayoutModeValue(rows[2]) == null && readLayoutModeFromLsPlain()) {
         persistLayoutMode(mode);
@@ -2793,6 +2793,20 @@
 
   if (!window._miyaCustomDeskClockTimer) {
     window._miyaCustomDeskClockTimer = setInterval(updateAllProfileClocks, 60000);
+  }
+
+  function updateStellaseiClock() {
+    var timeEl = document.getElementById('stellasei-clock-time');
+    var dateEl = document.getElementById('stellasei-clock-date');
+    if (!timeEl && !dateEl) return;
+    var now = new Date();
+    var pad = function (n) { return n < 10 ? '0' + n : '' + n; };
+    if (timeEl) timeEl.textContent = pad(now.getHours()) + ':' + pad(now.getMinutes());
+    if (dateEl) dateEl.textContent = (now.getMonth() + 1) + '月' + now.getDate() + '日';
+  }
+
+  if (!window._miyaStellaseiClockTimer) {
+    window._miyaStellaseiClockTimer = setInterval(updateStellaseiClock, 60000);
   }
 
   function createMemoWidgetEl() {
@@ -4443,22 +4457,32 @@
 
   function updateLayoutVisibility(mode) {
     var isCustom = mode === 'custom';
+    var isStellasei = mode === 'stellasei';
     if (!isCustom && editMode) exitEditMode();
     var fixedVp = $('desk-viewport');
     var customVp = $('desk-custom-viewport');
-    if (fixedVp) fixedVp.hidden = isCustom;
+    var stellaseiVp = $('desk-stellasei-viewport');
+    if (fixedVp) fixedVp.hidden = isCustom || isStellasei;
     if (customVp) customVp.hidden = !isCustom;
+    if (stellaseiVp) stellaseiVp.hidden = !isStellasei;
     if (isCustom) paintCustomPager();
     else restoreFixedPager();
     document.documentElement.dataset.miyaDeskLayout = mode;
     if (isCustom) { captureFixedDock(); renderCustomLayout(); }
     else restoreFixedDock();
+    if (isStellasei) { updateStellaseiClock(); }
   }
 
   function applyActiveLayout() {
     var mode = getLayoutMode();
     updateLayoutVisibility(mode);
     if (mode === 'custom') return applyCustomDeskTheme();
+    if (mode === 'stellasei') {
+      document.documentElement.classList.remove('miya-custom-desk-icon-frameless');
+      updateStellaseiClock();
+      if (global.miyaApplyTheme) return global.miyaApplyTheme(global.miyaGetTheme && global.miyaGetTheme());
+      return Promise.resolve();
+    }
     document.documentElement.classList.remove('miya-custom-desk-icon-frameless');
     if (global.miyaApplyTheme) return global.miyaApplyTheme(global.miyaGetTheme && global.miyaGetTheme());
     return Promise.resolve();
@@ -5947,9 +5971,26 @@
         bindCustomPager();
         bindWidgetPicker();
         bindWidgetEditor();
+        bindLayoutSwitchButtons();
         setLayoutMode(getLayoutMode());
         return applyActiveLayout();
       });
+    });
+  }
+
+  function bindLayoutSwitchButtons() {
+    var picker = document.getElementById('miya-bf-layout-pick');
+    if (!picker || picker.dataset.bound) return;
+    picker.dataset.bound = '1';
+    picker.addEventListener('click', function (e) {
+      var btn = e.target.closest('[data-bf-layout]');
+      if (!btn) return;
+      var mode = btn.getAttribute('data-bf-layout');
+      if (!mode) return;
+      picker.querySelectorAll('[data-bf-layout]').forEach(function (b) {
+        b.classList.toggle('is-active', b === btn);
+      });
+      switchDeskLayout(mode);
     });
   }
 

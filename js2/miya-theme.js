@@ -1609,8 +1609,10 @@
 
   global.miyaApplyTheme = function (theme) {
     theme = theme || global.miyaGetTheme();
-    var isCustom = global.miyaGetDeskLayoutMode && global.miyaGetDeskLayoutMode() === 'custom';
-    if (!isCustom) {
+    var layoutMode = global.miyaGetDeskLayoutMode ? global.miyaGetDeskLayoutMode() : 'stellasei';
+    var isCustom = layoutMode === 'custom';
+    var isFixedLike = layoutMode === 'fixed' || layoutMode === 'stellasei';
+    if (isFixedLike) {
       applyTextColor(theme);
       applyIconFrameless(theme);
       applyAltIconStyle(theme);
@@ -1629,7 +1631,7 @@
       var btn = document.querySelector('.desk-viewport [data-app="' + key + '"], .desk--p1 [data-app="' + key + '"]');
       promises.push(applyIconBg(btn, theme.icons && theme.icons[key]));
     });
-    if (!isCustom) {
+    if (isFixedLike) {
       ['contacts', 'pet', 'pen'].forEach(function (key) {
         var dockBtn = document.querySelector('.foot__dock [data-app="' + key + '"]');
         promises.push(applyIconBg(dockBtn, theme.icons && theme.icons[key]));
