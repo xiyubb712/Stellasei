@@ -1210,11 +1210,25 @@
       if (nameEl4x4) nameEl4x4.textContent = cfg.name || '星绥 Stellasei';
       if (bioEl4x4) bioEl4x4.textContent = cfg.bio || '白日太长，适合慢慢过';
       updateProfileClock(wgEl);
-      // 四个独立的颜色+透明度设置
-      if (nameEl4x4) nameEl4x4.style.color = hexToRgba(cfg.nameColor || '#3c4046', cfg.nameColorOpacity != null ? cfg.nameColorOpacity : 0.9);
-      if (bioEl4x4) bioEl4x4.style.color = hexToRgba(cfg.bioColor || '#646a72', cfg.bioColorOpacity != null ? cfg.bioColorOpacity : 0.75);
-      if (timeEl4x4) timeEl4x4.style.color = hexToRgba(cfg.timeColor || '#1c1e22', cfg.timeColorOpacity != null ? cfg.timeColorOpacity : 0.85);
-      if (dateEl4x4) dateEl4x4.style.color = hexToRgba(cfg.dateColor || '#646a72', cfg.dateColorOpacity != null ? cfg.dateColorOpacity : 0.7);
+      // 四个独立的颜色+透明度设置（优先读取美化应用里的全局颜色设置）
+      var globalColors = {};
+      try {
+        if (global.miyaGetWidgetColors && typeof global.miyaGetWidgetColors === 'function') {
+          globalColors = global.miyaGetWidgetColors() || {};
+        }
+      } catch (e) {}
+      // 名字颜色
+      var nameColorVal = parseWidgetColor(globalColors.profileName) || { color: cfg.nameColor || '#3c4046', alpha: cfg.nameColorOpacity != null ? cfg.nameColorOpacity : 0.9 };
+      if (nameEl4x4) nameEl4x4.style.color = hexToRgba(nameColorVal.color, nameColorVal.alpha);
+      // 简介颜色
+      var bioColorVal = parseWidgetColor(globalColors.profileBio) || { color: cfg.bioColor || '#646a72', alpha: cfg.bioColorOpacity != null ? cfg.bioColorOpacity : 0.75 };
+      if (bioEl4x4) bioEl4x4.style.color = hexToRgba(bioColorVal.color, bioColorVal.alpha);
+      // 时间颜色
+      var timeColorVal = parseWidgetColor(globalColors.profileTime) || { color: cfg.timeColor || '#1c1e22', alpha: cfg.timeColorOpacity != null ? cfg.timeColorOpacity : 0.85 };
+      if (timeEl4x4) timeEl4x4.style.color = hexToRgba(timeColorVal.color, timeColorVal.alpha);
+      // 日期颜色
+      var dateColorVal = parseWidgetColor(globalColors.profileDate) || { color: cfg.dateColor || '#646a72', alpha: cfg.dateColorOpacity != null ? cfg.dateColorOpacity : 0.7 };
+      if (dateEl4x4) dateEl4x4.style.color = hexToRgba(dateColorVal.color, dateColorVal.alpha);
       var bgPos = cfg.profileBgPosition || 'center center';
       var cornerPos = cfg.cornerPhotoPosition || 'center center';
       // 直接用小组件配置的头像
@@ -6672,9 +6686,127 @@
         bindWidgetPicker();
         bindWidgetEditor();
         bindLayoutSwitchButtons();
+        bindWidgetColorPickers();
         setLayoutMode(getLayoutMode());
         return applyActiveLayout();
       });
+    });
+  }
+
+  // 美化应用里的小组件文字颜色选择器
+  var WIDGET_COLOR_DEFAULTS = {
+    profileName: { color: '#1c1e22', alpha: 0.92 },
+    profileBio: { color: '#646a72', alpha: 0.78 },
+    profileDate: { color: '#646a72', alpha: 0.70 },
+    profileTime: { color: '#1c1e22', alpha: 0.88 },
+    polaroidText1: { color: '#1c1e22', alpha: 0.92 },
+    polaroidText2: { color: '#1c1e22', alpha: 0.92 },
+    polaroidText3: { color: '#646a72', alpha: 0.60 }
+  };
+
+  function getWidgetColors() {
+    try {
+      if (global.miyaGetWidgetColors && typeof global.miyaGetWidgetColors === 'function') {
+        return global.miyaGetWidgetColors();
+      }
+    } catch (e) {}
+    return {};
+  }
+
+  function setWidgetColor(key, color, alpha) {
+    try {
+      var colors = getWidgetColors();
+      var val = color;
+      if (alpha != null) {
+        // 把颜色和透明度合并成 rgba 格式保存
+        var r = parseInt(color.slice(1, 3), 16);
+        var g = parseInt(color.slice(3, 5), 16);
+        var b = parseInt(color.slice(5, 7), 16);
+        val = 'rgba(' + r + ',' + g + ',' + b + ',' + alpha + ')';
+      }
+      colors[key] = val;
+      if (global.miyaSetTheme && typeof global.miyaSetTheme === 'function') {
+        global.miyaSetTheme({ widgetColors: colors });
+      }
+      if (global.miyaApplyTheme && typeof global.miyaApplyTheme === 'function') {
+        global.miyaApplyTheme();
+      }
+    } catch (e) {}
+    // 同时刷新主页上的名片小组件
+    try {
+      var wgEls = document.querySelectorAll('.desk-custom__wg--profile4x4');
+      for (var i = 0; i < wgEls.length; i++) {
+        var wrap = wgEls[i].closest('[data-item-id]');
+        if (wrap) {
+          var itemId = wrap.getAttribute('data-item-id');
+          var found = findLayoutItemById(itemId);
+          if (found && found.item) {
+            paintWidgetElement(wgEls[i], found.item);
+          }
+        }
+      }
+    } catch (e) {}
+  }
+
+  function parseWidgetColor(val) {
+    if (!val) return null;
+    // 如果是 rgba 格式，解析出颜色和透明度
+    var rgbaMatch = String(val).match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
+    if (rgbaMatch) {
+      var r = parseInt(rgbaMatch[1], 10);
+      var g = parseInt(rgbaMatch[2], 10);
+      var b = parseInt(rgbaMatch[3], 10);
+      var a = rgbaMatch[4] != null ? parseFloat(rgbaMatch[4]) : 1;
+      var hex = '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+      return { color: hex, alpha: a };
+    }
+    // 如果是 hex 格式，默认透明度 1
+    if (String(val).charAt(0) === '#') {
+      return { color: val, alpha: 1 };
+    }
+    return null;
+  }
+
+  function bindWidgetColorPickers() {
+    var colorCells = document.querySelectorAll('.ins-widget-color-cell');
+    if (!colorCells || colorCells.length === 0) return;
+    var colors = getWidgetColors();
+    colorCells.forEach(function (cell) {
+      var key = cell.getAttribute('data-widget-color-key');
+      if (!key) return;
+      var colorPicker = cell.querySelector('.ins-widget-color-picker');
+      var alphaPicker = cell.querySelector('.ins-widget-color-alpha');
+      var resetBtn = cell.querySelector('.ins-widget-color-reset');
+      var defaultVal = WIDGET_COLOR_DEFAULTS[key] || { color: '#1c1e22', alpha: 0.9 };
+      // 初始化颜色选择器的值
+      var savedColor = parseWidgetColor(colors[key]);
+      var currentColor = savedColor ? savedColor.color : defaultVal.color;
+      var currentAlpha = savedColor ? savedColor.alpha : defaultVal.alpha;
+      if (colorPicker) colorPicker.value = currentColor;
+      if (alphaPicker) alphaPicker.value = String(Math.round(currentAlpha * 100));
+      // 颜色改变事件
+      if (colorPicker) {
+        colorPicker.addEventListener('input', function () {
+          var alpha = alphaPicker ? parseInt(alphaPicker.value, 10) / 100 : currentAlpha;
+          setWidgetColor(key, colorPicker.value, alpha);
+        });
+      }
+      // 透明度改变事件
+      if (alphaPicker) {
+        alphaPicker.addEventListener('input', function () {
+          var color = colorPicker ? colorPicker.value : currentColor;
+          var alpha = parseInt(alphaPicker.value, 10) / 100;
+          setWidgetColor(key, color, alpha);
+        });
+      }
+      // 恢复默认按钮
+      if (resetBtn) {
+        resetBtn.addEventListener('click', function () {
+          if (colorPicker) colorPicker.value = defaultVal.color;
+          if (alphaPicker) alphaPicker.value = String(Math.round(defaultVal.alpha * 100));
+          setWidgetColor(key, defaultVal.color, defaultVal.alpha);
+        });
+      }
     });
   }
 
