@@ -1130,10 +1130,10 @@
     });
   }
 
-  // 更新编辑面板里的完整名片预览
+  // 更新编辑面板外的完整名片预览
   function updateProfile4x4Preview(cfg) {
-    var preview = document.getElementById('profile4x4-editor-preview');
-    if (!preview || !cfg) return;
+    var previewContainer = $('desk-custom-wg-editor-preview');
+    if (!previewContainer || previewContainer.hidden || !cfg) return;
     // 更新名字和简介
     var nameEl = document.getElementById('preview-name');
     var bioEl = document.getElementById('preview-bio');
@@ -1712,39 +1712,38 @@
       fields = tpl && tpl.editorFieldsFromConfig ? tpl.editorFieldsFromConfig(cfg) : [];
     }
     body.innerHTML = '';
-    // 对于 profile4x4 类型，在顶部添加完整的名片预览
-    if (widgetType === 'profile4x4') {
-      var previewRow = document.createElement('div');
-      previewRow.className = 'desk-custom-wg-editor__field desk-custom-wg-editor__preview-row';
-      previewRow.innerHTML =
-        '<label class="desk-custom-wg-editor__label">实时预览</label>' +
-        '<div class="desk-custom-wg-editor__profile4x4-preview" id="profile4x4-editor-preview">' +
-          '<div class="wg-profile4x4__bg" aria-hidden="true">' +
-            '<div class="wg-profile4x4__bg-photo" id="preview-bg-photo"></div>' +
-            '<div class="wg-profile4x4__bg-overlay"></div>' +
+    // 对于 profile4x4 类型，在编辑面板外显示完整的名片预览
+    var previewContainer = $('desk-custom-wg-editor-preview');
+    if (widgetType === 'profile4x4' && previewContainer) {
+      previewContainer.hidden = false;
+      previewContainer.innerHTML =
+        '<div class="wg-profile4x4__bg" aria-hidden="true">' +
+          '<div class="wg-profile4x4__bg-photo" id="preview-bg-photo"></div>' +
+          '<div class="wg-profile4x4__bg-overlay"></div>' +
+        '</div>' +
+        '<div class="wg-profile4x4__content">' +
+          '<div class="wg-profile4x4__clock">' +
+            '<span class="wg-profile4x4__clock-date" id="preview-date">9月1日 · 周二</span>' +
+            '<span class="wg-profile4x4__clock-time" id="preview-time">14:53</span>' +
           '</div>' +
-          '<div class="wg-profile4x4__content">' +
-            '<div class="wg-profile4x4__clock">' +
-              '<span class="wg-profile4x4__clock-date" id="preview-date">9月1日 · 周二</span>' +
-              '<span class="wg-profile4x4__clock-time" id="preview-time">14:53</span>' +
+          '<div class="wg-profile4x4__top">' +
+            '<div class="wg-profile4x4__info">' +
+              '<h2 class="wg-profile4x4__name" id="preview-name">星绥 Stellasei</h2>' +
+              '<p class="wg-profile4x4__bio" id="preview-bio">白日太长，适合慢慢过</p>' +
             '</div>' +
-            '<div class="wg-profile4x4__top">' +
-              '<div class="wg-profile4x4__info">' +
-                '<h2 class="wg-profile4x4__name" id="preview-name">星绥 Stellasei</h2>' +
-                '<p class="wg-profile4x4__bio" id="preview-bio">白日太长，适合慢慢过</p>' +
-              '</div>' +
-              '<div class="wg-profile4x4__avatar" aria-hidden="true"></div>' +
-            '</div>' +
-            '<div class="wg-profile4x4__bottom">' +
-              '<div class="wg-profile4x4__photo" aria-hidden="true">' +
-                '<div class="wg-profile4x4__photo-inner" id="preview-corner-photo"></div>' +
-              '</div>' +
+            '<div class="wg-profile4x4__avatar" aria-hidden="true"></div>' +
+          '</div>' +
+          '<div class="wg-profile4x4__bottom">' +
+            '<div class="wg-profile4x4__photo" aria-hidden="true">' +
+              '<div class="wg-profile4x4__photo-inner" id="preview-corner-photo"></div>' +
             '</div>' +
           '</div>' +
         '</div>';
-      body.appendChild(previewRow);
       // 初始化预览
       updateProfile4x4Preview(cfg);
+    } else if (previewContainer) {
+      previewContainer.hidden = true;
+      previewContainer.innerHTML = '';
     }
     if (widgetType === 'custom' && !fields.length) {
       var empty = document.createElement('p');
@@ -1802,36 +1801,8 @@
         var colorText = document.createElement('span');
         colorText.className = 'desk-custom-wg-editor__color-text';
         colorText.textContent = cfg[field.key] || defaultColor;
-        // 预览文本
-        var previewText = document.createElement('div');
-        previewText.className = 'desk-custom-wg-editor__color-preview';
-        var previewContent = '预览文字';
-        if (field.key === 'nameColor') previewContent = '星绥 Stellasei';
-        else if (field.key === 'bioColor') previewContent = '白日太长，适合慢慢过';
-        else if (field.key === 'timeColor') previewContent = '14:53';
-        else if (field.key === 'dateColor') previewContent = '9月1日 · 周二';
-        previewText.textContent = previewContent;
         var defaultOpacity = field.defaultOpacity != null ? field.defaultOpacity : 0.85;
         var currentOpacity = cfg[field.opacityKey] != null ? cfg[field.opacityKey] : defaultOpacity;
-        previewText.style.color = hexToRgba(cfg[field.key] || defaultColor, currentOpacity);
-        // 根据字段类型设置预览文本的字体样式
-        if (field.key === 'nameColor') {
-          previewText.style.fontFamily = '"Cormorant Garamond", "Noto Serif SC", serif';
-          previewText.style.fontSize = '20px';
-          previewText.style.fontWeight = '600';
-        } else if (field.key === 'bioColor') {
-          previewText.style.fontFamily = '"Noto Serif SC", "Cormorant Garamond", serif';
-          previewText.style.fontSize = '12px';
-          previewText.style.fontWeight = '400';
-        } else if (field.key === 'timeColor') {
-          previewText.style.fontFamily = '"Cormorant Garamond", serif';
-          previewText.style.fontSize = '32px';
-          previewText.style.fontWeight = '600';
-        } else if (field.key === 'dateColor') {
-          previewText.style.fontFamily = '"Noto Serif SC", serif';
-          previewText.style.fontSize = '13px';
-          previewText.style.fontWeight = '400';
-        }
         colorInput.addEventListener('input', function () {
           colorText.textContent = colorInput.value;
           if (wgEditorState.draft) {
@@ -1839,14 +1810,12 @@
           }
           // 实时预览
           var op = cfg[field.opacityKey] != null ? cfg[field.opacityKey] : defaultOpacity;
-          previewText.style.color = hexToRgba(colorInput.value, op);
           previewWidgetColor(field.key, colorInput.value, op);
           // 更新完整名片预览
           if (wgEditorState.draft) updateProfile4x4Preview(wgEditorState.draft);
         });
         colorWrap.appendChild(colorInput);
         colorWrap.appendChild(colorText);
-        colorWrap.appendChild(previewText);
         // 透明度拉条
         if (field.opacityKey) {
           var opacityWrap = document.createElement('div');
@@ -1869,7 +1838,6 @@
             }
             // 实时预览
             var colorVal = cfg[field.key] || colorInput.value;
-            previewText.style.color = hexToRgba(colorVal, op);
             previewWidgetColor(field.key, colorVal, op);
             // 更新完整名片预览
             if (wgEditorState.draft) updateProfile4x4Preview(wgEditorState.draft);
@@ -2097,6 +2065,12 @@
     if (editor) {
       editor.hidden = true;
       editor.setAttribute('aria-hidden', 'true');
+    }
+    // 同时隐藏预览框
+    var previewContainer = $('desk-custom-wg-editor-preview');
+    if (previewContainer) {
+      previewContainer.hidden = true;
+      previewContainer.innerHTML = '';
     }
     document.documentElement.classList.remove('is-custom-wg-editing');
   }
