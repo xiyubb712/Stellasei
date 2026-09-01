@@ -2413,6 +2413,12 @@
     return layoutModeCache || 'fixed';
   }
 
+  // 判断是否是自定义类布局（custom 或 stellasei）
+  function isCustomLikeMode() {
+    var mode = getLayoutMode();
+    return mode === 'custom' || mode === 'stellasei';
+  }
+
   function persistLayoutMode(mode) {
     var next = mode === 'custom' ? 'custom' : (mode === 'stellasei' ? 'stellasei' : 'fixed');
     layoutModeCache = next;
@@ -4200,7 +4206,7 @@
     applyCustomTextColor(theme);
     applyCustomIconFrameless(theme);
     applyCustomAltIconStyle(theme);
-    if (getLayoutMode() === 'custom') renderCustomLayout();
+    if (isCustomLikeMode()) renderCustomLayout();
     var promises = [
       global.miyaResolveMediaUrl(theme.wallpaper).then(function (url) { applyWallToPhone(url); })
     ];
@@ -4244,7 +4250,7 @@
         pager.appendChild(dot);
       }
     }
-    pager.hidden = getLayoutMode() !== 'custom';
+    pager.hidden = !isCustomLikeMode();
   }
 
   function scrollCustomToPage(dx, behavior) {
@@ -4354,7 +4360,7 @@
     }
 
     function syncFromScroll() {
-      if (getLayoutMode() !== 'custom' || wgEditorState.open) return;
+      if (!isCustomLikeMode() || wgEditorState.open) return;
       /* 拖着图标/组件时才锁页；编辑模式正常左右滑不受影响 */
       if (drag.active && !customPageScrollLock) {
         var lockedLeft = currentPage * pageWidth();
@@ -4410,7 +4416,7 @@
     }
 
     track.addEventListener('touchstart', function (e) {
-      if (getLayoutMode() !== 'custom' || drag.active || drag.pending || wgEditorState.open) return;
+      if (!isCustomLikeMode() || drag.active || drag.pending || wgEditorState.open) return;
       if (e.touches.length !== 1) return;
       if (isPagerSwipeBlockedTarget(e.target)) return;
       edgeStartX = e.touches[0].clientX;
@@ -4419,7 +4425,7 @@
     }, { passive: true });
 
     track.addEventListener('touchend', function (e) {
-      if (getLayoutMode() !== 'custom' || editMode || drag.active || wgEditorState.open) return;
+      if (!isCustomLikeMode() || editMode || drag.active || wgEditorState.open) return;
       var layout = getLayout();
       var touch = e.changedTouches[0];
       if (!touch) return;
@@ -4438,7 +4444,7 @@
       pager._customPagerBound = true;
       pager.addEventListener('click', function (e) {
         var dot = e.target.closest('[data-desk-page]');
-        if (!dot || getLayoutMode() !== 'custom') return;
+        if (!dot || !isCustomLikeMode()) return;
         setCustomPage(parseInt(dot.getAttribute('data-desk-page'), 10) || 0);
       });
     }
@@ -4536,17 +4542,17 @@
     });
     markOccupied(0, 0, 4, 2);
 
-    // 第3-4行：MEMO双头像小组件（占 4x2）
+    // 第3-4行：双头像 MEMO 小组件（占 2x2，左上角）
     items.push({
       id: genItemId(),
       kind: 'widget',
-      widgetId: 'blank_4x2_6',
-      x: 0, y: 2, w: 4, h: 2,
+      widgetId: 'blank_2x2_1',
+      x: 0, y: 2, w: 2, h: 2,
       config: {}
     });
-    markOccupied(0, 2, 4, 2);
+    markOccupied(0, 2, 2, 2);
 
-    // 第5-6行：拍立得小组件（占 2x2）
+    // 第5-6行：拍立得小组件（占 2x2，左上角）
     items.push({
       id: genItemId(),
       kind: 'widget',
@@ -6289,32 +6295,32 @@
   whenCustomDeskReady();
   global.miyaCustomSetWallpaper = function (ref) {
     global.miyaSetCustomDeskTheme({ wallpaper: ref });
-    return getLayoutMode() === 'custom' ? applyCustomDeskTheme() : Promise.resolve();
+    return isCustomLikeMode() ? applyCustomDeskTheme() : Promise.resolve();
   };
   global.miyaCustomSetIcon = function (key, ref) {
     var icons = Object.assign({}, (customThemeState || loadCustomTheme()).icons || {});
     if (ref) icons[key] = ref; else delete icons[key];
     global.miyaSetCustomDeskTheme({ icons: icons });
-    return getLayoutMode() === 'custom' ? applyCustomDeskTheme() : Promise.resolve();
+    return isCustomLikeMode() ? applyCustomDeskTheme() : Promise.resolve();
   };
   global.miyaCustomClearWallpaper = function () {
     global.miyaSetCustomDeskTheme({ wallpaper: null });
-    return getLayoutMode() === 'custom' ? applyCustomDeskTheme() : Promise.resolve();
+    return isCustomLikeMode() ? applyCustomDeskTheme() : Promise.resolve();
   };
   global.miyaCustomSetProfileBg = function (ref) {
     global.miyaSetCustomDeskTheme({ profileBg: ref || null });
-    return getLayoutMode() === 'custom' ? applyCustomDeskTheme() : Promise.resolve();
+    return isCustomLikeMode() ? applyCustomDeskTheme() : Promise.resolve();
   };
   global.miyaCustomSetMemoAva = function (key, ref) {
     var memoAvas = Object.assign({}, (customThemeState || loadCustomTheme()).memoAvas || {});
     if (ref) memoAvas[key] = ref; else delete memoAvas[key];
     global.miyaSetCustomDeskTheme({ memoAvas: memoAvas });
-    return getLayoutMode() === 'custom' ? applyCustomDeskTheme() : Promise.resolve();
+    return isCustomLikeMode() ? applyCustomDeskTheme() : Promise.resolve();
   };
   global.miyaCustomSetPolaroid = function (key, ref) {
     var polaroids = Object.assign({}, (customThemeState || loadCustomTheme()).polaroids || {});
     if (ref) polaroids[key] = ref; else delete polaroids[key];
     global.miyaSetCustomDeskTheme({ polaroids: polaroids });
-    return getLayoutMode() === 'custom' ? applyCustomDeskTheme() : Promise.resolve();
+    return isCustomLikeMode() ? applyCustomDeskTheme() : Promise.resolve();
   };
 })(window);
