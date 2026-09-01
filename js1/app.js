@@ -953,5 +953,13 @@
       checkAndUpdateAvatar();
     }
   });
+  // 暴露头像刷新函数到全局，供恢复默认布局等场景调用
+  global.miyaRefreshHomeAvatars = function () {
+    lastAvatarId = '';
+    cacheApplyRetryCount = 0;
+    applyAllAvatarsFromCache();
+    initAvatarSync();
+  };
+
   // ===== 头像自动刷新机制结束 =====
 })();

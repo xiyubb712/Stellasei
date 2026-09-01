@@ -6615,6 +6615,10 @@
         ensureStellaseiDefaultLayout();
         applyActiveLayout();
         showToast('已恢复默认布局');
+        // 恢复默认布局后，名片小组件被重新创建，需要刷新头像
+        setTimeout(function () {
+          if (global.miyaRefreshHomeAvatars) global.miyaRefreshHomeAvatars();
+        }, 300);
       });
     }
 
@@ -6630,6 +6634,10 @@
         ensureStellaseiDefaultLayout();
         applyActiveLayout();
         showToast('已恢复默认布局');
+        // 恢复默认布局后，名片小组件被重新创建，需要刷新头像
+        setTimeout(function () {
+          if (global.miyaRefreshHomeAvatars) global.miyaRefreshHomeAvatars();
+        }, 300);
       });
     }
 
