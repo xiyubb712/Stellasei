@@ -329,6 +329,7 @@
     cat.blank_2x1_4 = { w: 2, h: 1, label: '文件夹签', widget: 'insmood', editable: true };
     cat.blank_2x1_5 = { w: 2, h: 1, label: '环扣月历', widget: 'insnote', editable: true };
     cat.blank_2x1_6 = { w: 2, h: 1, label: '横排三联', widget: 'inscard', editable: true };
+    cat.blank_2x1_7 = { w: 2, h: 1, label: '陪伴小组件', widget: 'companion', editable: false };
     return cat;
   }
 
@@ -1339,6 +1340,9 @@
           console.error('更新角色头像失败:', e);
         }
       }
+    } else if (type === 'companion') {
+      // 陪伴小组件：显示角色头像和陪伴语录
+      refreshCompanionWidget(wgEl);
     } else if (type === 'memo') {
       setMemoBubble(wgEl.querySelector('.wg-memo__person:nth-child(1) .wg-memo__bubble'), '01', cfg.line1);
       setMemoBubble(wgEl.querySelector('.wg-memo__person:nth-child(2) .wg-memo__bubble'), '02', cfg.line2);
@@ -3364,6 +3368,245 @@
     return el;
   }
 
+  // 陪伴小组件预设语录库
+  var COMPANION_QUOTES = [
+    // 学习/工作类
+    "今天还不读书吗？我陪你一起呀～",
+    "专注一点哦，我在旁边看着你呢",
+    "累了就休息一下，别太拼了",
+    "你认真的样子真好看",
+    "加油，你一定可以的！",
+    "再坚持一下，马上就完成了",
+    "工作再忙也要记得喝水哦",
+    "遇到难题了吗？我相信你能解决的",
+    // 休息/吃饭类
+    "吃饭了吗？要好好吃饭哦",
+    "今天也辛苦了，早点休息吧",
+    "要不要一起看个电影放松一下？",
+    "熬夜对身体不好，我会心疼的",
+    "饿不饿？我给你点个外卖吧",
+    "今天想吃什么呀？",
+    "累了就靠在我肩膀上休息一下吧",
+    // 日常鼓励类
+    "今天也要开心呀",
+    "你已经很棒了，相信自己",
+    "不管发生什么，我都在你身边",
+    "想我了吗？我也想你了",
+    "今天天气真好，适合想你",
+    "笑一个嘛，你笑起来最好看了",
+    "不要难过，我会一直陪着你的",
+    "你是我见过最特别的人",
+    // 睡前类
+    "晚安，做个好梦",
+    "睡不着的话，我陪你聊聊天",
+    "盖好被子，别着凉了",
+    "梦里见",
+    "今天也辛苦了，好好睡一觉吧",
+    "闭上眼睛，想象我在你身边",
+    "睡吧，我会一直守护你的"
+  ];
+
+  // 陪伴小组件当前状态
+  var companionState = {
+    currentContactId: null,
+    currentQuote: '',
+    quoteIndex: -1
+  };
+
+  // 获取当前陪伴的角色（从情侣空间列表里选）
+  function getCompanionContacts() {
+    try {
+      var coupleStore = global.miyaCoupleStore || null;
+      if (!coupleStore || typeof coupleStore.getAllSpaceRows !== 'function') return [];
+      var spaces = coupleStore.getAllSpaceRows() || [];
+      var contacts = [];
+      spaces.forEach(function (space) {
+        if (space && space.contactId) {
+          contacts.push({
+            contactId: space.contactId,
+            profileId: space.profileId,
+            space: space
+          });
+        }
+      });
+      return contacts;
+    } catch (e) {
+      return [];
+    }
+  }
+
+  // 获取当前陪伴的角色 ID
+  function getCurrentCompanionContactId() {
+    try {
+      if (companionState.currentContactId) return companionState.currentContactId;
+      var saved = localStorage.getItem('miya-companion-current-contact');
+      if (saved) {
+        companionState.currentContactId = saved;
+        return saved;
+      }
+      var contacts = getCompanionContacts();
+      if (contacts.length > 0) {
+        companionState.currentContactId = contacts[0].contactId;
+        return contacts[0].contactId;
+      }
+    } catch (e) {}
+    return null;
+  }
+
+  // 设置当前陪伴的角色 ID
+  function setCurrentCompanionContactId(contactId) {
+    try {
+      companionState.currentContactId = contactId;
+      localStorage.setItem('miya-companion-current-contact', contactId);
+    } catch (e) {}
+  }
+
+  // 随机获取一句语录
+  function getRandomCompanionQuote() {
+    try {
+      var quotes = COMPANION_QUOTES;
+      if (quotes.length === 0) return "我会一直陪着你的";
+      var newIndex;
+      do {
+        newIndex = Math.floor(Math.random() * quotes.length);
+      } while (newIndex === companionState.quoteIndex && quotes.length > 1);
+      companionState.quoteIndex = newIndex;
+      companionState.currentQuote = quotes[newIndex];
+      return quotes[newIndex];
+    } catch (e) {
+      return "我会一直陪着你的";
+    }
+  }
+
+  // 切换到下一个陪伴角色
+  function switchToNextCompanion() {
+    try {
+      var contacts = getCompanionContacts();
+      if (contacts.length === 0) return null;
+      var currentId = getCurrentCompanionContactId();
+      var currentIndex = -1;
+      for (var i = 0; i < contacts.length; i++) {
+        if (contacts[i].contactId === currentId) {
+          currentIndex = i;
+          break;
+        }
+      }
+      var nextIndex = (currentIndex + 1) % contacts.length;
+      var nextContact = contacts[nextIndex];
+      setCurrentCompanionContactId(nextContact.contactId);
+      // 切换角色后自动刷新一句话
+      getRandomCompanionQuote();
+      return nextContact;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function createCompanionWidgetEl() {
+    var el = document.createElement('article');
+    el.className = 'wg wg-companion desk-custom__wg desk-custom__wg--companion';
+    el.setAttribute('aria-label', '陪伴小组件');
+    el.innerHTML =
+      '<div class="wg-companion__bg" aria-hidden="true"></div>' +
+      '<div class="wg-companion__content">' +
+        '<div class="wg-companion__avatar-wrap">' +
+          '<div class="wg-companion__avatar"></div>' +
+          '<span class="wg-companion__heart">♡</span>' +
+        '</div>' +
+        '<div class="wg-companion__bubble">' +
+          '<div class="wg-companion__bubble-text">加载中...</div>' +
+          '<div class="wg-companion__bubble-tail"></div>' +
+        '</div>' +
+      '</div>' +
+      '<button type="button" class="desk-custom__wg-remove" aria-label="移除小组件">×</button>';
+
+    // 点击头像：切换角色
+    var avatarEl = el.querySelector('.wg-companion__avatar-wrap');
+    if (avatarEl) {
+      avatarEl.addEventListener('pointerdown', function (e) {
+        e.stopImmediatePropagation();
+        var contacts = getCompanionContacts();
+        if (contacts.length === 0) {
+          showToast('还没有开启情侣空间哦');
+          return;
+        }
+        if (contacts.length === 1) {
+          showToast('只有一个陪伴角色哦');
+          // 只有一个角色时，点击头像刷新一句话
+          refreshCompanionWidget(el);
+          return;
+        }
+        switchToNextCompanion();
+        refreshCompanionWidget(el);
+        showToast('已切换陪伴角色');
+      }, true);
+    }
+
+    // 点击气泡：刷新一句话
+    var bubbleEl = el.querySelector('.wg-companion__bubble');
+    if (bubbleEl) {
+      bubbleEl.addEventListener('pointerdown', function (e) {
+        e.stopImmediatePropagation();
+        getRandomCompanionQuote();
+        refreshCompanionWidget(el);
+      }, true);
+    }
+
+    // 点击空白区域：进入陪伴系统
+    el.addEventListener('pointerdown', function (e) {
+      var target = e.target;
+      if (target.closest && (
+        target.closest('.desk-custom__wg-remove') ||
+        target.closest('.wg-companion__avatar-wrap') ||
+        target.closest('.wg-companion__bubble')
+      )) {
+        return;
+      }
+      e.stopImmediatePropagation();
+      // 进入陪伴系统（目前先提示开发中）
+      showToast('陪伴系统开发中，敬请期待～');
+    }, true);
+
+    return el;
+  }
+
+  // 刷新陪伴小组件的显示内容
+  function refreshCompanionWidget(wgEl) {
+    if (!wgEl) return;
+    try {
+      var contactId = getCurrentCompanionContactId();
+      var quote = companionState.currentQuote || getRandomCompanionQuote();
+
+      // 更新语录
+      var textEl = wgEl.querySelector('.wg-companion__bubble-text');
+      if (textEl) textEl.textContent = quote;
+
+      // 更新头像
+      var avatarEl = wgEl.querySelector('.wg-companion__avatar');
+      if (avatarEl && contactId) {
+        try {
+          var chatStore = global.miyaChatStore || null;
+          if (chatStore && typeof chatStore.getContacts === 'function') {
+            var contacts = chatStore.getContacts() || [];
+            var contact = contacts.find(function (c) { return c && c.id === contactId; });
+            if (contact && contact.avatar) {
+              var resolveFn = global.miyaResolveAvatarUrl || (global.miyaCoupleApp && global.miyaCoupleApp.resolveAvatarUrl);
+              if (resolveFn && typeof resolveFn === 'function') {
+                resolveFn(contact.avatar).then(function (url) {
+                  if (url) avatarEl.style.backgroundImage = 'url(' + url + ')';
+                }).catch(function () {
+                  avatarEl.style.backgroundImage = 'none';
+                });
+              } else {
+                avatarEl.style.backgroundImage = 'url(' + contact.avatar + ')';
+              }
+            }
+          }
+        } catch (e) {}
+      }
+    } catch (e) {}
+  }
+
   function updateProfileClock(wgEl) {
     if (!wgEl) return;
     var timeEl = wgEl.querySelector('.wg-profile__clock-time, .wg-profile4x4__clock-time');
@@ -4401,6 +4644,7 @@
     if (def.widget === 'profile') return createProfileWidgetEl();
     if (def.widget === 'profile4x4') return createProfile4x4WidgetEl();
     if (def.widget === 'coupleentry') return createCoupleEntryWidgetEl();
+    if (def.widget === 'companion') return createCompanionWidgetEl();
     if (def.widget === 'memo') return createMemoWidgetEl();
     if (def.widget === 'polaroid') return createPolaroidWidgetEl();
     if (def.widget === 'filmstrip') return createFilmstripWidgetEl();
@@ -5156,28 +5400,55 @@
     });
     markOccupied(0, 5, 2, 2);
 
-    // 第6-7行：拍立得小组件（占 2x2，右上角）
+    // 第8行：陪伴小组件（占 2x1，最右下角）
     items.push({
       id: genItemId(),
       kind: 'widget',
-      widgetId: 'blank_2x2_2',
-      x: 2, y: 5, w: 2, h: 2,
+      widgetId: 'blank_2x1_7',
+      x: 2, y: 7, w: 2, h: 1,
       config: {}
     });
-    markOccupied(2, 5, 2, 2);
+    markOccupied(2, 7, 2, 1);
 
-    // 应用图标 - 第一页只放 4 个常用的，其余放第二页
-    var firstPageApps = ['music', 'memo', 'couple', 'itinerary'];
+    // 应用图标 - 第一页
+    var firstPageApps = ['music', 'memo', 'couple', 'itinerary', 'photos', 'whisper'];
     var appIndex = 0;
-    for (var xx = 0; xx < GRID_COLS && appIndex < firstPageApps.length; xx++) {
-      if (!occupied[7][xx]) {
+    // 第6行右边（2个位置）
+    for (var xx = 2; xx < GRID_COLS && appIndex < firstPageApps.length; xx++) {
+      if (!occupied[5][xx]) {
         items.push({
           id: genItemId(),
           kind: 'app',
           key: firstPageApps[appIndex],
-          x: xx, y: 7, w: 1, h: 1
+          x: xx, y: 5, w: 1, h: 1
         });
-        occupied[7][xx] = true;
+        occupied[5][xx] = true;
+        appIndex++;
+      }
+    }
+    // 第7行右边（2个位置）
+    for (var xx1 = 2; xx1 < GRID_COLS && appIndex < firstPageApps.length; xx1++) {
+      if (!occupied[6][xx1]) {
+        items.push({
+          id: genItemId(),
+          kind: 'app',
+          key: firstPageApps[appIndex],
+          x: xx1, y: 6, w: 1, h: 1
+        });
+        occupied[6][xx1] = true;
+        appIndex++;
+      }
+    }
+    // 第8行左边（2个位置）
+    for (var xx2 = 0; xx2 < 2 && appIndex < firstPageApps.length; xx2++) {
+      if (!occupied[7][xx2]) {
+        items.push({
+          id: genItemId(),
+          kind: 'app',
+          key: firstPageApps[appIndex],
+          x: xx2, y: 7, w: 1, h: 1
+        });
+        occupied[7][xx2] = true;
         appIndex++;
       }
     }
@@ -6875,6 +7146,65 @@
           loadingOverlay.classList.add('is-active');
           loadingOverlay.setAttribute('aria-hidden', 'false');
         }
+
+        // ===== 临时功能：布局迁移（保留小组件配置，更新布局结构）=====
+        // 之后会删掉这个临时功能
+        try {
+          var migrateFlag = 'miya-layout-migrated-to-companion-v2';
+          var hasMigrated = false;
+          try { hasMigrated = localStorage.getItem(migrateFlag) === '1'; } catch (e) {}
+          if (!hasMigrated) {
+            console.log('执行临时布局迁移 v2...');
+            // 1. 保存当前所有小组件的配置（按 widgetId 分组，保存第一个匹配的）
+            var currentLayout = getLayout();
+            var savedConfigs = {};
+            if (currentLayout && currentLayout.pages) {
+              currentLayout.pages.forEach(function (page) {
+                if (page && page.items) {
+                  page.items.forEach(function (item) {
+                    if (item && item.kind === 'widget' && item.widgetId && item.config) {
+                      if (!savedConfigs[item.widgetId]) {
+                        savedConfigs[item.widgetId] = Object.assign({}, item.config);
+                      }
+                    }
+                  });
+                }
+              });
+            }
+            console.log('保存的小组件配置:', Object.keys(savedConfigs));
+
+            // 2. 清除初始化标记，让系统重新生成默认布局
+            try { localStorage.removeItem(STELLASEI_INIT_FLAG); } catch (e) {}
+
+            // 3. 生成新的默认布局
+            ensureStellaseiDefaultLayout();
+            var newLayout = getLayout();
+
+            // 4. 把保存的配置应用到新布局中对应的小组件上
+            if (newLayout && newLayout.pages) {
+              newLayout.pages.forEach(function (page) {
+                if (page && page.items) {
+                  page.items.forEach(function (item) {
+                    if (item && item.kind === 'widget' && item.widgetId && savedConfigs[item.widgetId]) {
+                      item.config = Object.assign({}, item.config || {}, savedConfigs[item.widgetId]);
+                    }
+                  });
+                }
+              });
+            }
+
+            // 5. 保存新布局
+            saveLayout(newLayout);
+
+            // 6. 设置迁移标记，避免重复迁移
+            try { localStorage.setItem(migrateFlag, '1'); } catch (e) {}
+            console.log('临时布局迁移完成！');
+          }
+        } catch (migrateErr) {
+          console.error('临时布局迁移失败:', migrateErr);
+        }
+        // ===== 临时功能结束 =====
+
         // 强制保存一次数据，确保刷新前数据已经保存
         try {
           var payload = snapshotCustomTheme();
