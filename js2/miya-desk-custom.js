@@ -7271,64 +7271,6 @@
           loadingOverlay.setAttribute('aria-hidden', 'false');
         }
 
-        // ===== 临时功能：布局迁移（保留小组件配置，更新布局结构）=====
-        // 之后会删掉这个临时功能
-        try {
-          var migrateFlag = 'miya-layout-migrated-to-companion-v2';
-          var hasMigrated = false;
-          try { hasMigrated = localStorage.getItem(migrateFlag) === '1'; } catch (e) {}
-          if (!hasMigrated) {
-            console.log('执行临时布局迁移 v2...');
-            // 1. 保存当前所有小组件的配置（按 widgetId 分组，保存第一个匹配的）
-            var currentLayout = getLayout();
-            var savedConfigs = {};
-            if (currentLayout && currentLayout.pages) {
-              currentLayout.pages.forEach(function (page) {
-                if (page && page.items) {
-                  page.items.forEach(function (item) {
-                    if (item && item.kind === 'widget' && item.widgetId && item.config) {
-                      if (!savedConfigs[item.widgetId]) {
-                        savedConfigs[item.widgetId] = Object.assign({}, item.config);
-                      }
-                    }
-                  });
-                }
-              });
-            }
-            console.log('保存的小组件配置:', Object.keys(savedConfigs));
-
-            // 2. 清除初始化标记，让系统重新生成默认布局
-            try { localStorage.removeItem(STELLASEI_INIT_FLAG); } catch (e) {}
-
-            // 3. 生成新的默认布局
-            ensureStellaseiDefaultLayout();
-            var newLayout = getLayout();
-
-            // 4. 把保存的配置应用到新布局中对应的小组件上
-            if (newLayout && newLayout.pages) {
-              newLayout.pages.forEach(function (page) {
-                if (page && page.items) {
-                  page.items.forEach(function (item) {
-                    if (item && item.kind === 'widget' && item.widgetId && savedConfigs[item.widgetId]) {
-                      item.config = Object.assign({}, item.config || {}, savedConfigs[item.widgetId]);
-                    }
-                  });
-                }
-              });
-            }
-
-            // 5. 保存新布局
-            saveLayout(newLayout);
-
-            // 6. 设置迁移标记，避免重复迁移
-            try { localStorage.setItem(migrateFlag, '1'); } catch (e) {}
-            console.log('临时布局迁移完成！');
-          }
-        } catch (migrateErr) {
-          console.error('临时布局迁移失败:', migrateErr);
-        }
-        // ===== 临时功能结束 =====
-
         // 强制保存一次数据，确保刷新前数据已经保存
         try {
           var payload = snapshotCustomTheme();
