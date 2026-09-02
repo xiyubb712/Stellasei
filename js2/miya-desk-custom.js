@@ -2970,9 +2970,9 @@
   }
 
   function getLayoutMode() {
-    var synced = hydrateLayoutModeSync();
-    if (synced) return synced;
-    return layoutModeCache || 'stellasei';
+    // 【强制星绥布局】永远返回 stellasei，忽略旧的布局模式设置
+    // 原作者的 fixed 和 custom 布局模式已废弃，只保留星绥布局
+    return 'stellasei';
   }
 
   // 判断是否是自定义类布局（custom 或 stellasei）
@@ -2982,7 +2982,8 @@
   }
 
   function persistLayoutMode(mode) {
-    var next = mode === 'custom' ? 'custom' : (mode === 'stellasei' ? 'stellasei' : 'fixed');
+    // 【强制星绥布局】只保存 stellasei
+    var next = 'stellasei';
     layoutModeCache = next;
     if (typeof global.miyaWriteLsJsonKey === 'function') {
       return global.miyaWriteLsJsonKey(LAYOUT_MODE_KEY, next);
@@ -2992,7 +2993,8 @@
   }
 
   function setLayoutMode(mode) {
-    var next = mode === 'custom' ? 'custom' : (mode === 'stellasei' ? 'stellasei' : 'fixed');
+    // 【强制星绥布局】只设置 stellasei
+    var next = 'stellasei';
     layoutModeCache = next;
     persistLayoutMode(next);
     document.documentElement.dataset.miyaDeskLayout = next;
