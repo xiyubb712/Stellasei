@@ -3011,8 +3011,19 @@
       readKey(CUSTOM_PRESETS_KEY, []),
       readKey(LAYOUT_MODE_KEY, null)
     ]).then(function (rows) {
-      if (customThemeState) mergeThemeFromRaw(rows[0]);
-      else applyThemeFromRaw(rows[0]);
+      // 如果用户已经修改了布局（layoutFromFallback为false），保留用户修改的布局，不被IndexedDB覆盖
+      // 否则，使用IndexedDB里的布局
+      if (layoutFromFallback) {
+        if (rows[0] && typeof rows[0] === 'object') {
+          applyThemeFromRaw(rows[0]);
+        } else {
+          layoutFromFallback = true;
+        }
+      }
+      // 如果用户已经修改了布局，确保layoutFromFallback保持为false
+      if (!layoutFromFallback) {
+        layoutFromFallback = false;
+      }
       hydratePresetsFromRaw(rows[1]);
       var mode = parseLayoutModeValue(rows[2]) || readLayoutModeFromLsPlain() || 'stellasei';
       layoutModeCache = mode;

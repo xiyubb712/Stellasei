@@ -308,6 +308,30 @@
     });
   };
 
+  /**
+   * 全局异步初始化：从IndexedDB读取所有数据到内存缓存
+   * 解决大数据（>49152字节）在页面加载时同步读取不到的问题
+   */
+  global.miyaHydrateAllFromIdb = async function () {
+    try {
+      var all = await global.miyaKvIdbExportAllEntries();
+      if (all && typeof all === 'object') {
+        Object.keys(all).forEach(function (key) {
+          if (key && key.indexOf(WIDGET_PREFIX) !== 0) {
+            var val = all[key];
+            if (val !== undefined && val !== null) {
+              memSet(key, val);
+            }
+          }
+        });
+      }
+      return true;
+    } catch (e) {
+      console.warn('[miya-storage] hydrate all from idb failed', e);
+      return false;
+    }
+  };
+
   /** 游标导出 KV 为 JSON Blob，避免整表对象 + stringify 双峰内存 */
   global.miyaKvIdbExportToJsonBlob = function (onProgress) {
     onProgress = typeof onProgress === 'function' ? onProgress : function () {};
