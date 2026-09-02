@@ -7689,51 +7689,7 @@
     console.log('添加语录库点击拦截失败:', e);
   }
 
-  // 页面加载完成后，更新语录库应用的图标
-  try {
-    var quotesSvg = '<svg viewBox="0 0 24 24" fill="none"><path d="M9.5 7H6.5C5.12 7 4 8.12 4 9.5v2C4 12.88 5.12 14 6.5 14h1v2.5l3-2.5V9.5C10.5 8.12 9.38 7 8 7h1.5z" fill="rgba(70,74,80,0.75)" stroke="rgba(70,74,80,0.82)" stroke-width="0.8" stroke-linejoin="round"/><path d="M19.5 7h-3C15.12 7 14 8.12 14 9.5v2c0 1.38 1.12 2.5 2.5 2.5h1v2.5l3-2.5V9.5C20.5 8.12 19.38 7 18 7h1.5z" fill="rgba(70,74,80,0.75)" stroke="rgba(70,74,80,0.82)" stroke-width="0.8" stroke-linejoin="round"/><path d="M5 19h14" stroke="rgba(130,136,145,0.65)" stroke-width="1.1" stroke-linecap="round"/></svg>';
-    
-    function updateQuotesIcons() {
-      var quotesBtns = document.querySelectorAll('[data-app="quotes"] [data-i="quotes"], [data-app="quotes"] .ic__box');
-      quotesBtns.forEach(function (btn) {
-        if (btn.innerHTML !== quotesSvg) {
-          btn.innerHTML = quotesSvg;
-        }
-      });
-    }
-    
-    // 立即执行一次
-    updateQuotesIcons();
-    
-    // DOMContentLoaded后再执行一次
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', function () {
-        updateQuotesIcons();
-        // 多次尝试，确保应用列表加载完成后图标能及时更新
-        setTimeout(updateQuotesIcons, 100);
-        setTimeout(updateQuotesIcons, 300);
-      });
-    } else {
-      setTimeout(updateQuotesIcons, 100);
-      setTimeout(updateQuotesIcons, 300);
-    }
-    
-    // 添加MutationObserver，监听动态添加的语录库应用按钮
-    try {
-      var observer = new MutationObserver(function (mutations) {
-        mutations.forEach(function (mutation) {
-          if (mutation.addedNodes && mutation.addedNodes.length > 0) {
-            updateQuotesIcons();
-          }
-        });
-      });
-      observer.observe(document.body, { childList: true, subtree: true });
-    } catch (e) {
-      console.log('添加语录库图标MutationObserver失败:', e);
-    }
-  } catch (e) {
-    console.log('更新语录库图标失败:', e);
-  }
+  // 语录库图标已在 app.js 的 SVG_CLASSIC 中直接定义为对话气泡样式，无需动态替换
 
   // 监听来自 iframe 的 postMessage（解决跨域问题）
   window.addEventListener('message', function (e) {
