@@ -4,7 +4,7 @@
   var LAYOUT_MODE_KEY = 'miya-desk-layout-mode';
   var CUSTOM_META_KEY = 'miya-desk-custom-v1';
   var CUSTOM_PRESETS_KEY = 'miya-desk-custom-presets-v1';
-  var STELLASEI_INIT_FLAG = 'miya-desk-stellasei-initialized';
+  var STELLASEI_INIT_FLAG = 'miya-desk-stellasei-initialized-v2';
 
   var GRID_COLS = 4;
   var GRID_ROWS = 8;
@@ -2935,9 +2935,9 @@
   }
 
   function getLayoutMode() {
-    // 【强制星绥布局】永远返回 stellasei，忽略旧的布局模式设置
-    // 原作者的 fixed 和 custom 布局模式已废弃，只保留星绥布局
-    return 'stellasei';
+    var synced = hydrateLayoutModeSync();
+    if (synced) return synced;
+    return layoutModeCache || 'stellasei';
   }
 
   // 判断是否是自定义类布局（custom 或 stellasei）
@@ -2947,8 +2947,7 @@
   }
 
   function persistLayoutMode(mode) {
-    // 【强制星绥布局】只保存 stellasei
-    var next = 'stellasei';
+    var next = mode === 'custom' ? 'custom' : (mode === 'stellasei' ? 'stellasei' : 'fixed');
     layoutModeCache = next;
     if (typeof global.miyaWriteLsJsonKey === 'function') {
       return global.miyaWriteLsJsonKey(LAYOUT_MODE_KEY, next);
@@ -2958,8 +2957,7 @@
   }
 
   function setLayoutMode(mode) {
-    // 【强制星绥布局】只设置 stellasei
-    var next = 'stellasei';
+    var next = mode === 'custom' ? 'custom' : (mode === 'stellasei' ? 'stellasei' : 'fixed');
     layoutModeCache = next;
     persistLayoutMode(next);
     document.documentElement.dataset.miyaDeskLayout = next;
@@ -5494,21 +5492,13 @@
     try {
       var flag = localStorage.getItem(STELLASEI_INIT_FLAG);
       if (flag === '1') return;
-      // 检查是否已经有用户自定义的布局（防止localStorage标志丢失时覆盖用户布局）
-      var hasUserLayout = customThemeState && customThemeState.layout
-        && Array.isArray(customThemeState.layout.pages)
-        && customThemeState.layout.pages.length > 0
-        && customThemeState.layout.pages.some(function (p) {
-          return Array.isArray(p.items) && p.items.length > 0;
-        });
-      if (hasUserLayout) {
-        // 已经有用户布局了，只设置标志，不覆盖
-        localStorage.setItem(STELLASEI_INIT_FLAG, '1');
-        return;
-      }
+      // 【v2初始化】第一次加载时，即便是已经有旧的布局数据，也覆盖成星绥布局的默认数据
+      // 这样可以解决旧的布局数据导致的显示问题
+      console.log('[stellasei] first init (v2), applying default stellasei layout...');
       var layout = getStellaseiDefaultLayout();
       saveLayout(layout);
       localStorage.setItem(STELLASEI_INIT_FLAG, '1');
+      console.log('[stellasei] default stellasei layout applied');
     } catch (e) {
       console.warn('[stellasei] default layout init failed', e);
     }
