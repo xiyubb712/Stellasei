@@ -89,8 +89,8 @@
   }
 
   function shouldPlay() {
-    if (global.matchMedia && global.matchMedia('(prefers-reduced-motion: reduce)').matches) return false;
-    return true;
+    // 已禁用启动动画，直接显示主界面
+    return false;
   }
 
   function playSplash() {

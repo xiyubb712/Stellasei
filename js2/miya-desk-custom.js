@@ -5493,6 +5493,18 @@
     try {
       var flag = localStorage.getItem(STELLASEI_INIT_FLAG);
       if (flag === '1') return;
+      // 检查是否已经有用户自定义的布局（防止localStorage标志丢失时覆盖用户布局）
+      var hasUserLayout = customThemeState && customThemeState.layout
+        && Array.isArray(customThemeState.layout.pages)
+        && customThemeState.layout.pages.length > 0
+        && customThemeState.layout.pages.some(function (p) {
+          return Array.isArray(p.items) && p.items.length > 0;
+        });
+      if (hasUserLayout) {
+        // 已经有用户布局了，只设置标志，不覆盖
+        localStorage.setItem(STELLASEI_INIT_FLAG, '1');
+        return;
+      }
       var layout = getStellaseiDefaultLayout();
       saveLayout(layout);
       localStorage.setItem(STELLASEI_INIT_FLAG, '1');
@@ -7225,6 +7237,7 @@
   }
 
   // 显示 Toast 提示
+  var activeToasts = [];
   function showToast(message, duration) {
     duration = duration || 2000;
     var container = document.getElementById('miya-toast-container');
@@ -7233,20 +7246,38 @@
     toast.className = 'miya-toast';
     toast.innerHTML = '<span class="miya-toast__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span><span>' + message + '</span>';
     container.appendChild(toast);
+    activeToasts.push(toast);
     // 显示动画
     requestAnimationFrame(function () {
       toast.classList.add('is-show');
     });
     // 自动消失
-    setTimeout(function () {
+    var hideTimer = setTimeout(function () {
       toast.classList.remove('is-show');
-      setTimeout(function () {
+      var removeTimer = setTimeout(function () {
         if (toast.parentNode) {
           toast.parentNode.removeChild(toast);
         }
+        var idx = activeToasts.indexOf(toast);
+        if (idx > -1) activeToasts.splice(idx, 1);
       }, 300);
+      toast._removeTimer = removeTimer;
     }, duration);
+    toast._hideTimer = hideTimer;
   }
+
+  // 清除所有 Toast 提示（切换应用时调用，避免残留）
+  function clearAllToasts() {
+    activeToasts.forEach(function (toast) {
+      if (toast._hideTimer) clearTimeout(toast._hideTimer);
+      if (toast._removeTimer) clearTimeout(toast._removeTimer);
+      if (toast.parentNode) {
+        toast.parentNode.removeChild(toast);
+      }
+    });
+    activeToasts = [];
+  }
+  global.clearAllToasts = clearAllToasts;
 
   function bindLayoutSwitchButtons() {
     var picker = document.getElementById('miya-bf-layout-pick');
