@@ -1355,6 +1355,64 @@
       } catch (e) {
         console.error('更新情侣对话语录失败:', e);
       }
+
+      // 延迟刷新头像：确保头像数据和解析函数都加载好了
+      var avatarImgs = wgEl.querySelectorAll('.wg-couple-entry__avatar-img');
+      if (avatarImgs.length >= 2 && homeSpace && homeContactId) {
+        [500, 1500, 3000].forEach(function(delay) {
+          setTimeout(function() {
+            // 左边：角色头像
+            try {
+              var contact = null;
+              var cs2 = global.miyaChatStore || null;
+              if (cs2 && typeof cs2.getContacts === 'function') {
+                var contacts = cs2.getContacts() || [];
+                contact = contacts.find(function (c) { return c && c.id === homeContactId; }) || null;
+              }
+              if (contact) {
+                if (typeof global.miyaResolveAvatarUrl === 'function') {
+                  global.miyaResolveAvatarUrl(contact).then(function (url) {
+                    if (url && avatarImgs[0]) {
+                      avatarImgs[0].style.backgroundImage = 'url(' + url + ')';
+                    }
+                  }).catch(function () {
+                    if (contact && contact.avatar && avatarImgs[0]) {
+                      avatarImgs[0].style.backgroundImage = 'url(' + contact.avatar + ')';
+                    }
+                  });
+                } else if (contact.avatar) {
+                  avatarImgs[0].style.backgroundImage = 'url(' + contact.avatar + ')';
+                }
+              }
+            } catch (e) {}
+
+            // 右边：用户头像
+            try {
+              var cs = global.miyaChatStore || null;
+              var profile = null;
+              if (cs && homeSpace.profileId && typeof cs.getProfiles === 'function') {
+                var profiles = cs.getProfiles() || [];
+                profile = profiles.find(function (p) { return p && p.id === homeSpace.profileId; }) || null;
+              }
+              if (profile) {
+                if (typeof global.miyaResolveProfileAvatarUrl === 'function') {
+                  global.miyaResolveProfileAvatarUrl(profile).then(function (url) {
+                    if (url && avatarImgs[1]) {
+                      avatarImgs[1].style.backgroundImage = 'url(' + url + ')';
+                    }
+                  }).catch(function () {
+                    if (profile && profile.avatar && avatarImgs[1]) {
+                      avatarImgs[1].style.backgroundImage = 'url(' + profile.avatar + ')';
+                    }
+                  });
+                } else if (profile.avatar) {
+                  avatarImgs[1].style.backgroundImage = 'url(' + profile.avatar + ')';
+                }
+              }
+            } catch (e) {}
+          }, delay);
+        });
+      }
     } else if (type === 'companion') {
       // 陪伴小组件：显示角色头像和陪伴语录
       refreshCompanionWidget(wgEl);
