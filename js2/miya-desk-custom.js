@@ -4,6 +4,42 @@
   var LAYOUT_MODE_KEY = 'miya-desk-layout-mode';
   var CUSTOM_META_KEY = 'miya-desk-custom-v1';
   var CUSTOM_PRESETS_KEY = 'miya-desk-custom-presets-v1';
+  var STELLASEI_INIT_FLAG = 'miya-desk-stellasei-initialized';
+
+  // ═══════════════════════════════════════════════════════════════
+  // 【最早期重置检测】在任何数据加载之前执行
+  // 访问 ?reset-all=1 时，清除所有旧的布局数据，强制使用星绥默认布局
+  // ═══════════════════════════════════════════════════════════════
+  (function earlyResetCheck() {
+    try {
+      var urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('reset-all') !== '1') return;
+      console.log('[stellasei] early reset: clearing all old layout data...');
+      // 清除localStorage里的所有布局相关数据
+      var keysToClear = [
+        LAYOUT_MODE_KEY,
+        CUSTOM_META_KEY,
+        CUSTOM_PRESETS_KEY,
+        STELLASEI_INIT_FLAG,
+        'miya-custom-theme-v1',
+        'miya-custom-layout-mode'
+      ];
+      keysToClear.forEach(function (key) {
+        try { localStorage.removeItem(key); } catch (e) {}
+      });
+      // 清除内存缓存里的相关数据
+      try {
+        if (window.__miyaKvMem) {
+          keysToClear.forEach(function (key) {
+            delete window.__miyaKvMem[key];
+          });
+        }
+      } catch (e) {}
+      console.log('[stellasei] early reset: done, will use stellasei default layout');
+    } catch (e) {
+      console.warn('[stellasei] early reset failed', e);
+    }
+  })();
 
   var GRID_COLS = 4;
   var GRID_ROWS = 8;
@@ -5497,8 +5533,6 @@
     }
     return applyActiveLayout();
   }
-
-  var STELLASEI_INIT_FLAG = 'miya-desk-stellasei-initialized';
 
   function ensureStellaseiDefaultLayout() {
     try {
