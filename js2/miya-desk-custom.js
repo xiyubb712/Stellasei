@@ -2756,7 +2756,16 @@
     if (saveLayoutTimer) clearTimeout(saveLayoutTimer);
     saveLayoutTimer = setTimeout(function () {
       saveLayoutTimer = 0;
-      saveCustomTheme();
+      // 如果异步加载还没完成，等待完成后再保存，避免数据丢失
+      if (!customDeskHydrated) {
+        whenCustomDeskReady().then(function () {
+          saveCustomTheme();
+        }).catch(function () {
+          saveCustomTheme();
+        });
+      } else {
+        saveCustomTheme();
+      }
     }, 0);
   }
 
@@ -2859,7 +2868,8 @@
   }
 
   function persistCustomTheme() {
-    if (!customDeskHydrated || layoutFromFallback) return Promise.resolve(false);
+    /* layoutFromFallback 为 true 时禁止落盘，避免默认布局/空组件库盖掉 IDB 真数据 */
+    if (layoutFromFallback) return Promise.resolve(false);
     var payload = snapshotCustomTheme();
     customThemeState = Object.assign({}, defaultCustomTheme, payload);
     customThemeState.icons = Object.assign({}, payload.icons || {});
@@ -2875,8 +2885,17 @@
   }
 
   function saveCustomTheme() {
-    /* hydrate 完成前禁止落盘，避免默认布局/空组件库写入内存热缓存盖掉 IDB 真数据 */
-    if (!customDeskHydrated || layoutFromFallback) return;
+    /* layoutFromFallback 为 true 时禁止落盘，避免默认布局/空组件库盖掉 IDB 真数据 */
+    if (layoutFromFallback) return;
+    /* 如果 hydrate 还没完成，等待完成后再保存，避免用户修改的数据丢失 */
+    if (!customDeskHydrated) {
+      whenCustomDeskReady().then(function () {
+        persistCustomTheme();
+      }).catch(function () {
+        persistCustomTheme();
+      });
+      return;
+    }
     persistCustomTheme();
   }
 
