@@ -4,9 +4,8 @@
   var KV_DB = 'miya-kv-store';
   var KV_STORE = 'kv';
   var WIDGET_PREFIX = 'widgetKV:';
-  // 阈值改成2MB，让大部分数据都存在localStorage里
-  // 解决iOS PWA模式下IndexedDB数据被系统清理的问题
-  var SPILL_BYTES = 2097152;
+  // 阈值改成200KB，既保证大部分数据能存在localStorage里，又不会太大导致性能问题
+  var SPILL_BYTES = 204800;
   var LS_PLACEHOLDER = '{"__storedInIdb":true}';
 
   /** 内存热缓存：bootstrap / 写入后立即可用，供 miyaSyncReadJsonKey 同步读 */
