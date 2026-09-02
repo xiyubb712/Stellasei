@@ -1174,12 +1174,59 @@
     let profiles = []; // 所有面具列表
     let currentProfileId = ''; // 当前选中的面具 ID
 
+    // 语录库 postMessage 代理（解决 iframe 跨域问题）
+    let quotesLibRequestId = 0;
+    let quotesLibCallbacks = {};
+
+    // 向父页面发送语录库请求
+    function requestQuotesLib(action, params) {
+      return new Promise(function(resolve) {
+        try {
+          if (!window.parent || window.parent === window) {
+            // 不在 iframe 里，直接返回 null
+            resolve(null);
+            return;
+          }
+          var requestId = ++quotesLibRequestId;
+          quotesLibCallbacks[requestId] = resolve;
+          var message = Object.assign({ type: 'miya-quotes-library-request', action: action, requestId: requestId }, params || {});
+          window.parent.postMessage(message, '*');
+          // 3秒超时
+          setTimeout(function() {
+            if (quotesLibCallbacks[requestId]) {
+              delete quotesLibCallbacks[requestId];
+              resolve(null);
+            }
+          }, 3000);
+        } catch (e) {
+          console.log('语录库请求失败:', e);
+          resolve(null);
+        }
+      });
+    }
+
     // 初始化
     function init() {
       loadCharacters();
       // 页面加载后直接读取面具数据（最保险的方案）
       setTimeout(loadProfilesDirectly, 300);
       setTimeout(loadProfilesDirectly, 1000);
+
+      // 全局监听语录库的响应（一直保持监听，不移除）
+      window.addEventListener('message', function(e) {
+        try {
+          var data = e.data;
+          if (!data || typeof data !== 'object') return;
+          if (data.type !== 'miya-quotes-library-response') return;
+          if (data.requestId && quotesLibCallbacks[data.requestId]) {
+            var callback = quotesLibCallbacks[data.requestId];
+            delete quotesLibCallbacks[data.requestId];
+            callback(data.result);
+          }
+        } catch (err) {
+          console.log('处理语录库响应失败:', err);
+        }
+      });
     }
 
     // 直接从 localStorage 读取面具数据（最保险的方案）
@@ -1868,11 +1915,32 @@
       document.getElementById('companionTimer').textContent = `${hours}:${minutes}:${seconds}`;
     }
 
-    // 刷新语录
-    function refreshQuote() {
-      const quotes = sceneQuotes[currentScene] || sceneQuotes.chill;
-      const randomIndex = Math.floor(Math.random() * quotes.length);
-      document.getElementById('companionQuote').textContent = quotes[randomIndex];
+    // 刷新语录（优先从语录库读取，没有的话用预设的备用语录）
+    async function refreshQuote() {
+      var quoteEl = document.getElementById('companionQuote');
+      var characterId = currentCharacter ? currentCharacter.id : null;
+
+      // 1. 优先从语录库读取
+      if (characterId) {
+        try {
+          var quoteFromLib = await requestQuotesLib('getRandom', {
+            category: 'companion',
+            characterId: characterId,
+            scene: currentScene
+          });
+          if (quoteFromLib && typeof quoteFromLib === 'string' && quoteFromLib.trim()) {
+            quoteEl.textContent = quoteFromLib;
+            return;
+          }
+        } catch (e) {
+          console.log('从语录库读取语录失败，使用备用语录:', e);
+        }
+      }
+
+      // 2. 语录库没有的话，用预设的备用语录
+      var quotes = sceneQuotes[currentScene] || sceneQuotes.chill;
+      var randomIndex = Math.floor(Math.random() * quotes.length);
+      quoteEl.textContent = quotes[randomIndex];
     }
 
     // 保存统计
