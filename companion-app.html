@@ -95,6 +95,13 @@
       color: var(--text-main);
       line-height: 1.3;
       letter-spacing: 0.05em;
+      margin: 0;
+    }
+
+    .page-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
       margin-bottom: 16px;
     }
 
@@ -569,6 +576,222 @@
       margin: 0 2px;
     }
 
+    /* 统计页面 */
+    .stats-page {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--bg);
+      z-index: 100;
+      overflow-y: auto;
+    }
+
+    .stats-page.show {
+      display: block;
+    }
+
+    .stats-content {
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 40px 24px 60px;
+    }
+
+    .stats-top {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 40px;
+    }
+
+    .stats-back {
+      background: none;
+      border: none;
+      font-family: inherit;
+      font-size: 14px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      padding: 4px 8px;
+      transition: color 0.3s;
+    }
+
+    .stats-back:hover {
+      color: var(--accent);
+    }
+
+    .stats-title {
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      color: var(--text-main);
+    }
+
+    .stats-top-line {
+      flex: 1;
+      height: 1px;
+      background: var(--line);
+    }
+
+    /* 总统计卡片 */
+    .stats-overview {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 48px;
+    }
+
+    .overview-card {
+      background: rgba(0, 0, 0, 0.02);
+      border: 1px solid var(--line);
+      border-radius: 2px;
+      padding: 20px 12px;
+      text-align: center;
+    }
+
+    .overview-number {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 8px;
+      letter-spacing: -0.02em;
+    }
+
+    .overview-label {
+      font-size: 11px;
+      color: var(--text-secondary);
+      letter-spacing: 0.05em;
+    }
+
+    /* 统计区块 */
+    .stats-section {
+      margin-bottom: 40px;
+    }
+
+    .stats-section-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-main);
+      letter-spacing: 0.05em;
+    }
+
+    .stats-section-number {
+      font-size: 12px;
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    /* 角色统计列表 */
+    .stats-character-list,
+    .stats-scene-list,
+    .stats-records-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .stats-character-item,
+    .stats-scene-item,
+    .stats-record-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      background: rgba(0, 0, 0, 0.02);
+      border: 1px solid var(--line);
+      border-radius: 2px;
+    }
+
+    .stats-item-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .stats-item-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      overflow: hidden;
+      background-size: cover;
+      background-position: center;
+    }
+
+    .stats-item-name {
+      font-size: 13px;
+      color: var(--text-main);
+      font-weight: 500;
+    }
+
+    .stats-item-right {
+      text-align: right;
+    }
+
+    .stats-item-count {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .stats-item-minutes {
+      font-size: 11px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    /* 记录条目 */
+    .stats-record-item {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .record-top {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      align-items: center;
+    }
+
+    .record-character {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-main);
+    }
+
+    .record-duration {
+      font-size: 12px;
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .record-bottom {
+      display: flex;
+      gap: 12px;
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+
+    .stats-empty {
+      text-align: center;
+      padding: 30px 20px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      background: rgba(0, 0, 0, 0.02);
+      border: 1px dashed var(--line);
+      border-radius: 2px;
+    }
+
     /* 开始按钮 */
     .start-section {
       margin-top: 60px;
@@ -606,6 +829,39 @@
       font-size: 10px;
       letter-spacing: 0.15em;
       color: var(--text-light);
+    }
+
+    /* 统计入口按钮（小尺寸，放在标题右边） */
+    .stats-entry-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 6px 10px;
+      background: none;
+      border: 1px solid var(--line);
+      border-radius: 2px;
+      font-family: inherit;
+      font-size: 10px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.3s;
+      letter-spacing: 0.05em;
+      margin-top: 8px;
+      flex-shrink: 0;
+    }
+
+    .stats-entry-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .stats-entry-arrow {
+      font-size: 10px;
+      transition: transform 0.3s;
+    }
+
+    .stats-entry-btn:hover .stats-entry-arrow {
+      transform: translateX(2px);
     }
 
     /* 空状态 */
@@ -911,7 +1167,13 @@
       <!-- 页面标题 -->
       <div class="page-header">
         <div class="page-eyebrow">MIYA · MOMENT</div>
-        <h1 class="page-title">今天<br>想和谁一起</h1>
+        <div class="page-title-row">
+          <h1 class="page-title">今天<br>想和谁一起</h1>
+          <button class="stats-entry-btn" onclick="openStatsPage()">
+            <span>陪伴记录</span>
+            <span class="stats-entry-arrow">→</span>
+          </button>
+        </div>
         <p class="page-desc">选择一个角色，设定一个场景，让陪伴成为日常里最温柔的时刻。</p>
       </div>
 
@@ -1312,6 +1574,43 @@
       if (isRunning) {
         startAutoPlay();
       }
+    }
+
+    // 检查当前角色+场景的语录数量
+    async function checkQuotesCount() {
+      if (!currentCharacter) return true;
+      try {
+        var count = await requestQuotesLib('getQuotesCount', {
+          category: 'companion',
+          characterId: currentCharacter.id,
+          scene: currentScene
+        });
+        console.log('当前语录数量:', count);
+        if (count !== null && count !== undefined && count < 10) {
+          showQuotesWarning(count);
+          return false;
+        }
+        return true;
+      } catch (e) {
+        console.log('检查语录数量失败:', e);
+        return true;
+      }
+    }
+
+    // 显示语录不足提示
+    function showQuotesWarning(count) {
+      var modal = document.getElementById('quotesWarningModal');
+      var countEl = document.getElementById('quotesWarningCount');
+      if (countEl) countEl.textContent = count || 0;
+      if (modal) modal.classList.add('show');
+    }
+
+    // 关闭语录不足提示，继续陪伴
+    function closeQuotesWarningAndStart() {
+      var modal = document.getElementById('quotesWarningModal');
+      if (modal) modal.classList.remove('show');
+      // 继续开始陪伴
+      startCompanionActual();
     }
 
     // 向父页面发送语录库请求
@@ -2189,6 +2488,113 @@
         console.log('统计已保存：', minutes, '分钟');
       } catch (e) {
         console.log('保存统计失败:', e);
+      }
+    }
+
+    // 打开统计页面
+    function openStatsPage() {
+      loadStatsData();
+      document.getElementById('setupPage').style.display = 'none';
+      document.getElementById('statsPage').classList.add('show');
+    }
+
+    // 关闭统计页面
+    function closeStatsPage() {
+      document.getElementById('statsPage').classList.remove('show');
+      document.getElementById('setupPage').style.display = 'block';
+    }
+
+    // 加载并显示统计数据
+    function loadStatsData() {
+      try {
+        var stats = JSON.parse(localStorage.getItem('companion-stats-v2') || '{}');
+        var today = new Date().toISOString().split('T')[0];
+
+        // 总统计
+        document.getElementById('totalCount').textContent = stats.totalCount || 0;
+        var totalHours = ((stats.totalMinutes || 0) / 60).toFixed(1);
+        document.getElementById('totalHours').textContent = totalHours;
+        document.getElementById('todayMinutes').textContent = (stats.daily && stats.daily[today]) || 0;
+
+        // 按角色统计
+        var charList = document.getElementById('characterStatsList');
+        var byCharacter = stats.byCharacter || {};
+        var charIds = Object.keys(byCharacter);
+        if (charIds.length === 0) {
+          charList.innerHTML = '<div class="stats-empty">还没有陪伴记录哦，开始第一次陪伴吧～</div>';
+        } else {
+          charIds.sort(function(a, b) {
+            return (byCharacter[b].minutes || 0) - (byCharacter[a].minutes || 0);
+          });
+          charList.innerHTML = charIds.map(function(id) {
+            var char = byCharacter[id];
+            var hours = (char.minutes / 60).toFixed(1);
+            return '<div class="stats-character-item">' +
+              '<div class="stats-item-left">' +
+                '<div class="stats-item-avatar">🤍</div>' +
+                '<div class="stats-item-name">' + (char.name || '未知') + '</div>' +
+              '</div>' +
+              '<div class="stats-item-right">' +
+                '<div class="stats-item-count">' + char.count + ' 次</div>' +
+                '<div class="stats-item-minutes">共 ' + hours + ' 小时</div>' +
+              '</div>' +
+            '</div>';
+          }).join('');
+        }
+
+        // 按场景统计
+        var sceneList = document.getElementById('sceneStatsList');
+        var byScene = stats.byScene || {};
+        var sceneIds = Object.keys(byScene);
+        if (sceneIds.length === 0) {
+          sceneList.innerHTML = '<div class="stats-empty">还没有场景数据</div>';
+        } else {
+          sceneIds.sort(function(a, b) {
+            return (byScene[b].minutes || 0) - (byScene[a].minutes || 0);
+          });
+          sceneList.innerHTML = sceneIds.map(function(id) {
+            var scene = byScene[id];
+            var hours = (scene.minutes / 60).toFixed(1);
+            return '<div class="stats-scene-item">' +
+              '<div class="stats-item-left">' +
+                '<div class="stats-item-name">' + (scene.name || id) + '</div>' +
+              '</div>' +
+              '<div class="stats-item-right">' +
+                '<div class="stats-item-count">' + scene.count + ' 次</div>' +
+                '<div class="stats-item-minutes">共 ' + hours + ' 小时</div>' +
+              '</div>' +
+            '</div>';
+          }).join('');
+        }
+
+        // 最近陪伴记录
+        var recordsList = document.getElementById('recentRecordsList');
+        var records = stats.records || [];
+        if (records.length === 0) {
+          recordsList.innerHTML = '<div class="stats-empty">还没有陪伴记录</div>';
+        } else {
+          var recentRecords = records.slice(0, 10);
+          recordsList.innerHTML = recentRecords.map(function(record) {
+            var date = new Date(record.timestamp);
+            var dateStr = (date.getMonth() + 1) + '月' + date.getDate() + '日 ' +
+                          String(date.getHours()).padStart(2, '0') + ':' +
+                          String(date.getMinutes()).padStart(2, '0');
+            return '<div class="stats-record-item">' +
+              '<div class="record-top">' +
+                '<span class="record-character">' + (record.characterName || '未知') + '</span>' +
+                '<span class="record-duration">' + record.minutes + ' 分钟</span>' +
+              '</div>' +
+              '<div class="record-bottom">' +
+                '<span>' + (record.sceneName || record.scene) + '</span>' +
+                '<span>' + dateStr + '</span>' +
+              '</div>' +
+            '</div>';
+          }).join('');
+        }
+
+        console.log('统计数据已加载');
+      } catch (e) {
+        console.log('加载统计数据失败:', e);
       }
     }
 

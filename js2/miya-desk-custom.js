@@ -7614,6 +7614,23 @@
         case 'getRandom':
           result = quotesLib.getRandom(data.category, data.characterId, data.scene);
           break;
+        case 'getQuotesCount':
+          // 获取指定角色+场景的语录数量
+          try {
+            var allData = quotesLib.getAll();
+            var count = 0;
+            if (allData && allData[data.category] && 
+                allData[data.category][data.characterId] && 
+                allData[data.category][data.characterId][data.scene] &&
+                Array.isArray(allData[data.category][data.characterId][data.scene])) {
+              count = allData[data.category][data.characterId][data.scene].length;
+            }
+            result = count;
+          } catch (err) {
+            console.log('获取语录数量失败:', err);
+            result = 0;
+          }
+          break;
         case 'addQuote':
           result = quotesLib.addQuote(data.category, data.characterId, data.scene, data.quote);
           break;
