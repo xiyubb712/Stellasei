@@ -674,6 +674,190 @@
       background: var(--line);
     }
 
+    /* 打卡统计卡片 */
+    .checkin-overview {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 40px;
+    }
+
+    .checkin-card {
+      background: linear-gradient(135deg, rgba(142, 92, 122, 0.08) 0%, rgba(142, 92, 122, 0.03) 100%);
+      border: 1px solid var(--line);
+      border-radius: 2px;
+      padding: 20px 12px;
+      text-align: center;
+    }
+
+    .checkin-number {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 8px;
+      letter-spacing: -0.02em;
+    }
+
+    .checkin-label {
+      font-size: 11px;
+      color: var(--text-secondary);
+      letter-spacing: 0.05em;
+    }
+
+    /* 打卡角色选择 */
+    .checkin-character-select {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 32px;
+      flex-wrap: wrap;
+    }
+
+    .checkin-character-label {
+      font-size: 12px;
+      color: var(--text-secondary);
+      letter-spacing: 0.05em;
+      flex-shrink: 0;
+    }
+
+    .checkin-character-buttons {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .checkin-char-btn {
+      padding: 6px 14px;
+      background: none;
+      border: 1px solid var(--line);
+      border-radius: 2px;
+      font-family: inherit;
+      font-size: 11px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.3s;
+      letter-spacing: 0.05em;
+    }
+
+    .checkin-char-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .checkin-char-btn.active {
+      background: var(--accent);
+      color: var(--bg);
+      border-color: var(--accent);
+    }
+
+    /* 日历 */
+    .calendar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .calendar-nav {
+      background: none;
+      border: 1px solid var(--line);
+      border-radius: 2px;
+      width: 28px;
+      height: 28px;
+      font-family: inherit;
+      font-size: 16px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s;
+      line-height: 1;
+    }
+
+    .calendar-nav:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .calendar-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-main);
+      letter-spacing: 0.05em;
+    }
+
+    .calendar-weekdays {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+      margin-bottom: 8px;
+    }
+
+    .calendar-weekdays span {
+      text-align: center;
+      font-size: 11px;
+      color: var(--text-light);
+      padding: 4px 0;
+    }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+    }
+
+    .calendar-day {
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      color: var(--text-secondary);
+      border-radius: 2px;
+      position: relative;
+    }
+
+    .calendar-day.other-month {
+      color: var(--text-light);
+      opacity: 0.4;
+    }
+
+    .calendar-day.today {
+      border: 1px solid var(--accent);
+      font-weight: 600;
+    }
+
+    .calendar-day.checked {
+      background: none;
+      color: var(--text-main);
+      font-weight: 500;
+    }
+
+    .calendar-day.checked::after {
+      content: '♡';
+      position: absolute;
+      bottom: 0px;
+      right: -2px;
+      font-size: 26px;
+      color: var(--accent);
+      line-height: 1;
+      transform: rotate(-22deg);
+      opacity: 0.85;
+      font-weight: 400;
+      pointer-events: none;
+    }
+
+    .calendar-day.checked.today {
+      border: 1px solid var(--accent);
+      box-shadow: none;
+    }
+
+    .calendar-day.checked.today::after {
+      font-size: 24px;
+      opacity: 0.9;
+    }
+
     /* 总统计卡片 */
     .stats-overview {
       display: grid;
@@ -1426,6 +1610,48 @@
         <button class="stats-back" onclick="closeStatsPage()">← 返回</button>
         <span class="stats-title">陪伴记录</span>
         <div class="stats-top-line"></div>
+      </div>
+
+      <!-- 打卡统计卡片 -->
+      <div class="checkin-overview">
+        <div class="checkin-card">
+          <div class="checkin-number" id="streakDays">0</div>
+          <div class="checkin-label">连续打卡</div>
+        </div>
+        <div class="checkin-card">
+          <div class="checkin-number" id="monthDays">0</div>
+          <div class="checkin-label">本月打卡</div>
+        </div>
+        <div class="checkin-card">
+          <div class="checkin-number" id="totalDays">0</div>
+          <div class="checkin-label">累计打卡</div>
+        </div>
+      </div>
+
+      <!-- 打卡角色选择 -->
+      <div class="checkin-character-select">
+        <span class="checkin-character-label">查看角色：</span>
+        <div class="checkin-character-buttons" id="checkinCharacterButtons">
+          <button class="checkin-char-btn active" data-char="all">全部</button>
+        </div>
+      </div>
+
+      <!-- 日历打卡 -->
+      <div class="stats-section">
+        <div class="stats-section-title">
+          <span class="stats-section-number">00</span>
+          <span>打卡日历</span>
+          <span class="stats-section-hint">· 陪伴超过1分钟即打卡</span>
+        </div>
+        <div class="calendar-header">
+          <button class="calendar-nav" onclick="changeMonth(-1)">‹</button>
+          <span class="calendar-title" id="calendarTitle">2026年9月</span>
+          <button class="calendar-nav" onclick="changeMonth(1)">›</button>
+        </div>
+        <div class="calendar-weekdays">
+          <span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span>
+        </div>
+        <div class="calendar-grid" id="calendarGrid"></div>
       </div>
 
       <!-- 总统计卡片 -->
@@ -2705,6 +2931,15 @@
         document.getElementById('totalHours').textContent = totalHours;
         document.getElementById('todayMinutes').textContent = (stats.daily && stats.daily[today]) || 0;
 
+        // 打卡统计
+        calculateCheckinStats(stats);
+
+        // 渲染角色选择按钮
+        renderCheckinCharacterButtons(stats);
+
+        // 渲染日历
+        renderCalendar(stats);
+
         // 按角色统计
         var charList = document.getElementById('characterStatsList');
         var byCharacter = stats.byCharacter || {};
@@ -2785,6 +3020,192 @@
       } catch (e) {
         console.log('加载统计数据失败:', e);
       }
+    }
+
+    // 日历当前显示的月份
+    var calendarCurrentDate = new Date();
+
+    // 当前选择的打卡角色（all表示全部角色）
+    var currentCheckinCharacter = 'all';
+
+    // 切换月份
+    function changeMonth(delta) {
+      calendarCurrentDate.setMonth(calendarCurrentDate.getMonth() + delta);
+      var stats = JSON.parse(localStorage.getItem('companion-stats-v2') || '{}');
+      renderCalendar(stats);
+    }
+
+    // 切换打卡角色
+    function changeCheckinCharacter(characterId) {
+      currentCheckinCharacter = characterId;
+      // 更新按钮状态
+      document.querySelectorAll('.checkin-char-btn').forEach(function(btn) {
+        btn.classList.toggle('active', btn.dataset.char === characterId);
+      });
+      // 重新计算和渲染
+      var stats = JSON.parse(localStorage.getItem('companion-stats-v2') || '{}');
+      calculateCheckinStats(stats);
+      renderCalendar(stats);
+    }
+
+    // 渲染角色选择按钮
+    function renderCheckinCharacterButtons(stats) {
+      var container = document.getElementById('checkinCharacterButtons');
+      if (!container) return;
+
+      // 收集所有有记录的角色
+      var characters = {};
+      if (stats && stats.records && Array.isArray(stats.records)) {
+        stats.records.forEach(function(r) {
+          if (r.characterId && r.characterName) {
+            characters[r.characterId] = r.characterName;
+          }
+        });
+      }
+
+      var charIds = Object.keys(characters);
+      var html = '<button class="checkin-char-btn active" data-char="all" onclick="changeCheckinCharacter(\'all\')">全部</button>';
+
+      charIds.forEach(function(id) {
+        var name = characters[id];
+        html += '<button class="checkin-char-btn" data-char="' + id + '" onclick="changeCheckinCharacter(\'' + id + '\')">' + name + '</button>';
+      });
+
+      container.innerHTML = html;
+    }
+
+    // 判断某一天是否打卡（陪伴超过1分钟），支持分角色
+    function isCheckedIn(dateStr, stats, characterId) {
+      if (!stats || !stats.records || !Array.isArray(stats.records)) return false;
+
+      var targetChar = characterId || currentCheckinCharacter;
+      var totalMinutes = 0;
+
+      stats.records.forEach(function(r) {
+        if (r.date === dateStr && r.minutes >= 1) {
+          if (targetChar === 'all' || r.characterId === targetChar) {
+            totalMinutes += r.minutes;
+          }
+        }
+      });
+
+      return totalMinutes >= 1;
+    }
+
+    // 渲染日历
+    function renderCalendar(stats) {
+      var year = calendarCurrentDate.getFullYear();
+      var month = calendarCurrentDate.getMonth();
+      var titleEl = document.getElementById('calendarTitle');
+      if (titleEl) {
+        titleEl.textContent = year + '年' + (month + 1) + '月';
+      }
+
+      var gridEl = document.getElementById('calendarGrid');
+      if (!gridEl) return;
+
+      // 当月第一天是星期几
+      var firstDay = new Date(year, month, 1).getDay();
+      // 当月有多少天
+      var daysInMonth = new Date(year, month + 1, 0).getDate();
+      // 上个月有多少天
+      var daysInPrevMonth = new Date(year, month, 0).getDate();
+
+      var today = new Date();
+      var todayStr = today.toISOString().split('T')[0];
+
+      var html = '';
+
+      // 上个月的日期
+      for (var i = firstDay - 1; i >= 0; i--) {
+        var day = daysInPrevMonth - i;
+        var prevMonth = month === 0 ? 12 : month;
+        var prevYear = month === 0 ? year - 1 : year;
+        var dateStr = prevYear + '-' + String(prevMonth).padStart(2, '0') + '-' + String(day).padStart(2, '0');
+        var checked = isCheckedIn(dateStr, stats, currentCheckinCharacter);
+        html += '<div class="calendar-day other-month' + (checked ? ' checked' : '') + '">' + day + '</div>';
+      }
+
+      // 当月的日期
+      for (var d = 1; d <= daysInMonth; d++) {
+        var dateStr = year + '-' + String(month + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+        var checked = isCheckedIn(dateStr, stats, currentCheckinCharacter);
+        var isToday = dateStr === todayStr;
+        var classes = 'calendar-day';
+        if (isToday) classes += ' today';
+        if (checked) classes += ' checked';
+        html += '<div class="' + classes + '">' + d + '</div>';
+      }
+
+      // 下个月的日期（填满6行）
+      var totalCells = firstDay + daysInMonth;
+      var remainingCells = (7 - (totalCells % 7)) % 7;
+      for (var j = 1; j <= remainingCells; j++) {
+        var nextMonth = month === 11 ? 1 : month + 2;
+        var nextYear = month === 11 ? year + 1 : year;
+        var dateStr = nextYear + '-' + String(nextMonth).padStart(2, '0') + '-' + String(j).padStart(2, '0');
+        var checked = isCheckedIn(dateStr, stats, currentCheckinCharacter);
+        html += '<div class="calendar-day other-month' + (checked ? ' checked' : '') + '">' + j + '</div>';
+      }
+
+      gridEl.innerHTML = html;
+    }
+
+    // 计算打卡统计（支持分角色）
+    function calculateCheckinStats(stats) {
+      if (!stats || !stats.records || !Array.isArray(stats.records)) {
+        document.getElementById('streakDays').textContent = 0;
+        document.getElementById('monthDays').textContent = 0;
+        document.getElementById('totalDays').textContent = 0;
+        return;
+      }
+
+      var targetChar = currentCheckinCharacter;
+      var today = new Date();
+
+      // 收集符合条件的打卡日期
+      var checkedDates = {};
+      stats.records.forEach(function(r) {
+        if (r.date && r.minutes >= 1) {
+          if (targetChar === 'all' || r.characterId === targetChar) {
+            if (!checkedDates[r.date]) {
+              checkedDates[r.date] = 0;
+            }
+            checkedDates[r.date] += r.minutes;
+          }
+        }
+      });
+
+      // 累计打卡天数
+      var totalDays = Object.keys(checkedDates).length;
+      document.getElementById('totalDays').textContent = totalDays;
+
+      // 本月打卡天数
+      var year = today.getFullYear();
+      var month = today.getMonth();
+      var monthDays = 0;
+      var daysInMonth = new Date(year, month + 1, 0).getDate();
+      for (var d = 1; d <= daysInMonth; d++) {
+        var dateStr = year + '-' + String(month + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+        if (checkedDates[dateStr] && checkedDates[dateStr] >= 1) {
+          monthDays++;
+        }
+      }
+      document.getElementById('monthDays').textContent = monthDays;
+
+      // 连续打卡天数（从今天往前数）
+      var streak = 0;
+      var checkDate = new Date(today);
+      while (true) {
+        var dateStr = checkDate.toISOString().split('T')[0];
+        if (checkedDates[dateStr] && checkedDates[dateStr] >= 1) {
+          streak++;
+          checkDate.setDate(checkDate.getDate() - 1);
+        } else {
+          break;
+        }
+      }
+      document.getElementById('streakDays').textContent = streak;
     }
 
     // 关闭弹窗
