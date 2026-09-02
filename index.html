@@ -1715,6 +1715,17 @@
           <svg class="st-io-arrow" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
         </button>
 
+        <button type="button" class="st-io-card" id="miya-st-cloud-backup">
+          <div class="st-io-icon st-io-icon--export">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>
+          </div>
+          <div>
+            <div class="st-io-title">云端备份</div>
+            <div class="st-io-desc">全量备份到云端 · 自动备份 · 选择恢复</div>
+          </div>
+          <svg class="st-io-arrow" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+
         <div class="st-section-label">存储</div>
         <button type="button" class="st-feature-card st-feature-card--clickable" data-st-nav="miya-st-panel-storage">
           <div class="st-deco-number">02</div>
@@ -7101,6 +7112,10 @@
     </div>
   </div>
 
+  <!-- Supabase SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- 云端备份与恢复模块 -->
+  <script defer src="js2/miya-cloud-backup.js?v=1"></script>
   <script defer src="js2/miya-storage.js?v=15"></script>
   <script defer src="js2/miya-perf.js?v=3"></script>
   <script defer src="js2/miya-lazy-boot.js?v=24"></script>
@@ -7249,5 +7264,89 @@
 
   <script defer src="miya-auth/auth.js?v=5"></script>
   <script defer src="js1/app.js?v=59"></script>
+
+  <!-- 记忆应用 · 全部清除按钮 -->
+  <script>
+  (function () {
+    'use strict';
+    function getStore() { return window.miyaChatStore || (window.MiyaChatStore && window.MiyaChatStore.store) || null; }
+    function getDialog() { return window.miyaDialog || (window.MiyaDialog && window.MiyaDialog.dialog) || null; }
+    function showToast(msg) {
+      var toastEl = document.getElementById('miya-mem-toast');
+      if (toastEl) { toastEl.textContent = msg; toastEl.classList.add('is-active'); setTimeout(function(){toastEl.classList.remove('is-active');},2000); return; }
+      alert(msg);
+    }
+    function findCurrentChatId() {
+      var rolesEl = document.getElementById('miya-mem-roles');
+      if (!rolesEl) return null;
+      var activeRole = rolesEl.querySelector('.mm-ticket.is-active');
+      if (!activeRole) return null;
+      return activeRole.getAttribute('data-mem-chat');
+    }
+    function clearAllData(chatId) {
+      var st = getStore();
+      if (!st) { alert('存储服务不可用'); return Promise.reject(new Error('no_store')); }
+      if (!chatId) { alert('未找到 chatId'); return Promise.reject(new Error('no_chatId')); }
+      return Promise.resolve()
+        .then(function(){ if (typeof st.clearChatMessages==='function') return st.clearChatMessages(chatId); })
+        .then(function(){ if (typeof st.saveChatSettings==='function') return st.saveChatSettings(chatId,{summaryList:[],megaSummaryList:[],charMemoryList:[]}); })
+        .then(function(){ return true; });
+    }
+    function addClearButton() {
+      var detailEl = document.getElementById('miya-mem-detail');
+      if (!detailEl) return;
+      var heroEl = detailEl.querySelector('.mm-hero');
+      if (!heroEl) return;
+      if (heroEl.querySelector('.mm-clear-all-btn')) return;
+      var btn = document.createElement('button');
+      btn.type='button'; btn.className='mm-clear-all-btn'; btn.textContent='全部清除';
+      btn.setAttribute('aria-label','清除该角色的所有聊天记录和记忆');
+      btn.style.cssText='margin-left:auto;padding:6px 14px;font-family:"Jost","Noto Sans SC",sans-serif;font-size:12px;font-weight:500;letter-spacing:0.08em;color:rgba(245,245,240,0.7);background:transparent;border:1px solid rgba(245,245,240,0.25);border-radius:4px;cursor:pointer;transition:all 0.2s ease;flex-shrink:0;align-self:center;';
+      btn.addEventListener('mouseenter',function(){btn.style.color='rgba(255,200,200,0.9)';btn.style.borderColor='rgba(255,150,150,0.5)';});
+      btn.addEventListener('mouseleave',function(){btn.style.color='rgba(245,245,240,0.7)';btn.style.borderColor='rgba(245,245,240,0.25)';});
+      btn.addEventListener('click',function(){
+        var chatId = findCurrentChatId();
+        if (!chatId) { alert('未找到当前角色，请先选择角色'); return; }
+        var confirmMsg = '确定要清除该角色的所有数据吗？\n\n包括：聊天记录、分镜总结、合卷总结、角色记忆、健康档案。\n\n此操作不可恢复！';
+        if (!confirm(confirmMsg)) return;
+        btn.disabled=true; btn.textContent='清除中...';
+        clearAllData(chatId)
+          .then(function(){
+            alert('已清除全部数据！');
+            setTimeout(function(){var d=document.getElementById('miya-mem-detail');if(d)d.innerHTML='';},500);
+          })
+          .catch(function(e){ alert('清除失败：'+(e&&e.message?e.message:String(e))); })
+          .finally(function(){ btn.disabled=false; btn.textContent='全部清除'; });
+      });
+      var statsEl = heroEl.querySelector('.mm-hero__stats');
+      if (statsEl&&statsEl.parentNode) {
+        statsEl.parentNode.style.display='flex'; statsEl.parentNode.style.alignItems='center'; statsEl.parentNode.style.gap='12px';
+        statsEl.parentNode.insertBefore(btn, statsEl.nextSibling);
+      } else {
+        var nameEl = heroEl.querySelector('.mm-hero__name');
+        if (nameEl&&nameEl.parentNode) {
+          nameEl.parentNode.style.display='flex'; nameEl.parentNode.style.alignItems='center'; nameEl.parentNode.style.gap='12px';
+          nameEl.style.flex='1'; nameEl.style.minWidth='0';
+          nameEl.parentNode.insertBefore(btn, nameEl.nextSibling);
+        } else {
+          heroEl.style.display='flex'; heroEl.style.alignItems='center'; heroEl.style.justifyContent='space-between';
+          heroEl.appendChild(btn);
+        }
+      }
+    }
+    function initObserver() {
+      var detailEl = document.getElementById('miya-mem-detail');
+      if (!detailEl) { setTimeout(initObserver,500); return; }
+      var observer = new MutationObserver(function(){ setTimeout(addClearButton,50); });
+      observer.observe(detailEl, { childList: true, subtree: true });
+      addClearButton();
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initObserver);
+    } else {
+      initObserver();
+    }
+  })();
+  </script>
 </body>
 </html>
