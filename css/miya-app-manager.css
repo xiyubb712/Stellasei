@@ -1,0 +1,303 @@
+/**
+ * 应用管理 - 样式
+ * 控制主屏幕显示哪些应用
+ */
+
+/* 应用管理 Modal */
+.app-manager-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.app-manager-modal[hidden] {
+  display: none;
+}
+
+.app-manager-modal__card {
+  width: 100%;
+  max-width: 500px;
+  max-height: 85vh;
+  border-radius: 24px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: appManagerSlideIn 0.3s ease-out;
+}
+
+@keyframes appManagerSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* 头部 */
+.app-manager-modal__head {
+  position: relative;
+  padding: 24px 24px 20px;
+  background: linear-gradient(135deg, #f8f5f0 0%, #f0ebe3 100%);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.app-manager-modal__title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+  color: #3a3a3a;
+  letter-spacing: 0.5px;
+}
+
+.app-manager-modal__subtitle {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: #8a8a8a;
+}
+
+.app-manager-modal__close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.06);
+  color: #6a6a6a;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.app-manager-modal__close:hover {
+  background: rgba(0, 0, 0, 0.12);
+  transform: rotate(90deg);
+}
+
+/* 内容区域 */
+.app-manager-modal__body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 20px 24px;
+  background: #fdfcfa;
+}
+
+.app-manager-modal__body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.app-manager-modal__body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.app-manager-modal__body::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 3px;
+}
+
+/* 分类 */
+.app-manager-category {
+  margin-bottom: 24px;
+}
+
+.app-manager-category:last-child {
+  margin-bottom: 0;
+}
+
+.app-manager-category-title {
+  margin: 0 0 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #a0a0a0;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  padding-left: 4px;
+}
+
+/* 应用列表 */
+.app-manager-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* 应用项 */
+.app-manager-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 16px;
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+}
+
+.app-manager-item:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.app-manager-item.is-hidden {
+  opacity: 0.6;
+}
+
+.app-manager-item.is-hidden .app-manager-icon {
+  filter: grayscale(1);
+}
+
+/* 图标 */
+.app-manager-icon {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f5f0e8 0%, #ebe4d8 100%);
+  border-radius: 12px;
+  color: #5a5a5a;
+}
+
+.app-manager-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+/* 信息 */
+.app-manager-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.app-manager-name {
+  display: block;
+  font-size: 15px;
+  font-weight: 500;
+  color: #3a3a3a;
+}
+
+.app-manager-status {
+  display: block;
+  font-size: 12px;
+  color: #9a9a9a;
+  margin-top: 2px;
+}
+
+.app-manager-item.is-visible .app-manager-status {
+  color: #7ba05b;
+}
+
+/* 开关 */
+.app-manager-switch {
+  position: relative;
+  width: 48px;
+  height: 28px;
+  flex-shrink: 0;
+}
+
+.app-manager-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.app-manager-switch-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #d0d0d0;
+  transition: 0.3s;
+  border-radius: 28px;
+}
+
+.app-manager-switch-slider:before {
+  position: absolute;
+  content: "";
+  height: 22px;
+  width: 22px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.3s;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.app-manager-switch input:checked + .app-manager-switch-slider {
+  background: linear-gradient(135deg, #a8c090 0%, #8ba870 100%);
+}
+
+.app-manager-switch input:checked + .app-manager-switch-slider:before {
+  transform: translateX(20px);
+}
+
+.app-manager-switch.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.app-manager-switch.disabled input {
+  cursor: not-allowed;
+}
+
+/* 响应式 */
+@media (max-width: 480px) {
+  .app-manager-modal {
+    padding: 0;
+    align-items: flex-end;
+  }
+
+  .app-manager-modal__card {
+    max-width: 100%;
+    max-height: 90vh;
+    border-radius: 24px 24px 0 0;
+  }
+
+  .app-manager-modal__head {
+    padding: 20px 20px 16px;
+  }
+
+  .app-manager-modal__title {
+    font-size: 20px;
+  }
+
+  .app-manager-modal__body {
+    padding: 12px 16px 20px;
+  }
+
+  .app-manager-item {
+    padding: 10px 14px;
+  }
+
+  .app-manager-icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .app-manager-icon svg {
+    width: 20px;
+    height: 20px;
+  }
+}

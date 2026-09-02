@@ -85,6 +85,7 @@
   <link rel="stylesheet" href="css/miya-settings.css?v=19">
   <link rel="stylesheet" href="css/miya-worldbook.css?v=4">
   <link rel="stylesheet" href="css/miya-contacts.css?v=3">
+  <link rel="stylesheet" href="css/miya-app-manager.css?v=1">
   <link rel="stylesheet" href="css/miya-music.css?v=17">
   <link rel="stylesheet" href="css/miya-music-beautify.css?v=4">
   <link rel="stylesheet" href="css/miya-music-desktop-lyrics.css?v=1">
@@ -1170,6 +1171,20 @@
       <div id="modal-icon"></div>
       <h2 id="modal-title"></h2>
       <p>即将开放</p>
+    </div>
+  </div>
+
+  <!-- 应用管理 -->
+  <div class="app-manager-modal" id="app-manager-modal" hidden>
+    <div class="app-manager-modal__card glass">
+      <header class="app-manager-modal__head">
+        <h2 class="app-manager-modal__title">应用管理</h2>
+        <p class="app-manager-modal__subtitle">选择要显示在主屏幕的应用</p>
+        <button class="app-manager-modal__close" id="app-manager-close" aria-label="关闭">×</button>
+      </header>
+      <div class="app-manager-modal__body" id="app-manager-body">
+        <!-- 应用列表会通过JS动态渲染 -->
+      </div>
     </div>
   </div>
 
@@ -7245,6 +7260,7 @@
   <script defer src="js2/miya-theme.js?v=30"></script>
   <script defer src="js2/miya-desk-custom-widget-templates.js?v=5"></script>
   <script defer src="js2/miya-quotes-library.js?v=1"></script>
+  <script defer src="js2/miya-app-manager.js?v=1"></script>
   <script defer src="js2/miya-desk-custom.js?v=52"></script>
   <script defer src="js2/miya-splash.js?v=13"></script>
   <script defer src="js2/miya-lockscreen.js?v=10"></script>

@@ -420,6 +420,9 @@
     },
     deep: function () {
       if (window.miyaDeepApp && window.miyaDeepApp.open) window.miyaDeepApp.open();
+    },
+    apps: function () {
+      if (window.miyaAppManager && window.miyaAppManager.open) window.miyaAppManager.open();
     }
   };
 
