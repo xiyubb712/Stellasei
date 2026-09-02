@@ -4,7 +4,7 @@
   var KV_DB = 'miya-kv-store';
   var KV_STORE = 'kv';
   var WIDGET_PREFIX = 'widgetKV:';
-  // 恢复原作者的阈值48KB，保持原作者的存储机制不变
+  // 恢复原作者的阈值48KB
   var SPILL_BYTES = 49152;
   var LS_PLACEHOLDER = '{"__storedInIdb":true}';
 

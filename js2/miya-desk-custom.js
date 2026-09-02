@@ -7087,38 +7087,6 @@
       return ready.then(function () {
         syncCustomWidgetCatalog();
         ensureLayoutCustomWidgetsInCatalog(customThemeState && customThemeState.layout);
-        // 检测 URL 参数 ?reset-layout=1，自动恢复默认布局
-        try {
-          var urlParams = new URLSearchParams(window.location.search);
-          if (urlParams.get('reset-layout') === '1') {
-            localStorage.removeItem(STELLASEI_INIT_FLAG);
-          }
-          // 彻底重置：清除所有旧数据，重新生成星绥布局
-          if (urlParams.get('reset-all') === '1') {
-            // 清除localStorage里的布局相关数据（正确的key！）
-            try {
-              localStorage.removeItem('miya-desk-layout-mode');
-              localStorage.removeItem('miya-desk-custom-v1');
-              localStorage.removeItem('miya-desk-custom-presets-v1');
-              localStorage.removeItem(STELLASEI_INIT_FLAG);
-            } catch (e) {}
-            // 清除内存缓存里的相关数据
-            try {
-              if (window.__miyaKvMem) {
-                delete window.__miyaKvMem['miya-desk-layout-mode'];
-                delete window.__miyaKvMem['miya-desk-custom-v1'];
-                delete window.__miyaKvMem['miya-desk-custom-presets-v1'];
-              }
-            } catch (e) {}
-            // 清除内存里的布局数据，强制重新生成默认布局
-            customThemeState = null;
-            layoutFromFallback = true;
-            customDeskHydrated = false;
-            layoutModeCache = 'stellasei'; // 强制设置为星绥布局
-            // 重新加载默认主题
-            loadCustomTheme();
-          }
-        } catch (e) {}
         if (getLayoutMode() === 'stellasei') {
           ensureStellaseiDefaultLayout();
         }
