@@ -7348,5 +7348,82 @@
     }
   })();
   </script>
+
+  <!-- 聊天界面 · 左滑返回上一页 -->
+  <script>
+  (function () {
+    'use strict';
+    var startX = 0;
+    var startY = 0;
+    var isTracking = false;
+    var threshold = 60; // 滑动距离阈值（像素）
+    var edgeThreshold = 30; // 左边缘触发范围（像素）
+
+    function getChatRoom() {
+      return document.getElementById('qq-room') || document.querySelector('.qq-room') || document.getElementById('miya-chat-room');
+    }
+
+    function getBackButton() {
+      return document.getElementById('qq-room-back');
+    }
+
+    function isChatRoomOpen() {
+      var room = getChatRoom();
+      if (!room) return false;
+      return !room.hasAttribute('hidden') && room.offsetParent !== null;
+    }
+
+    function onTouchStart(e) {
+      if (!isChatRoomOpen()) return;
+      if (e.touches.length !== 1) return;
+      var touch = e.touches[0];
+      // 只在屏幕左边缘开始滑动时触发
+      if (touch.clientX > edgeThreshold) return;
+      startX = touch.clientX;
+      startY = touch.clientY;
+      isTracking = true;
+    }
+
+    function onTouchMove(e) {
+      if (!isTracking) return;
+      if (e.touches.length !== 1) return;
+      var touch = e.touches[0];
+      var deltaX = touch.clientX - startX;
+      var deltaY = Math.abs(touch.clientY - startY);
+      // 如果横向滑动距离明显大于纵向，阻止默认行为（防止页面滚动）
+      if (deltaX > 20 && deltaX > deltaY) {
+        e.preventDefault();
+      }
+    }
+
+    function onTouchEnd(e) {
+      if (!isTracking) return;
+      isTracking = false;
+      var touch = e.changedTouches[0];
+      var deltaX = touch.clientX - startX;
+      var deltaY = Math.abs(touch.clientY - startY);
+      // 如果向右滑动距离超过阈值，并且横向滑动明显大于纵向，触发返回
+      if (deltaX > threshold && deltaX > deltaY) {
+        var backBtn = getBackButton();
+        if (backBtn) {
+          backBtn.click();
+        }
+      }
+    }
+
+    function init() {
+      document.addEventListener('touchstart', onTouchStart, { passive: true });
+      document.addEventListener('touchmove', onTouchMove, { passive: false });
+      document.addEventListener('touchend', onTouchEnd, { passive: true });
+      console.log('[ChatSwipeBack] 聊天界面左滑返回功能已启用');
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  })();
+  </script>
 </body>
 </html>
