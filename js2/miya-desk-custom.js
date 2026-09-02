@@ -7113,6 +7113,28 @@
           if (urlParams.get('reset-layout') === '1') {
             localStorage.removeItem(STELLASEI_INIT_FLAG);
           }
+          // 彻底重置：清除所有旧数据，重新生成星绥布局
+          if (urlParams.get('reset-all') === '1') {
+            // 清除localStorage里的布局相关数据
+            try {
+              localStorage.removeItem('miya-custom-theme-v1');
+              localStorage.removeItem('miya-custom-layout-mode');
+              localStorage.removeItem(STELLASEI_INIT_FLAG);
+            } catch (e) {}
+            // 清除内存缓存里的相关数据
+            try {
+              if (window.__miyaKvMem) {
+                delete window.__miyaKvMem['miya-custom-theme-v1'];
+                delete window.__miyaKvMem['miya-custom-layout-mode'];
+              }
+            } catch (e) {}
+            // 清除内存里的布局数据，强制重新生成默认布局
+            customThemeState = null;
+            layoutFromFallback = true;
+            customDeskHydrated = false;
+            // 重新加载默认主题
+            loadCustomTheme();
+          }
         } catch (e) {}
         if (getLayoutMode() === 'stellasei') {
           ensureStellaseiDefaultLayout();
