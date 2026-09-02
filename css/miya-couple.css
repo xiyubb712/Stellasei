@@ -1,4 +1,4 @@
-/* 情侣空间 · Our Space */
+﻿/* 情侣空间 · Our Space */
 .miya-couple-app {
   --cp-blush: #F4E4EA;
   --cp-rose: #E8C4D0;
@@ -8389,3 +8389,630 @@ html.miya-app-open .miya-couple-app .cp-shell {
   margin-top: 1px;
 }
 
+
+
+
+/* ═══ 健康体检报告 · 极简医疗风（全新设计） ═══ */
+
+/* ===== 整体页面背景 ===== */
+.cp-view-health {
+  background: linear-gradient(180deg, #f7f3ed 0%, #f2ede5 100%) !important;
+}
+
+/* ===== 滚动区域 ===== */
+.cp-health-scroll {
+  padding: calc(env(safe-area-inset-top, 0px) + 16px) 16px 120px !important;
+}
+
+/* ===== 头部区域 ===== */
+.cp-health-head {
+  display: flex !important;
+  align-items: flex-start !important;
+  gap: 14px !important;
+  margin-bottom: 20px !important;
+  padding: 18px !important;
+  background: rgba(255, 255, 255, 0.7) !important;
+  backdrop-filter: blur(10px) !important;
+  border-radius: 16px !important;
+  border: 1px solid rgba(180, 160, 140, 0.12) !important;
+}
+
+.cp-health-head__main {
+  flex: 1 !important;
+  min-width: 0 !important;
+}
+
+.cp-health-head__eyebrow {
+  font-size: 10px !important;
+  letter-spacing: 0.2em !important;
+  text-transform: uppercase !important;
+  color: #a09080 !important;
+  margin-bottom: 4px !important;
+  font-weight: 500 !important;
+}
+
+.cp-health-head__title {
+  font-size: 22px !important;
+  font-weight: 600 !important;
+  color: #4a4038 !important;
+  margin-bottom: 4px !important;
+  letter-spacing: 0.02em !important;
+}
+
+.cp-health-head__sub {
+  font-size: 12px !important;
+  color: #908070 !important;
+}
+
+/* 返回按钮 */
+.cp-health-back {
+  flex-shrink: 0 !important;
+  width: 36px !important;
+  height: 36px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: rgba(255, 255, 255, 0.9) !important;
+  border: 1px solid rgba(180, 160, 140, 0.15) !important;
+  border-radius: 10px !important;
+  color: #6a5a4a !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.cp-health-back:hover {
+  background: #fff !important;
+  border-color: rgba(180, 160, 140, 0.25) !important;
+}
+
+.cp-health-back svg {
+  width: 18px !important;
+  height: 18px !important;
+}
+
+/* 数据说明 */
+.cp-health-head__note {
+  margin-top: 12px !important;
+  padding: 10px 14px !important;
+  background: rgba(160, 200, 170, 0.08) !important;
+  border-radius: 10px !important;
+  border-left: 2px solid rgba(120, 170, 140, 0.4) !important;
+}
+
+.cp-health-head__note-title {
+  font-size: 10px !important;
+  font-weight: 600 !important;
+  color: #709080 !important;
+  margin-bottom: 4px !important;
+  letter-spacing: 0.05em !important;
+}
+
+.cp-health-head__note-item {
+  font-size: 10px !important;
+  color: #809088 !important;
+  line-height: 1.6 !important;
+  opacity: 0.85 !important;
+}
+
+/* ===== 报告容器 ===== */
+.cp-health-report-container {
+  position: relative !important;
+  background: #ffffff !important;
+  border-radius: 20px !important;
+  box-shadow: 0 4px 24px rgba(120, 100, 80, 0.08) !important;
+  border: 1px solid rgba(180, 160, 140, 0.1) !important;
+  padding: 28px 24px !important;
+  overflow: hidden !important;
+}
+
+/* 顶部装饰条 */
+.cp-health-report-container::before {
+  content: '' !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  height: 4px !important;
+  background: linear-gradient(90deg, #a8c8b0, #c8d8c0, #b8d0c0) !important;
+}
+
+/* ===== 报告编号和分类 ===== */
+.cp-health-report-id {
+  position: absolute !important;
+  top: 20px !important;
+  right: 24px !important;
+  font-size: 10px !important;
+  color: #b0a090 !important;
+  font-family: 'Courier New', monospace !important;
+  letter-spacing: 0.05em !important;
+}
+
+.cp-health-report-classification {
+  display: inline-block !important;
+  padding: 4px 10px !important;
+  font-size: 9px !important;
+  color: #80a090 !important;
+  background: rgba(160, 200, 170, 0.1) !important;
+  border-radius: 4px !important;
+  letter-spacing: 0.1em !important;
+  margin-bottom: 20px !important;
+  font-weight: 500 !important;
+}
+
+/* ===== 报告头部 ===== */
+.cp-health-report-header {
+  text-align: center !important;
+  margin-bottom: 32px !important;
+  padding-bottom: 24px !important;
+  border-bottom: 1px solid rgba(180, 160, 140, 0.1) !important;
+}
+
+.cp-health-report-hospital {
+  font-size: 12px !important;
+  color: #90a098 !important;
+  letter-spacing: 0.25em !important;
+  margin-bottom: 8px !important;
+  font-weight: 500 !important;
+}
+
+.cp-health-report-title {
+  font-size: 28px !important;
+  font-weight: 700 !important;
+  color: #4a4038 !important;
+  margin-bottom: 6px !important;
+  letter-spacing: 0.08em !important;
+}
+
+.cp-health-report-subtitle {
+  font-size: 10px !important;
+  color: #b0a090 !important;
+  letter-spacing: 0.3em !important;
+  text-transform: uppercase !important;
+  font-weight: 500 !important;
+}
+
+/* ===== 基本信息 ===== */
+.cp-health-report-basic-info {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 12px 20px !important;
+  margin-bottom: 32px !important;
+  padding: 16px 18px !important;
+  background: rgba(247, 245, 240, 0.6) !important;
+  border-radius: 12px !important;
+}
+
+.cp-health-info-item {
+  font-size: 13px !important;
+  color: #5a5048 !important;
+  line-height: 1.5 !important;
+}
+
+.cp-health-info-item strong {
+  color: #8a8078 !important;
+  font-weight: 500 !important;
+  margin-right: 6px !important;
+  font-size: 11px !important;
+}
+
+/* ===== 章节标题 ===== */
+.cp-health-section-title {
+  position: relative !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  color: #4a4038 !important;
+  margin: 28px 0 16px !important;
+  padding-left: 12px !important;
+  letter-spacing: 0.03em !important;
+}
+
+.cp-health-section-title::before {
+  content: '' !important;
+  position: absolute !important;
+  left: 0 !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  width: 3px !important;
+  height: 16px !important;
+  background: linear-gradient(180deg, #a8c8b0, #88b098) !important;
+  border-radius: 2px !important;
+}
+
+/* ===== 整体评估卡片 ===== */
+.cp-health-overall {
+  display: flex !important;
+  align-items: center !important;
+  gap: 20px !important;
+  padding: 20px !important;
+  background: linear-gradient(135deg, rgba(248, 250, 247, 0.9), rgba(242, 247, 243, 0.8)) !important;
+  border-radius: 14px !important;
+  border: 1px solid rgba(160, 200, 170, 0.15) !important;
+  margin-bottom: 16px !important;
+}
+
+.cp-health-overall-score {
+  flex-shrink: 0 !important;
+  width: 64px !important;
+  height: 64px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 28px !important;
+  font-weight: 700 !important;
+  color: #6a9a7a !important;
+  background: #fff !important;
+  border-radius: 50% !important;
+  border: 2px solid rgba(160, 200, 170, 0.3) !important;
+  box-shadow: 0 2px 8px rgba(120, 170, 140, 0.1) !important;
+}
+
+.cp-health-overall-content {
+  flex: 1 !important;
+  min-width: 0 !important;
+}
+
+.cp-health-overall-title {
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: #5a6a5e !important;
+  margin-bottom: 4px !important;
+}
+
+.cp-health-overall-summary {
+  font-size: 12px !important;
+  color: #707a72 !important;
+  line-height: 1.6 !important;
+  margin-bottom: 6px !important;
+}
+
+.cp-health-overall-tag {
+  display: inline-block !important;
+  padding: 2px 8px !important;
+  font-size: 10px !important;
+  color: #6a9a7a !important;
+  background: rgba(160, 200, 170, 0.15) !important;
+  border-radius: 4px !important;
+  font-weight: 500 !important;
+}
+
+/* ===== 指标卡片网格 ===== */
+.cp-health-section-grid {
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 10px !important;
+}
+
+.cp-health-metric-card {
+  padding: 14px 10px !important;
+  background: rgba(250, 248, 245, 0.7) !important;
+  border-radius: 10px !important;
+  border: 1px solid rgba(180, 160, 140, 0.08) !important;
+  text-align: center !important;
+  transition: all 0.2s ease !important;
+}
+
+.cp-health-metric-card:hover {
+  background: #fff !important;
+  border-color: rgba(160, 200, 170, 0.2) !important;
+  box-shadow: 0 2px 8px rgba(120, 100, 80, 0.06) !important;
+}
+
+.cp-health-metric-label {
+  font-size: 10px !important;
+  color: #9a9088 !important;
+  margin-bottom: 6px !important;
+  letter-spacing: 0.03em !important;
+}
+
+.cp-health-metric-value {
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  color: #5a5048 !important;
+}
+
+/* ===== 心理状态和生活习惯分类 ===== */
+#cp-health-mental-categories,
+#cp-health-lifestyle-categories {
+  position: relative !important;
+}
+
+#cp-health-mental-categories p,
+#cp-health-lifestyle-categories p {
+  padding: 14px 16px !important;
+  background: rgba(250, 248, 245, 0.6) !important;
+  border-radius: 10px !important;
+  border-left: 2px solid rgba(160, 200, 170, 0.3) !important;
+  color: #6a6058 !important;
+  font-size: 12px !important;
+  line-height: 1.8 !important;
+  margin-bottom: 8px !important;
+}
+
+.cp-health-placeholder {
+  color: #b0a090 !important;
+  font-style: italic !important;
+  text-align: center !important;
+  padding: 24px !important;
+  font-size: 12px !important;
+}
+
+/* ===== 医生总结 ===== */
+.cp-health-summary-box {
+  position: relative !important;
+  padding: 20px 22px !important;
+  background: rgba(248, 250, 247, 0.7) !important;
+  border-radius: 14px !important;
+  border: 1px solid rgba(160, 200, 170, 0.12) !important;
+  margin: 24px 0 16px !important;
+}
+
+.cp-health-summary-title {
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  color: #5a6a5e !important;
+  margin-bottom: 12px !important;
+  padding-bottom: 10px !important;
+  border-bottom: 1px solid rgba(160, 200, 170, 0.15) !important;
+  letter-spacing: 0.03em !important;
+}
+
+.cp-health-summary-text {
+  font-size: 13px !important;
+  color: #5a6058 !important;
+  line-height: 1.9 !important;
+}
+
+/* ===== 照顾建议 ===== */
+.cp-health-advice-list {
+  list-style: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  counter-reset: advice-counter !important;
+}
+
+.cp-health-advice-list li {
+  position: relative !important;
+  padding: 12px 16px 12px 42px !important;
+  background: rgba(250, 248, 245, 0.6) !important;
+  border-radius: 10px !important;
+  border: 1px solid rgba(180, 160, 140, 0.08) !important;
+  color: #6a6058 !important;
+  font-size: 12px !important;
+  line-height: 1.7 !important;
+  margin-bottom: 8px !important;
+  counter-increment: advice-counter !important;
+}
+
+.cp-health-advice-list li::before {
+  content: counter(advice-counter) !important;
+  position: absolute !important;
+  left: 14px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  width: 20px !important;
+  height: 20px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  color: #6a9a7a !important;
+  background: rgba(160, 200, 170, 0.15) !important;
+  border-radius: 50% !important;
+}
+
+/* ===== 页脚说明 ===== */
+.cp-health-report-footer {
+  text-align: center !important;
+  font-size: 10px !important;
+  color: #b0a8a0 !important;
+  margin-top: 28px !important;
+  padding-top: 16px !important;
+  border-top: 1px solid rgba(180, 160, 140, 0.08) !important;
+  opacity: 0.8 !important;
+}
+
+/* ===== 印章 ===== */
+.cp-health-stamp {
+  position: absolute !important;
+  bottom: 80px !important;
+  right: 24px !important;
+  z-index: 10 !important;
+  transform: rotate(-8deg) !important;
+  opacity: 0.5 !important;
+}
+
+.cp-health-stamp-circle {
+  width: 70px !important;
+  height: 70px !important;
+  border: 2px solid rgba(140, 100, 90, 0.5) !important;
+  border-radius: 50% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: rgba(140, 100, 90, 0.6) !important;
+  background: rgba(255, 255, 255, 0.3) !important;
+}
+
+.cp-health-stamp-text-top {
+  font-size: 8px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.05em !important;
+  margin-bottom: 1px !important;
+}
+
+.cp-health-stamp-star {
+  font-size: 12px !important;
+  margin: 1px 0 !important;
+}
+
+.cp-health-stamp-text-bottom {
+  font-size: 7px !important;
+  letter-spacing: 0.1em !important;
+  margin-top: 1px !important;
+}
+
+/* ===== 底部操作按钮 ===== */
+.cp-health-actions {
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  padding: 14px 16px calc(env(safe-area-inset-bottom, 0px) + 14px) !important;
+  background: linear-gradient(180deg, transparent, rgba(247, 243, 237, 0.95) 40%) !important;
+  display: flex !important;
+  gap: 10px !important;
+  z-index: 200 !important;
+}
+
+.cp-health-generate-btn {
+  flex: 1 !important;
+  padding: 13px 20px !important;
+  background: linear-gradient(135deg, #88b098, #6a9a7a) !important;
+  border: none !important;
+  border-radius: 12px !important;
+  color: #fff !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  box-shadow: 0 4px 12px rgba(120, 170, 140, 0.3) !important;
+  letter-spacing: 0.03em !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+}
+
+.cp-health-generate-btn:hover {
+  background: linear-gradient(135deg, #98c0a8, #7aaa8a) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 6px 16px rgba(120, 170, 140, 0.35) !important;
+}
+
+.cp-health-save-btn {
+  flex: 1 !important;
+  padding: 13px 20px !important;
+  background: rgba(255, 255, 255, 0.9) !important;
+  border: 1.5px solid rgba(120, 170, 140, 0.3) !important;
+  border-radius: 12px !important;
+  color: #6a9a7a !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  letter-spacing: 0.03em !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+}
+
+.cp-health-save-btn:hover:not(:disabled) {
+  background: #fff !important;
+  border-color: rgba(120, 170, 140, 0.5) !important;
+}
+
+.cp-health-save-btn:disabled {
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
+}
+
+.cp-health-save-icon {
+  width: 16px !important;
+  height: 16px !important;
+}
+
+/* ===== 入口卡片 ===== */
+.cp-health-spotlight {
+  padding: 0 16px !important;
+  margin-top: 14px !important;
+}
+
+.cp-health-spotlight__btn {
+  display: flex !important;
+  align-items: center !important;
+  gap: 14px !important;
+  width: 100% !important;
+  padding: 16px !important;
+  border: 1px solid rgba(180, 160, 140, 0.12) !important;
+  background: rgba(255, 255, 255, 0.7) !important;
+  backdrop-filter: blur(10px) !important;
+  cursor: pointer !important;
+  text-align: left !important;
+  font: inherit !important;
+  color: inherit !important;
+  transition: all 0.2s ease !important;
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  border-radius: 14px !important;
+}
+
+.cp-health-spotlight__btn:hover {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border-color: rgba(160, 200, 170, 0.25) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(120, 100, 80, 0.08) !important;
+}
+
+.cp-health-spotlight__btn:active {
+  transform: scale(0.99) !important;
+}
+
+.cp-health-spotlight__icon {
+  flex-shrink: 0 !important;
+  width: 44px !important;
+  height: 44px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: #6a9a7a !important;
+  background: rgba(160, 200, 170, 0.12) !important;
+  border-radius: 12px !important;
+}
+
+.cp-health-spotlight__icon svg {
+  width: 24px !important;
+  height: 24px !important;
+}
+
+.cp-health-spotlight__body {
+  flex: 1 !important;
+  min-width: 0 !important;
+}
+
+.cp-health-spotlight__eyebrow {
+  font-size: 9px !important;
+  letter-spacing: 0.15em !important;
+  text-transform: uppercase !important;
+  color: #a09080 !important;
+  margin-bottom: 3px !important;
+  font-weight: 500 !important;
+}
+
+.cp-health-spotlight__title {
+  font-size: 17px !important;
+  font-weight: 600 !important;
+  line-height: 1.2 !important;
+  margin-bottom: 4px !important;
+  color: #4a4038 !important;
+}
+
+.cp-health-spotlight__preview {
+  font-size: 11px !important;
+  line-height: 1.5 !important;
+  color: #908880 !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2 !important;
+  -webkit-box-orient: vertical !important;
+}
+
+.cp-health-spotlight__arrow {
+  flex-shrink: 0 !important;
+  font-size: 16px !important;
+  color: #b0a090 !important;
+  opacity: 0.5 !important;
+}
