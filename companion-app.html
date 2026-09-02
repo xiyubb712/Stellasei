@@ -2141,7 +2141,8 @@
             updateCurrentProfileDisplay();
             filterCharactersByProfile();
             renderAfterLoad();
-            window.removeEventListener('message', messageHandler);
+            // 不移除监听器，这样后续父页面重新发送的角色数据也能收到
+            // window.removeEventListener('message', messageHandler);
           }
         } catch (err) {
           console.log('处理父页面消息失败:', err);

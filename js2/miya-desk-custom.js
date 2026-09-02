@@ -2917,7 +2917,7 @@
   function getLayoutMode() {
     var synced = hydrateLayoutModeSync();
     if (synced) return synced;
-    return layoutModeCache || 'fixed';
+    return layoutModeCache || 'stellasei';
   }
 
   // 判断是否是自定义类布局（custom 或 stellasei）
