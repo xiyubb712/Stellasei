@@ -554,6 +554,7 @@
 .mn-select,
 .mn-textarea {
   width: 100%;
+  max-width: 100%;
   border: none;
   border-bottom: 1px solid rgba(245, 245, 240, 0.35);
   background: transparent;
@@ -562,6 +563,13 @@
   font-size: 14px;
   padding: 6px 2px;
   outline: none;
+  box-sizing: border-box;
+}
+
+/* 生日输入框专门修复，确保不会超出屏幕 */
+#miya-ct-field-birthday {
+  max-width: 100%;
+  width: 100%;
   box-sizing: border-box;
 }
 
