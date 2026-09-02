@@ -544,6 +544,31 @@
       color: var(--text-secondary);
     }
 
+    /* 语录刷新间隔提示 */
+    .time-quote-hint {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 20px;
+      padding: 10px 16px;
+      background: rgba(0, 0, 0, 0.03);
+      border-radius: 2px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      letter-spacing: 0.05em;
+    }
+
+    .time-quote-hint .hint-icon {
+      font-size: 14px;
+    }
+
+    .time-quote-hint strong {
+      color: var(--accent);
+      font-weight: 600;
+      margin: 0 2px;
+    }
+
     /* 开始按钮 */
     .start-section {
       margin-top: 60px;
@@ -987,6 +1012,10 @@
             <input type="number" id="customMinutes" placeholder="自定义" min="1" max="480" oninput="onCustomTime()">
             <span>分钟</span>
           </div>
+          <div class="time-quote-hint" id="timeQuoteHint">
+            <span class="hint-icon">💬</span>
+            <span>语录每 <strong id="quoteInterval">5</strong> 分钟自动刷新 · 点击语录可手动换一句</span>
+          </div>
         </div>
 
         <!-- 开始按钮 -->
@@ -998,6 +1027,70 @@
         <!-- 底部装饰 - 放在页面内容最底部，跟着页面一起滚动 -->
         <div class="page-footer">COMPANION IS THE LONGEST CONFESSION OF LOVE</div>
       </div>
+    </div>
+  </div>
+
+  <!-- 统计页面 -->
+  <div class="stats-page" id="statsPage">
+    <div class="stats-content">
+      <!-- 顶部 -->
+      <div class="stats-top">
+        <button class="stats-back" onclick="closeStatsPage()">← 返回</button>
+        <span class="stats-title">陪伴记录</span>
+        <div class="stats-top-line"></div>
+      </div>
+
+      <!-- 总统计卡片 -->
+      <div class="stats-overview">
+        <div class="overview-card">
+          <div class="overview-number" id="totalCount">0</div>
+          <div class="overview-label">总陪伴次数</div>
+        </div>
+        <div class="overview-card">
+          <div class="overview-number" id="totalHours">0</div>
+          <div class="overview-label">总陪伴时长(小时)</div>
+        </div>
+        <div class="overview-card">
+          <div class="overview-number" id="todayMinutes">0</div>
+          <div class="overview-label">今日陪伴(分钟)</div>
+        </div>
+      </div>
+
+      <!-- 按角色统计 -->
+      <div class="stats-section">
+        <div class="stats-section-title">
+          <span class="stats-section-number">01</span>
+          <span>按角色统计</span>
+        </div>
+        <div class="stats-character-list" id="characterStatsList">
+          <div class="stats-empty">还没有陪伴记录哦，开始第一次陪伴吧～</div>
+        </div>
+      </div>
+
+      <!-- 按场景统计 -->
+      <div class="stats-section">
+        <div class="stats-section-title">
+          <span class="stats-section-number">02</span>
+          <span>按场景统计</span>
+        </div>
+        <div class="stats-scene-list" id="sceneStatsList">
+          <div class="stats-empty">还没有场景数据</div>
+        </div>
+      </div>
+
+      <!-- 最近陪伴记录 -->
+      <div class="stats-section">
+        <div class="stats-section-title">
+          <span class="stats-section-number">03</span>
+          <span>最近陪伴记录</span>
+        </div>
+        <div class="stats-records-list" id="recentRecordsList">
+          <div class="stats-empty">还没有陪伴记录</div>
+        </div>
+      </div>
+
+      <!-- 底部装饰 -->
+      <div class="page-footer">COMPANION IS THE LONGEST CONFESSION OF LOVE</div>
     </div>
   </div>
 
@@ -1015,7 +1108,7 @@
         <div class="companion-avatar-large" id="companionAvatarLarge"></div>
         <div class="companion-name-large" id="companionNameLarge">角色名</div>
         <div class="companion-timer" id="companionTimer">00:00:00</div>
-        <div class="companion-quote" id="companionQuote" onclick="refreshQuote()">
+        <div class="companion-quote" id="companionQuote" onclick="manualRefreshQuote()">
           今天也要好好加油哦，我会一直陪着你的。
         </div>
         <div class="companion-quote-hint">点击文字换一句 · TAP TO REFRESH</div>
@@ -1177,6 +1270,49 @@
     // 语录库 postMessage 代理（解决 iframe 跨域问题）
     let quotesLibRequestId = 0;
     let quotesLibCallbacks = {};
+
+    // 最近听过的语录（避免连续重复）
+    let recentQuotes = [];
+    const MAX_RECENT_QUOTES = 3; // 最多记录最近3句
+
+    // 自动播放语录
+    let autoPlayTimer = null;
+
+    // 根据陪伴总时长计算自动播放间隔（分钟）
+    // 统一用总时长÷6，最少2分钟，最多15分钟
+    function getAutoPlayInterval(totalMinutes) {
+      var interval = Math.round(totalMinutes / 6);
+      return Math.max(2, Math.min(15, interval));
+    }
+
+    // 启动自动播放
+    function startAutoPlay() {
+      stopAutoPlay(); // 先停止之前的
+      var intervalMinutes = getAutoPlayInterval(currentMinutes);
+      var intervalMs = intervalMinutes * 60 * 1000;
+      autoPlayTimer = setInterval(function() {
+        refreshQuote();
+      }, intervalMs);
+      console.log('自动播放已启动，间隔', intervalMinutes, '分钟');
+    }
+
+    // 停止自动播放
+    function stopAutoPlay() {
+      if (autoPlayTimer) {
+        clearInterval(autoPlayTimer);
+        autoPlayTimer = null;
+        console.log('自动播放已停止');
+      }
+    }
+
+    // 手动刷新语录（同时重置自动播放定时器）
+    function manualRefreshQuote() {
+      refreshQuote();
+      // 手动点击后重置自动播放定时器，不会马上又自动换一句
+      if (isRunning) {
+        startAutoPlay();
+      }
+    }
 
     // 向父页面发送语录库请求
     function requestQuotesLib(action, params) {
@@ -1789,6 +1925,16 @@
         btn.classList.toggle('active', parseInt(btn.dataset.minutes) === minutes);
       });
       document.getElementById('customMinutes').value = '';
+      updateQuoteHint();
+    }
+
+    // 更新语录刷新间隔提示
+    function updateQuoteHint() {
+      var interval = getAutoPlayInterval(currentMinutes);
+      var hintEl = document.getElementById('quoteInterval');
+      if (hintEl) {
+        hintEl.textContent = interval;
+      }
     }
 
     // 自定义时间
@@ -1800,6 +1946,7 @@
         document.querySelectorAll('.time-option').forEach(btn => {
           btn.classList.remove('active');
         });
+        updateQuoteHint();
       }
     }
 
@@ -1848,6 +1995,9 @@
       updateTimerDisplay();
       refreshQuote();
 
+      // 启动自动播放语录
+      startAutoPlay();
+
       // 开始计时
       isRunning = true;
       timerInterval = setInterval(() => {
@@ -1874,11 +2024,15 @@
             stopCompanion();
           }
         }, 1000);
+        // 继续的时候启动自动播放
+        startAutoPlay();
       } else {
         // 暂停
         isRunning = false;
         clearInterval(timerInterval);
         document.getElementById('pauseBtn').textContent = '继 续';
+        // 暂停的时候停止自动播放
+        stopAutoPlay();
       }
     }
 
@@ -1889,6 +2043,9 @@
         timerInterval = null;
       }
       isRunning = false;
+
+      // 停止自动播放
+      stopAutoPlay();
 
       const minutes = Math.floor(elapsedSeconds / 60);
       
@@ -1915,48 +2072,123 @@
       document.getElementById('companionTimer').textContent = `${hours}:${minutes}:${seconds}`;
     }
 
-    // 刷新语录（优先从语录库读取，没有的话用预设的备用语录）
+    // 刷新语录（优先从语录库读取，没有的话用预设的备用语录，最近3句不重复）
     async function refreshQuote() {
       var quoteEl = document.getElementById('companionQuote');
       var characterId = currentCharacter ? currentCharacter.id : null;
+      var finalQuote = null;
 
-      // 1. 优先从语录库读取
+      // 1. 优先从语录库读取（最多重试3次，避免连续重复）
       if (characterId) {
-        try {
-          var quoteFromLib = await requestQuotesLib('getRandom', {
-            category: 'companion',
-            characterId: characterId,
-            scene: currentScene
-          });
-          if (quoteFromLib && typeof quoteFromLib === 'string' && quoteFromLib.trim()) {
-            quoteEl.textContent = quoteFromLib;
-            return;
+        for (var attempt = 0; attempt < 3; attempt++) {
+          try {
+            var quoteFromLib = await requestQuotesLib('getRandom', {
+              category: 'companion',
+              characterId: characterId,
+              scene: currentScene
+            });
+            if (quoteFromLib && typeof quoteFromLib === 'string' && quoteFromLib.trim()) {
+              // 检查是否在最近听过的列表里
+              if (recentQuotes.indexOf(quoteFromLib) === -1) {
+                finalQuote = quoteFromLib;
+                break;
+              }
+              // 如果是最后一次重试，就算重复也用了
+              if (attempt === 2) {
+                finalQuote = quoteFromLib;
+              }
+            }
+          } catch (e) {
+            console.log('从语录库读取语录失败:', e);
           }
-        } catch (e) {
-          console.log('从语录库读取语录失败，使用备用语录:', e);
         }
       }
 
-      // 2. 语录库没有的话，用预设的备用语录
-      var quotes = sceneQuotes[currentScene] || sceneQuotes.chill;
-      var randomIndex = Math.floor(Math.random() * quotes.length);
-      quoteEl.textContent = quotes[randomIndex];
+      // 2. 语录库没有的话，用预设的备用语录（也做最近不重复）
+      if (!finalQuote) {
+        var quotes = sceneQuotes[currentScene] || sceneQuotes.chill;
+        for (var i = 0; i < 5; i++) {
+          var randomIndex = Math.floor(Math.random() * quotes.length);
+          var candidate = quotes[randomIndex];
+          if (recentQuotes.indexOf(candidate) === -1 || quotes.length <= MAX_RECENT_QUOTES) {
+            finalQuote = candidate;
+            break;
+          }
+        }
+        if (!finalQuote) {
+          finalQuote = quotes[Math.floor(Math.random() * quotes.length)];
+        }
+      }
+
+      // 3. 显示语录，并记录到最近听过的列表
+      if (finalQuote) {
+        quoteEl.textContent = finalQuote;
+        recentQuotes.push(finalQuote);
+        if (recentQuotes.length > MAX_RECENT_QUOTES) {
+          recentQuotes.shift(); // 去掉最旧的
+        }
+      }
     }
 
-    // 保存统计
+    // 保存统计（升级版本：保存角色、场景、次数、详细记录）
     function saveStats(minutes) {
       try {
-        const today = new Date().toDateString();
-        let stats = JSON.parse(localStorage.getItem('companion-stats') || '{}');
-        
-        if (!stats[today]) {
-          stats[today] = 0;
+        const now = new Date();
+        const dateStr = now.toISOString().split('T')[0]; // YYYY-MM-DD
+        let stats = JSON.parse(localStorage.getItem('companion-stats-v2') || '{}');
+
+        // 初始化数据结构
+        if (!stats.totalCount) stats.totalCount = 0;
+        if (!stats.totalMinutes) stats.totalMinutes = 0;
+        if (!stats.byCharacter) stats.byCharacter = {};
+        if (!stats.byScene) stats.byScene = {};
+        if (!stats.records) stats.records = [];
+        if (!stats.daily) stats.daily = {};
+
+        // 总统计
+        stats.totalCount += 1;
+        stats.totalMinutes += minutes;
+
+        // 按角色统计
+        if (currentCharacter) {
+          var charId = currentCharacter.id;
+          if (!stats.byCharacter[charId]) {
+            stats.byCharacter[charId] = { name: currentCharacter.name, count: 0, minutes: 0 };
+          }
+          stats.byCharacter[charId].count += 1;
+          stats.byCharacter[charId].minutes += minutes;
         }
-        stats[today] += minutes;
-        
-        localStorage.setItem('companion-stats', JSON.stringify(stats));
+
+        // 按场景统计
+        var sceneName = sceneLabels[currentScene] || currentScene;
+        if (!stats.byScene[currentScene]) {
+          stats.byScene[currentScene] = { name: sceneName, count: 0, minutes: 0 };
+        }
+        stats.byScene[currentScene].count += 1;
+        stats.byScene[currentScene].minutes += minutes;
+
+        // 详细记录（最多保存100条）
+        stats.records.unshift({
+          date: dateStr,
+          timestamp: now.getTime(),
+          characterId: currentCharacter ? currentCharacter.id : '',
+          characterName: currentCharacter ? currentCharacter.name : '未知',
+          scene: currentScene,
+          sceneName: sceneName,
+          minutes: minutes
+        });
+        if (stats.records.length > 100) {
+          stats.records = stats.records.slice(0, 100);
+        }
+
+        // 每日统计
+        if (!stats.daily[dateStr]) stats.daily[dateStr] = 0;
+        stats.daily[dateStr] += minutes;
+
+        localStorage.setItem('companion-stats-v2', JSON.stringify(stats));
+        console.log('统计已保存：', minutes, '分钟');
       } catch (e) {
-        console.log('保存统计失败');
+        console.log('保存统计失败:', e);
       }
     }
 
@@ -2012,6 +2244,8 @@
 
     // 初始化
     init();
+    // 初始化语录刷新间隔提示
+    updateQuoteHint();
   </script>
 </body>
 </html>
