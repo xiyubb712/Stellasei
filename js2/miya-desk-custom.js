@@ -6,41 +6,6 @@
   var CUSTOM_PRESETS_KEY = 'miya-desk-custom-presets-v1';
   var STELLASEI_INIT_FLAG = 'miya-desk-stellasei-initialized';
 
-  // ═══════════════════════════════════════════════════════════════
-  // 【最早期重置检测】在任何数据加载之前执行
-  // 访问 ?reset-all=1 时，清除所有旧的布局数据，强制使用星绥默认布局
-  // ═══════════════════════════════════════════════════════════════
-  (function earlyResetCheck() {
-    try {
-      var urlParams = new URLSearchParams(window.location.search);
-      if (urlParams.get('reset-all') !== '1') return;
-      console.log('[stellasei] early reset: clearing all old layout data...');
-      // 清除localStorage里的所有布局相关数据
-      var keysToClear = [
-        LAYOUT_MODE_KEY,
-        CUSTOM_META_KEY,
-        CUSTOM_PRESETS_KEY,
-        STELLASEI_INIT_FLAG,
-        'miya-custom-theme-v1',
-        'miya-custom-layout-mode'
-      ];
-      keysToClear.forEach(function (key) {
-        try { localStorage.removeItem(key); } catch (e) {}
-      });
-      // 清除内存缓存里的相关数据
-      try {
-        if (window.__miyaKvMem) {
-          keysToClear.forEach(function (key) {
-            delete window.__miyaKvMem[key];
-          });
-        }
-      } catch (e) {}
-      console.log('[stellasei] early reset: done, will use stellasei default layout');
-    } catch (e) {
-      console.warn('[stellasei] early reset failed', e);
-    }
-  })();
-
   var GRID_COLS = 4;
   var GRID_ROWS = 8;
   var GRID_SLOT_COUNT = GRID_COLS * GRID_ROWS;
@@ -3049,41 +3014,8 @@
       readKey(CUSTOM_PRESETS_KEY, []),
       readKey(LAYOUT_MODE_KEY, null)
     ]).then(function (rows) {
-      // 【重置模式】如果URL有 ?reset-all=1，直接用默认的星绥布局，不要从IndexedDB读取旧数据
-      var isResetMode = false;
-      try {
-        var resetParams = new URLSearchParams(window.location.search);
-        isResetMode = resetParams.get('reset-all') === '1';
-      } catch (e) {}
-      if (isResetMode) {
-        console.log('[stellasei] reset mode: using default stellasei layout, ignoring idb data');
-        // 强制用默认主题
-        customThemeState = null;
-        loadCustomTheme();
-        // 强制设置为星绥布局
-        layoutModeCache = 'stellasei';
-        hydratePresetsFromRaw([]);
-        customDeskHydrated = true;
-        layoutFromFallback = false;
-        return Promise.resolve({
-          theme: customThemeState,
-          presets: customPresetsCache,
-          layoutMode: 'stellasei'
-        });
-      }
-      // 如果用户已经修改了布局（layoutFromFallback为false），保留用户修改的布局，不被IndexedDB覆盖
-      // 否则，使用IndexedDB里的布局
-      if (layoutFromFallback) {
-        if (rows[0] && typeof rows[0] === 'object') {
-          applyThemeFromRaw(rows[0]);
-        } else {
-          layoutFromFallback = true;
-        }
-      }
-      // 如果用户已经修改了布局，确保layoutFromFallback保持为false
-      if (!layoutFromFallback) {
-        layoutFromFallback = false;
-      }
+      if (customThemeState) mergeThemeFromRaw(rows[0]);
+      else applyThemeFromRaw(rows[0]);
       hydratePresetsFromRaw(rows[1]);
       var mode = parseLayoutModeValue(rows[2]) || readLayoutModeFromLsPlain() || 'stellasei';
       layoutModeCache = mode;
