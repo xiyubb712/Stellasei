@@ -7816,3 +7816,576 @@ html.miya-app-open .miya-couple-app .cp-shell {
   border-color: #c99aaa;
   background: linear-gradient(135deg, rgba(232, 196, 208, 0.2), rgba(184, 208, 228, 0.15));
 }
+
+
+/* ═══ 健康体检报告 · Health Report ═══ */
+
+.cp-health-spotlight {
+  padding: 0 18px;
+  margin-top: 16px;
+}
+
+.cp-health-spotlight__btn {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 16px 18px;
+  border: 1px solid rgba(154, 184, 170, 0.22);
+  background: linear-gradient(135deg, rgba(196, 224, 208, 0.35), rgba(184, 208, 228, 0.28));
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  transition: transform 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.cp-health-spotlight__btn:active { transform: scale(0.985); }
+
+.cp-health-spotlight__icon {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #5a8a72;
+  opacity: 0.75;
+}
+
+.cp-health-spotlight__icon svg { width: 36px; height: 36px; }
+
+.cp-health-spotlight__body { flex: 1; min-width: 0; }
+
+.cp-health-spotlight__eyebrow {
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--cp-ink-muted);
+  margin-bottom: 2px;
+}
+
+.cp-health-spotlight__title {
+  font-family: 'Instrument Serif', serif;
+  font-size: 20px;
+  line-height: 1.15;
+  margin-bottom: 6px;
+}
+
+.cp-health-spotlight__preview {
+  font-size: 11px;
+  line-height: 1.55;
+  color: var(--cp-ink-soft);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.cp-health-spotlight__arrow {
+  flex-shrink: 0;
+  font-size: 14px;
+  color: var(--cp-ink-muted);
+  opacity: 0.5;
+}
+
+/* ═══ HEALTH REPORT SUB-PAGE ═══ */
+.miya-couple-app.is-health .cp-view-space { visibility: hidden; pointer-events: none; }
+
+.cp-view-health {
+  position: absolute;
+  inset: 0;
+  z-index: 150;
+  background: #e6e4e0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.cp-view-health[hidden] { display: none !important; }
+
+.cp-health-scroll {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding: calc(env(safe-area-inset-top, 0px) + 14px) 16px 120px;
+}
+
+.cp-health-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.cp-health-back {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid rgba(44, 36, 40, 0.12);
+  background: rgba(255, 255, 255, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #2c2c2c;
+  padding: 0;
+}
+
+.cp-health-back svg { width: 18px; height: 18px; }
+
+.cp-health-head__main { flex: 1; min-width: 0; }
+
+.cp-health-head__eyebrow {
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(44, 36, 40, 0.5);
+  margin-bottom: 2px;
+}
+
+.cp-health-head__title {
+  font-family: 'Instrument Serif', serif;
+  font-size: 22px;
+  line-height: 1.15;
+  margin-bottom: 2px;
+  color: #2c2c2c;
+}
+
+.cp-health-head__sub {
+  font-size: 11px;
+  color: rgba(44, 36, 40, 0.55);
+}
+
+/* 顶部标题栏右上角数据说明 */
+.cp-health-head__note {
+  flex-shrink: 0;
+  text-align: right;
+  font-family: "SimSun", serif;
+  font-size: 9px;
+  color: rgba(44, 36, 40, 0.5);
+  line-height: 1.7;
+  max-width: 160px;
+}
+
+.cp-health-head__note-title {
+  font-size: 10px;
+  font-weight: bold;
+  color: rgba(44, 36, 40, 0.65);
+  margin-bottom: 2px;
+  letter-spacing: 1px;
+}
+
+.cp-health-head__note-item {
+  color: rgba(44, 36, 40, 0.45);
+  letter-spacing: 0.3px;
+}
+
+.cp-health-actions {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: calc(env(safe-area-inset-bottom, 0px) + 12px) 18px;
+  background: linear-gradient(180deg, transparent, rgba(230, 228, 224, 0.95) 40%);
+  display: flex;
+  gap: 10px;
+  z-index: 10;
+}
+
+.cp-health-generate-btn {
+  flex: 1;
+  padding: 14px 20px;
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #5a8a72, #4a7a62);
+  color: white;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 16px rgba(90, 138, 114, 0.3);
+  transition: transform 0.2s, opacity 0.2s;
+}
+
+.cp-health-generate-btn:active { transform: scale(0.97); }
+.cp-health-generate-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.cp-health-save-btn {
+  flex: 1;
+  padding: 14px 20px;
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #8a7a5a, #7a6a4a);
+  color: white;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 16px rgba(138, 122, 90, 0.3);
+  transition: transform 0.2s, opacity 0.2s;
+}
+
+.cp-health-save-btn:active { transform: scale(0.97); }
+.cp-health-save-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.cp-health-save-icon {
+  width: 18px;
+  height: 18px;
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 4px;
+  flex-shrink: 0;
+}
+
+/* 报告容器 - 纸质风格 */
+.cp-health-report-container {
+  position: relative;
+  background: #f5f3ee;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E");
+  border: 2px solid #2c2c2c;
+  border-radius: 2px;
+  padding: 28px 20px;
+  color: #2c2c2c;
+  margin-bottom: 16px;
+}
+
+.cp-health-report-id {
+  position: absolute;
+  top: 16px;
+  right: 20px;
+  font-family: "Courier New", monospace;
+  font-size: 11px;
+  color: #2c2c2c;
+  letter-spacing: 1px;
+  font-weight: bold;
+}
+
+.cp-health-report-classification {
+  position: absolute;
+  top: 14px;
+  left: 20px;
+  font-family: "SimSun", serif;
+  font-size: 9px;
+  color: #c0392b;
+  letter-spacing: 1px;
+  font-weight: bold;
+  padding: 2px 6px;
+  border: 1px solid #c0392b;
+  border-radius: 2px;
+}
+
+/* 报告头部 */
+.cp-health-report-header {
+  text-align: center;
+  border: 1.5px solid #2c2c2c;
+  padding: 16px 16px 12px;
+  margin-bottom: 20px;
+  margin-top: 20px;
+}
+
+.cp-health-report-hospital {
+  font-size: 12px;
+  font-weight: bold;
+  letter-spacing: 3px;
+  margin-bottom: 6px;
+  font-family: "SimSun", serif;
+}
+
+.cp-health-report-title {
+  font-size: 24px;
+  font-weight: bold;
+  letter-spacing: 6px;
+  margin-bottom: 3px;
+  font-family: "SimSun", serif;
+}
+
+.cp-health-report-subtitle {
+  font-size: 8px;
+  color: #666;
+  letter-spacing: 2px;
+  margin-bottom: 12px;
+  font-family: "Courier New", monospace;
+  text-transform: uppercase;
+}
+
+.cp-health-report-basic-info {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0;
+  border-top: 1px solid #2c2c2c;
+  padding-top: 10px;
+  text-align: left;
+}
+
+.cp-health-info-item {
+  font-size: 12px;
+  padding: 3px 0;
+  font-family: "SimSun", serif;
+}
+
+.cp-health-info-item strong {
+  font-weight: bold;
+  margin-right: 4px;
+}
+
+.cp-health-info-item span {
+  font-family: "KaiTi", "楷体", serif;
+  font-size: 13px;
+}
+
+/* 报告板块 */
+.cp-health-report-section {
+  margin-bottom: 20px;
+}
+
+.cp-health-section-title {
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  padding: 5px 10px;
+  border: 1.5px solid #2c2c2c;
+  background: #e8e6e0;
+  letter-spacing: 2px;
+  font-family: "SimSun", serif;
+}
+
+/* 整体评估卡片 */
+.cp-health-overall {
+  background: #f8f6f0;
+  border: 1.5px solid #2c2c2c;
+  border-radius: 2px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 12px;
+}
+
+.cp-health-overall-score {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: transparent;
+  border: 2px solid #c0392b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  flex-shrink: 0;
+  color: #c0392b;
+  font-family: "Ma Shan Zheng", "KaiTi", cursive;
+  transform: rotate(-3deg);
+  line-height: 1;
+}
+
+.cp-health-overall-content { flex: 1; min-width: 0; }
+
+.cp-health-overall-title {
+  font-size: 11px;
+  color: #666;
+  margin-bottom: 3px;
+  letter-spacing: 1px;
+  font-weight: bold;
+  font-family: "SimSun", serif;
+}
+
+.cp-health-overall-summary {
+  font-size: 13px;
+  line-height: 1.5;
+  margin-bottom: 5px;
+  font-family: "KaiTi", "楷体", serif;
+}
+
+.cp-health-overall-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  background: transparent;
+  border: 1px solid #2c2c2c;
+  border-radius: 2px;
+  font-size: 10px;
+  font-weight: bold;
+  font-family: "SimSun", serif;
+}
+
+/* 小格子 */
+.cp-health-section-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+}
+
+.cp-health-metric-card {
+  background: #f8f6f0;
+  border: 1px solid #2c2c2c;
+  border-radius: 2px;
+  padding: 7px 9px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cp-health-metric-label {
+  font-size: 11px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-width: 45px;
+  color: #2c2c2c;
+  font-weight: bold;
+  font-family: "SimSun", serif;
+}
+
+.cp-health-metric-value {
+  font-size: 12px;
+  text-align: left;
+  flex: 1;
+  font-family: "KaiTi", "楷体", serif;
+  line-height: 1.4;
+}
+
+/* 分类 */
+.cp-health-category {
+  margin-bottom: 12px;
+}
+
+.cp-health-category__title {
+  font-size: 12px;
+  font-weight: bold;
+  margin-bottom: 6px;
+  padding: 3px 8px;
+  border-left: 3px solid #2c2c2c;
+  background: #e8e6e0;
+  letter-spacing: 1px;
+  font-family: "SimSun", serif;
+}
+
+.cp-health-category__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
+}
+
+.cp-health-placeholder {
+  font-size: 12px;
+  color: #999;
+  text-align: center;
+  padding: 20px;
+  font-family: "KaiTi", "楷体", serif;
+}
+
+/* 医生总结和建议 */
+.cp-health-summary-box {
+  background: #f8f6f0;
+  border: 1.5px solid #2c2c2c;
+  border-radius: 2px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+}
+
+.cp-health-summary-title {
+  font-size: 12px;
+  margin-bottom: 8px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid #2c2c2c;
+  font-family: "SimSun", serif;
+}
+
+.cp-health-summary-text {
+  font-size: 13px;
+  line-height: 1.8;
+  text-indent: 2em;
+  font-family: "Ma Shan Zheng", "KaiTi", "楷体", cursive;
+}
+
+.cp-health-advice-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.cp-health-advice-list li {
+  font-size: 13px;
+  padding: 5px 0 5px 20px;
+  position: relative;
+  line-height: 1.6;
+  font-family: "Ma Shan Zheng", "KaiTi", "楷体", cursive;
+}
+
+.cp-health-advice-list li::before {
+  content: "•";
+  position: absolute;
+  left: 6px;
+  top: 5px;
+  font-size: 14px;
+  font-weight: bold;
+  color: #2c2c2c;
+}
+
+/* 页脚 */
+.cp-health-report-footer {
+  margin-top: 16px;
+  padding-top: 8px;
+  border-top: 1px solid #2c2c2c;
+  font-size: 9px;
+  color: #666;
+  text-align: center;
+  letter-spacing: 1px;
+}
+
+/* 印章 */
+.cp-health-stamp {
+  position: absolute;
+  bottom: 30px;
+  right: 30px;
+  width: 70px;
+  height: 70px;
+  opacity: 0.85;
+  transform: rotate(-12deg);
+  pointer-events: none;
+}
+
+.cp-health-stamp-circle {
+  width: 100%;
+  height: 100%;
+  border: 2px solid #c0392b;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #c0392b;
+  font-family: "SimSun", serif;
+  font-weight: bold;
+}
+
+.cp-health-stamp-text-top {
+  font-size: 7px;
+  letter-spacing: 0.5px;
+  margin-bottom: 1px;
+}
+
+.cp-health-stamp-star {
+  font-size: 14px;
+  line-height: 1;
+  margin: 1px 0;
+}
+
+.cp-health-stamp-text-bottom {
+  font-size: 8px;
+  letter-spacing: 1px;
+  margin-top: 1px;
+}
+
