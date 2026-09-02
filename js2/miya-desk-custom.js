@@ -3047,6 +3047,28 @@
       readKey(CUSTOM_PRESETS_KEY, []),
       readKey(LAYOUT_MODE_KEY, null)
     ]).then(function (rows) {
+      // 【重置模式】如果URL有 ?reset-all=1，直接用默认的星绥布局，不要从IndexedDB读取旧数据
+      var isResetMode = false;
+      try {
+        var resetParams = new URLSearchParams(window.location.search);
+        isResetMode = resetParams.get('reset-all') === '1';
+      } catch (e) {}
+      if (isResetMode) {
+        console.log('[stellasei] reset mode: using default stellasei layout, ignoring idb data');
+        // 强制用默认主题
+        customThemeState = null;
+        loadCustomTheme();
+        // 强制设置为星绥布局
+        layoutModeCache = 'stellasei';
+        hydratePresetsFromRaw([]);
+        customDeskHydrated = true;
+        layoutFromFallback = false;
+        return Promise.resolve({
+          theme: customThemeState,
+          presets: customPresetsCache,
+          layoutMode: 'stellasei'
+        });
+      }
       // 如果用户已经修改了布局（layoutFromFallback为false），保留用户修改的布局，不被IndexedDB覆盖
       // 否则，使用IndexedDB里的布局
       if (layoutFromFallback) {
