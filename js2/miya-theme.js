@@ -442,6 +442,136 @@
     });
   }
 
+  // ========== 自动清理未使用的图片 ==========
+
+  // 递归遍历对象，收集所有以 miya_img_ 开头的图片 ID
+  function collectUsedImageIds(obj, resultSet) {
+    if (!resultSet) resultSet = new Set();
+    if (!obj) return resultSet;
+
+    if (typeof obj === 'string') {
+      // 图片 ID 以 miya_img_ 开头
+      if (obj.indexOf('miya_img_') === 0) {
+        resultSet.add(obj);
+      }
+      return resultSet;
+    }
+
+    if (Array.isArray(obj)) {
+      obj.forEach(function (item) {
+        collectUsedImageIds(item, resultSet);
+      });
+      return resultSet;
+    }
+
+    if (typeof obj === 'object') {
+      Object.keys(obj).forEach(function (key) {
+        collectUsedImageIds(obj[key], resultSet);
+      });
+    }
+
+    return resultSet;
+  }
+
+  // 获取 IndexedDB 里所有的图片 ID
+  function getAllMediaIds() {
+    return openMediaDb().then(function (db) {
+      return new Promise(function (resolve, reject) {
+        try {
+          var tx = db.transaction(MEDIA_STORE, 'readonly');
+          var store = tx.objectStore(MEDIA_STORE);
+          var ids = [];
+
+          // 用 openCursor 遍历所有 key
+          var req = store.openCursor();
+          req.onsuccess = function (e) {
+            var cursor = e.target.result;
+            if (cursor) {
+              ids.push(cursor.key);
+              cursor.continue();
+            } else {
+              resolve(ids);
+            }
+          };
+          req.onerror = function () {
+            reject(req.error);
+          };
+        } catch (e) {
+          reject(e);
+        }
+      });
+    });
+  }
+
+  // 清理未使用的图片
+  function cleanupUnusedImages() {
+    return new Promise(function (resolve) {
+      try {
+        // 1. 从 localStorage 读取当前主题元数据
+        var theme = loadMeta();
+
+        // 2. 收集当前主题使用的所有图片 ID
+        var usedIds = collectUsedImageIds(theme);
+
+        // 3. 也收集预设主题里使用的图片 ID（防止误删预设里的图片）
+        try {
+          var presetsRaw = localStorage.getItem(PRESETS_KEY);
+          if (presetsRaw) {
+            var presets = JSON.parse(presetsRaw);
+            if (Array.isArray(presets)) {
+              presets.forEach(function (p) {
+                if (p && p.theme) {
+                  collectUsedImageIds(p.theme, usedIds);
+                }
+              });
+            }
+          }
+        } catch (e) {}
+
+        // 4. 从 IndexedDB 获取所有图片 ID
+        getAllMediaIds().then(function (allIds) {
+          // 5. 找出未使用的图片 ID
+          var unusedIds = allIds.filter(function (id) {
+            return !usedIds.has(id);
+          });
+
+          if (unusedIds.length === 0) {
+            resolve({ cleaned: 0, unused: [] });
+            return;
+          }
+
+          // 6. 删除未使用的图片
+          var deletePromises = unusedIds.map(function (id) {
+            revokeUrl(id); // 先释放 blob URL
+            return mediaDelete(id);
+          });
+
+          Promise.all(deletePromises).then(function () {
+            resolve({ cleaned: unusedIds.length, unused: unusedIds });
+          }).catch(function () {
+            resolve({ cleaned: 0, unused: unusedIds });
+          });
+        }).catch(function () {
+          resolve({ cleaned: 0, unused: [] });
+        });
+      } catch (e) {
+        resolve({ cleaned: 0, unused: [] });
+      }
+    });
+  }
+
+  // 延迟清理（不阻塞当前操作）
+  function scheduleCleanupUnusedImages(delay) {
+    setTimeout(function () {
+      cleanupUnusedImages().then(function (result) {
+        if (result.cleaned > 0) {
+          console.log('[miya-theme] 清理了 ' + result.cleaned + ' 张未使用的图片');
+        }
+      }).catch(function () {});
+    }, delay || 3000);
+  }
+  // ========== 自动清理未使用的图片结束 ==========
+
   function centerCropSquareFromSource(ctx, source, w, h, outSize) {
     var cropSize = Math.min(w, h);
     var sx = (w - cropSize) / 2;
@@ -974,6 +1104,8 @@
     if (!themeState.copy) themeState.copy = Object.assign({}, defaultCopy);
     if (themeState.icons) themeState.icons = normalizeIcons(themeState.icons);
     saveMeta(themeState);
+    // 保存主题后延迟3秒自动清理未使用的图片
+    scheduleCleanupUnusedImages(3000);
     return themeState;
   };
 
@@ -2125,4 +2257,16 @@
     Object.keys(blobUrlCache).forEach(revokeUrl);
     return global.miyaImportNamedDbBlobs(MEDIA_DB, MEDIA_STORE, src);
   };
+
+  // 页面加载后延迟5秒自动清理一次未使用的图片
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () {
+      scheduleCleanupUnusedImages(5000);
+    });
+  } else {
+    scheduleCleanupUnusedImages(5000);
+  }
+
+  // 暴露清理函数到全局，方便保存主题后调用
+  global.miyaScheduleCleanupUnusedImages = scheduleCleanupUnusedImages;
 })(window);
