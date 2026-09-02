@@ -686,6 +686,13 @@
       font-weight: 700;
     }
 
+    .stats-section-hint {
+      font-size: 10px;
+      color: var(--text-light);
+      font-weight: 400;
+      letter-spacing: 0.05em;
+    }
+
     /* 角色统计列表 */
     .stats-character-list,
     .stats-scene-list,
@@ -1151,6 +1158,32 @@
     .modal-btn:hover {
       background: var(--accent);
     }
+
+    /* 两个按钮的布局 */
+    .modal-two-btns {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+    }
+
+    .modal-two-btns .modal-btn {
+      padding: 12px 24px;
+      flex: 1;
+      max-width: 140px;
+    }
+
+    /* 描边按钮样式 */
+    .modal-btn.outline {
+      background: none;
+      color: var(--text-secondary);
+      border: 1px solid var(--line);
+    }
+
+    .modal-btn.outline:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: none;
+    }
   </style>
 </head>
 <body>
@@ -1345,6 +1378,7 @@
         <div class="stats-section-title">
           <span class="stats-section-number">03</span>
           <span>最近陪伴记录</span>
+          <span class="stats-section-hint">· 未满30秒不列入记录</span>
         </div>
         <div class="stats-records-list" id="recentRecordsList">
           <div class="stats-empty">还没有陪伴记录</div>
@@ -1379,6 +1413,24 @@
       <div class="companion-bottom">
         <button class="companion-btn" id="pauseBtn" onclick="pauseCompanion()">暂 停</button>
         <button class="companion-btn primary" id="stopBtn" onclick="stopCompanion()">结 束</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 语录不足提示弹窗 -->
+  <div class="modal-overlay" id="quotesWarningModal">
+    <div class="modal-content">
+      <div class="modal-icon">💬</div>
+      <div class="modal-title">专属语录有点少哦</div>
+      <div class="modal-text">
+        当前角色这个场景的专属语录只有 <strong id="quotesWarningCount">0</strong> 句<br>
+        少于10句可能会听到重复的哦<br><br>
+        继续陪伴将默认使用<strong>通用语录</strong><br>
+        建议去语录库添加更多专属语录，体验更好～
+      </div>
+      <div class="modal-two-btns">
+        <button class="modal-btn outline" onclick="closeQuotesWarningAndBack()">返回添加</button>
+        <button class="modal-btn" onclick="closeQuotesWarningAndStart()">继续陪伴</button>
       </div>
     </div>
   </div>
@@ -1602,15 +1654,35 @@
       var modal = document.getElementById('quotesWarningModal');
       var countEl = document.getElementById('quotesWarningCount');
       if (countEl) countEl.textContent = count || 0;
-      if (modal) modal.classList.add('show');
+      if (modal) {
+        modal.classList.add('show');
+        // 禁止背景滑动
+        document.body.style.overflow = 'hidden';
+      }
     }
 
     // 关闭语录不足提示，继续陪伴
     function closeQuotesWarningAndStart() {
       var modal = document.getElementById('quotesWarningModal');
-      if (modal) modal.classList.remove('show');
+      if (modal) {
+        modal.classList.remove('show');
+        // 恢复背景滑动
+        document.body.style.overflow = '';
+      }
       // 继续开始陪伴
       startCompanionActual();
+    }
+
+    // 关闭语录不足提示，返回设置页面
+    function closeQuotesWarningAndBack() {
+      var modal = document.getElementById('quotesWarningModal');
+      if (modal) {
+        modal.classList.remove('show');
+        // 恢复背景滑动
+        document.body.style.overflow = '';
+      }
+      // 不开始陪伴，留在设置页面
+      console.log('用户选择返回添加语录');
     }
 
     // 向父页面发送语录库请求
@@ -2249,13 +2321,24 @@
       }
     }
 
-    // 开始陪伴
-    function startCompanion() {
+    // 开始陪伴（先检查语录数量）
+    async function startCompanion() {
       if (!currentCharacter) {
         alert('请先选择一个角色');
         return;
       }
 
+      // 检查语录数量，少于10句就提示
+      var enough = await checkQuotesCount();
+      if (!enough) {
+        return; // 用户会在弹窗里选择继续陪伴
+      }
+
+      startCompanionActual();
+    }
+
+    // 实际开始陪伴的逻辑
+    function startCompanionActual() {
       // 切换到陪伴页面
       document.getElementById('setupPage').style.display = 'none';
       document.getElementById('companionPage').classList.add('show');
@@ -2346,7 +2429,8 @@
       // 停止自动播放
       stopAutoPlay();
 
-      const minutes = Math.floor(elapsedSeconds / 60);
+      // 四舍五入计算时长（超过30秒算1分钟）
+      const minutes = Math.round(elapsedSeconds / 60);
       
       // 保存统计
       saveStats(minutes);
@@ -2361,6 +2445,8 @@
         ${randomEnding}
       `;
       document.getElementById('completeModal').classList.add('show');
+      // 禁止背景滑动
+      document.body.style.overflow = 'hidden';
     }
 
     // 更新计时器显示
@@ -2431,6 +2517,12 @@
 
     // 保存统计（升级版本：保存角色、场景、次数、详细记录）
     function saveStats(minutes) {
+      // 0分钟（不满30秒）的陪伴不保存记录
+      if (minutes <= 0) {
+        console.log('陪伴时长不满30秒，不保存记录');
+        return;
+      }
+
       try {
         const now = new Date();
         const dateStr = now.toISOString().split('T')[0]; // YYYY-MM-DD
@@ -2601,6 +2693,8 @@
     // 关闭弹窗
     function closeModal() {
       document.getElementById('completeModal').classList.remove('show');
+      // 恢复背景滑动
+      document.body.style.overflow = '';
       // 回到选择页面
       document.getElementById('companionPage').classList.remove('show');
       document.getElementById('setupPage').style.display = 'block';
