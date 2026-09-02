@@ -168,6 +168,17 @@
       font-size: 12px;
     }
 
+    .profile-switch-icon-svg {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-secondary);
+    }
+
+    .profile-switch-icon-svg svg {
+      display: block;
+    }
+
     .profile-switch-name {
       max-width: 80px;
       overflow: hidden;
@@ -455,6 +466,23 @@
       transition: transform 0.35s;
     }
 
+    .scene-icon-svg {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-main);
+      opacity: 0.7;
+    }
+
+    .scene-card.active .scene-icon-svg {
+      opacity: 1;
+      color: var(--accent);
+    }
+
+    .scene-icon-svg svg {
+      display: block;
+    }
+
     .scene-card.active .scene-icon {
       transform: scale(1.1);
       opacity: 1;
@@ -568,6 +596,18 @@
 
     .time-quote-hint .hint-icon {
       font-size: 14px;
+    }
+
+    .hint-icon-svg {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent);
+      opacity: 0.8;
+    }
+
+    .hint-icon-svg svg {
+      display: block;
     }
 
     .time-quote-hint strong {
@@ -1127,6 +1167,18 @@
       opacity: 0.8;
     }
 
+    .modal-icon-svg {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent);
+      opacity: 0.7;
+    }
+
+    .modal-icon-svg svg {
+      display: block;
+    }
+
     .modal-title {
       font-size: 24px;
       font-weight: 400;
@@ -1228,7 +1280,12 @@
             <span class="section-name">选择角色</span>
             <div class="section-line"></div>
             <button class="profile-switch-btn" id="profileSwitchBtn" onclick="toggleProfilePicker()">
-              <span class="profile-switch-icon">👤</span>
+              <span class="profile-switch-icon profile-switch-icon-svg">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+              </span>
               <span class="profile-switch-name" id="currentProfileName">当前面具</span>
               <span class="profile-switch-arrow">▾</span>
             </button>
@@ -1253,37 +1310,69 @@
           </div>
           <div class="scene-grid" id="sceneGrid">
             <div class="scene-card active" data-scene="study" onclick="selectScene('study')">
-              <div class="scene-icon">📖</div>
+              <div class="scene-icon scene-icon-svg">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                </svg>
+              </div>
               <div class="scene-name">学习</div>
               <div class="scene-en">STUDY</div>
               <div class="scene-desc">安静专注</div>
             </div>
             <div class="scene-card" data-scene="work" onclick="selectScene('work')">
-              <div class="scene-icon">✎</div>
+              <div class="scene-icon scene-icon-svg">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                  <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                </svg>
+              </div>
               <div class="scene-name">工作</div>
               <div class="scene-en">WORK</div>
               <div class="scene-desc">高效认真</div>
             </div>
             <div class="scene-card" data-scene="rest" onclick="selectScene('rest')">
-              <div class="scene-icon">☁</div>
+              <div class="scene-icon scene-icon-svg">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path>
+                </svg>
+              </div>
               <div class="scene-name">休息</div>
               <div class="scene-en">REST</div>
               <div class="scene-desc">放松身心</div>
             </div>
             <div class="scene-card" data-scene="meal" onclick="selectScene('meal')">
-              <div class="scene-icon">◡</div>
+              <div class="scene-icon scene-icon-svg">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
+                  <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
+                  <line x1="6" y1="1" x2="6" y2="4"></line>
+                  <line x1="10" y1="1" x2="10" y2="4"></line>
+                  <line x1="14" y1="1" x2="14" y2="4"></line>
+                </svg>
+              </div>
               <div class="scene-name">吃饭</div>
               <div class="scene-en">MEAL</div>
               <div class="scene-desc">温馨治愈</div>
             </div>
             <div class="scene-card" data-scene="chill" onclick="selectScene('chill')">
-              <div class="scene-icon">♪</div>
+              <div class="scene-icon scene-icon-svg">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M9 18V5l12-2v13"></path>
+                  <circle cx="6" cy="18" r="3"></circle>
+                  <circle cx="18" cy="16" r="3"></circle>
+                </svg>
+              </div>
               <div class="scene-name">放空</div>
               <div class="scene-en">CHILL</div>
               <div class="scene-desc">轻松愉悦</div>
             </div>
             <div class="scene-card" data-scene="sleep" onclick="selectScene('sleep')">
-              <div class="scene-icon">☾</div>
+              <div class="scene-icon scene-icon-svg">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                </svg>
+              </div>
               <div class="scene-name">睡前</div>
               <div class="scene-en">SLEEP</div>
               <div class="scene-desc">安静助眠</div>
@@ -1308,7 +1397,11 @@
             <span>分钟</span>
           </div>
           <div class="time-quote-hint" id="timeQuoteHint">
-            <span class="hint-icon">💬</span>
+            <span class="hint-icon hint-icon-svg">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+              </svg>
+            </span>
             <span>语录每 <strong id="quoteInterval">5</strong> 分钟自动刷新 · 点击语录可手动换一句</span>
           </div>
         </div>
@@ -1420,7 +1513,11 @@
   <!-- 语录不足提示弹窗 -->
   <div class="modal-overlay" id="quotesWarningModal">
     <div class="modal-content">
-      <div class="modal-icon">💬</div>
+      <div class="modal-icon modal-icon-svg">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        </svg>
+      </div>
       <div class="modal-title">专属语录有点少哦</div>
       <div class="modal-text">
         当前角色这个场景的专属语录只有 <strong id="quotesWarningCount">0</strong> 句<br>
